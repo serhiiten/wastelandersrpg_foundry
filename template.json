@@ -1,0 +1,24 @@
+{
+  "Actor": {
+    "types": [
+      "character",
+      "caravan"
+    ],
+    "htmlFields": [
+      "description",
+      "notes"
+    ]
+  },
+  "Item": {
+    "types": [
+      "weapon",
+      "armor",
+      "tool",
+      "perk",
+      "feat",
+      "upgrade",
+      "cargo",
+      "passenger"
+    ]
+  }
+}

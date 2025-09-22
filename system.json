@@ -1,0 +1,47 @@
+{
+  "id": "wastelanders",
+  "title": "Пустельники",
+  "description": "Система для Пустельники (автор: Сергій Тен) від GMonline",
+  "version": "0.1",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13",
+    "maximum": "13"
+  },
+  "authors": [
+    {
+      "name": "Serhii Ten",
+      "discord": "serhiiten"
+    },
+    {
+      "name": "GMonline-ua",
+      "url": "https://github.com/GMonlineua",
+      "email": "gmonlineua@gmail.com",
+      "discord": "vlad_dracula"
+    }
+  ],
+  "esmodules": [
+    "module/wastelanders.mjs"
+  ],
+  "styles": [
+    "css/wastelanders.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "uk",
+      "name": "Українська",
+      "path": "lang/uk.json"
+    }
+  ],
+  "socket": true,
+  "packFolders": [],
+  "url": "https://github.com/serhiiten/wastelandersrpg_foundry",
+  "manifest": "https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/main/system.json",
+  "download": "https://github.com/serhiiten/wastelandersrpg_foundry/releases/download/v0.1/foundry.zip",
+  "license": "https://github.com/serhiiten/wastelandersrpg_foundry/blob/main/LICENSE.md"
+}
