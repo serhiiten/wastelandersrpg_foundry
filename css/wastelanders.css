@@ -1,0 +1,472 @@
+@import url("https://fonts.googleapis.com/css2?family=Handjet:wght@100..900&family=Scada:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+@font-face {
+  font-family: "Overseer";
+  src: url("/systems/wastelanders/fonts/Overseer.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+/* Global styles */
+.portrait {
+  flex: none;
+  border-width: 0;
+  margin-right: 5px;
+}
+
+.roll-message .roll-header {
+  margin-bottom: 10px;
+}
+.roll-message .roll-header .roll-name {
+  margin: 0;
+  padding: 3px 5px 0 5px;
+}
+.roll-message .roll-header .roll-subheader {
+  padding: 3px 5px 0 5px;
+  font-weight: bold;
+}
+.roll-message .roll-header .roll-subheader h4 {
+  display: inline;
+  font-weight: bold;
+}
+
+.flex-group-left {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.flex-group-right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.flexshrink {
+  flex: 0;
+}
+
+.flex-between {
+  justify-content: space-between;
+}
+
+.flexlarge {
+  flex: 2;
+}
+
+.align-left {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.align-right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.align-center {
+  justify-content: center;
+  text-align: center;
+}
+
+.grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-4col {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-5col {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-6col {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-7col {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-8col {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-9col {
+  display: grid;
+  grid-column: span 9/span 9;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-10col {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-11col {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-12col {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid-start-2 {
+  grid-column-start: 2;
+}
+
+.grid-start-3 {
+  grid-column-start: 3;
+}
+
+.grid-start-4 {
+  grid-column-start: 4;
+}
+
+.grid-start-5 {
+  grid-column-start: 5;
+}
+
+.grid-start-6 {
+  grid-column-start: 6;
+}
+
+.grid-start-7 {
+  grid-column-start: 7;
+}
+
+.grid-start-8 {
+  grid-column-start: 8;
+}
+
+.grid-start-9 {
+  grid-column-start: 9;
+}
+
+.grid-start-10 {
+  grid-column-start: 10;
+}
+
+.grid-start-11 {
+  grid-column-start: 11;
+}
+
+.grid-start-12 {
+  grid-column-start: 12;
+}
+
+.grid-span-2 {
+  grid-column-end: span 2;
+}
+
+.grid-span-3 {
+  grid-column-end: span 3;
+}
+
+.grid-span-4 {
+  grid-column-end: span 4;
+}
+
+.grid-span-5 {
+  grid-column-end: span 5;
+}
+
+.grid-span-6 {
+  grid-column-end: span 6;
+}
+
+.grid-span-7 {
+  grid-column-end: span 7;
+}
+
+.grid-span-8 {
+  grid-column-end: span 8;
+}
+
+.grid-span-9 {
+  grid-column-end: span 9;
+}
+
+.grid-span-10 {
+  grid-column-end: span 10;
+}
+
+.grid-span-11 {
+  grid-column-end: span 11;
+}
+
+.grid-span-12 {
+  grid-column-end: span 12;
+}
+
+input.clear-input {
+  border-width: 0;
+  border-radius: 0;
+  background-image: none;
+  background-color: transparent;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  --color-shadow-primary: none;
+}
+
+input.clear-input:focus {
+  outline: none;
+}
+
+select.clear-select {
+  border: none;
+  background: none;
+}
+
+.window-app {
+  font-family: "Scada", sans-serif;
+}
+
+.window-content input[type=number] {
+  max-width: 35px;
+}
+.window-content input[type=text] {
+  width: auto;
+}
+
+.wastelanders.sheet.actor {
+  min-width: 400px;
+  min-height: 500px;
+}
+
+.wastelanders.sheet.item {
+  min-width: 450px;
+  min-height: 400px;
+}
+
+/* Styles limited to system sheets */
+.wastelanders {
+  font-family: "Scada", sans-serif;
+}
+.wastelanders .detail-window .detail-trigger {
+  cursor: pointer;
+}
+.wastelanders .detail-window .detail-block:not(.active) {
+  display: none;
+}
+.wastelanders .rollable:hover, .wastelanders .rollable:focus {
+  color: black;
+  cursor: pointer;
+}
+.wastelanders h1, .wastelanders h2, .wastelanders h3 {
+  font-family: "Overseer", sans-serif;
+}
+.wastelanders .sheet-tabs {
+  font-family: "Overseer", sans-serif;
+  font-size: medium;
+}
+.wastelanders .sheet-tabs .item.active {
+  background: rgba(0, 0, 0, 0.1);
+  text-shadow: none;
+}
+.wastelanders .tox {
+  min-height: 300px;
+}
+.wastelanders .tox .tox-editor-container {
+  background: white;
+}
+.wastelanders .tox .tox-edit-area {
+  padding: 0 5px;
+}
+.wastelanders .editor {
+  min-height: 200px;
+  padding: 0 5px;
+  border: 1px solid #b5b3a4;
+}
+.wastelanders .items-block {
+  position: relative;
+}
+.wastelanders .items-block .item-create {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+}
+.wastelanders .items-block .items-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.wastelanders .items-block .items-list .item {
+  position: relative;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.wastelanders .items-block .items-list .item .item-description {
+  padding-right: 55px;
+}
+.wastelanders .items-block .items-list .item .item-description .item-name.active {
+  font-weight: bold;
+}
+.wastelanders .items-block .items-list .item .item-description .item-tags {
+  font-style: italic;
+}
+.wastelanders .items-block .items-list .item .item-summary {
+  flex: auto;
+  margin: 0;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+.wastelanders .items-block .items-list .item .item-controls {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+.wastelanders .items-block .items-list .item .item-controls a {
+  font-size: 12px;
+  text-align: center;
+  margin: 0 3px;
+}
+.wastelanders .items-block .items-list .item.active .item-name {
+  font-weight: bold;
+}
+
+.wastelanders.actor input.all-width {
+  width: 100%;
+}
+.wastelanders.actor .window-content {
+  background: #eee;
+}
+.wastelanders.actor .window-content .sheet-header {
+  display: grid;
+  column-gap: 10px;
+  grid-template-columns: 120px 1fr;
+}
+.wastelanders.actor .window-content .sheet-header .profile-img {
+  height: auto;
+}
+.wastelanders.actor .window-content .sheet-header .character-name {
+  font-size: x-large;
+  font-family: "Overseer", sans-serif;
+  width: 100%;
+  margin: 0;
+  margin-bottom: 5px;
+}
+.wastelanders.actor .character .sheet-header .name-block .character-name {
+  border-bottom: 2px solid black;
+}
+.wastelanders.actor .character .sheet-header .name-block .prop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: none;
+}
+.wastelanders.actor .character .sheet-header .name-block .prop input {
+  max-width: 160px;
+}
+.wastelanders.actor .character .sheet-header .name-block .prop .archetype {
+  text-align: right;
+}
+.wastelanders.actor .character .sheet-header .brief-info {
+  gap: 2px 5px;
+}
+.wastelanders.actor .character .sheet-header .brief-info .prop {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.wastelanders.actor .character .sheet-header .brief-info .prop .prop-label {
+  margin-right: 3px;
+}
+.wastelanders.actor .character .sheet-header .brief-info .prop .clear-input {
+  flex: 1;
+  border-bottom: 1px solid #b5b3a4;
+}
+.wastelanders.actor .character .general-container h2 {
+  border: none;
+}
+.wastelanders.actor .character .general-container .attribute {
+  display: grid;
+  grid-template-columns: 1fr 30px;
+  gap: 2px;
+  font-family: "Handjet", sans-serif;
+  font-size: large;
+  border: 1px solid #222;
+}
+.wastelanders.actor .character .general-container .attribute .attribute-label {
+  padding: 3px;
+}
+.wastelanders.actor .character .general-container .attribute .clear-input {
+  border-left: 1px solid #222;
+}
+.wastelanders.actor .character .general-container .skill {
+  display: grid;
+  grid-template-columns: 1fr 30px;
+  gap: 2px;
+  font-family: "Handjet", sans-serif;
+  font-size: large;
+  border: 1px solid #222;
+}
+.wastelanders.actor .character .general-container .skill .skill-label {
+  padding: 3px;
+}
+.wastelanders.actor .character .general-container .skill .clear-input {
+  border-left: 1px solid #222;
+}
+
+.wastelanders.item input.all-width {
+  width: 100%;
+}
+.wastelanders.item .items-header {
+  flex: 100px auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+.wastelanders.item .items-header .item-img {
+  flex: 0 0 100px;
+  height: 100px;
+  margin-right: 10px;
+  border: none;
+}
+.wastelanders.item .items-header .header-fields {
+  flex: 1;
+}
+.wastelanders.item .items-header .header-fields .item-name {
+  height: 35px;
+  padding: 0px;
+  margin: 5px 0;
+  border-bottom: 0;
+  font-family: "Handjet", sans-serif;
+}
+.wastelanders.item .items-header .header-fields .item-name input {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.wastelanders.item .sheet-body .editor-block {
+  flex: auto;
+}
+
+/*# sourceMappingURL=wastelanders.css.map */

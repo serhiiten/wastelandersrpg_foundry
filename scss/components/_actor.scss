@@ -1,0 +1,25 @@
+input.all-width {
+  width: 100%;
+}
+
+.window-content{
+  background: #eee;
+
+  .sheet-header {
+    display: grid;
+    column-gap: $padding-md;
+    grid-template-columns: 120px 1fr;
+
+    .profile-img {
+      height: auto;
+    }
+
+    .character-name {
+      font-size: x-large;
+      font-family: $font-header;
+      width: 100%;
+      margin: 0;
+      margin-bottom: 5px;
+    }
+  }
+}

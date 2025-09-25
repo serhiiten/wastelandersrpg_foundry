@@ -1,0 +1,60 @@
+.items-block {
+  position: relative;
+
+  .item-create {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+  }
+
+  .items-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    .item {
+      position: relative;
+      align-items: center;
+      margin-bottom: 5px;
+
+      .item-description {
+        padding-right: 55px;
+
+        .item-name.active {
+          font-weight: bold;
+        }
+
+        .item-tags {
+          font-style: italic;
+        }
+      }
+
+      .item-summary {
+        flex: auto;
+        margin: 0;
+        height: 0;
+        overflow: hidden;
+        transition: height 0.3s ease;
+      }
+
+      .item-controls {
+        position: absolute;
+        top: 4px;
+        right: 0;
+        display: flex;
+        justify-content: flex-end;
+        a {
+          font-size: 12px;
+          text-align: center;
+          margin: 0 3px;
+        }
+      }
+    }
+
+    .item.active {
+      .item-name {
+        font-weight: bold;
+      }
+    }
+  }
+}

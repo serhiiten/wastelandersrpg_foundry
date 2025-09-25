@@ -1,0 +1,43 @@
+input.clear-input {
+  border-width: 0;
+  border-radius: 0;
+  background-image: none;
+  background-color: transparent;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  --color-shadow-primary: none;
+}
+
+input.clear-input:focus {
+  outline: none;
+}
+
+select.clear-select {
+  border: none;
+  background: none;
+}
+
+.window-app {
+  font-family: $font-primary;
+}
+
+.window-content {
+  input[type="number"] {
+    max-width: 35px;
+  }
+
+  input[type="text"] {
+    width: auto;
+  }
+}
+
+.wastelanders.sheet.actor {
+  min-width: 400px;
+  min-height: 500px;
+}
+
+.wastelanders.sheet.item {
+  min-width: 450px;
+  min-height: 400px;
+}

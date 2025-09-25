@@ -1,0 +1,85 @@
+.character {
+  .sheet-header {
+    .name-block {
+      .character-name {
+        border-bottom: $border-hard;
+      }
+
+      .prop {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: none;
+
+        input {
+          max-width: 160px;
+        }
+
+        .archetype {
+          text-align: right;
+        }
+      }
+    }
+
+    .brief-info {
+      gap: 2px 5px;
+
+      .prop {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+
+        .prop-label {
+          margin-right: 3px;
+        }
+
+        .clear-input {
+          flex: 1;
+          border-bottom: $border;
+        }
+      }
+    }
+  }
+
+  .general-container {
+    h2 {
+      border: none;
+    }
+
+    .attribute {
+      display: grid;
+      grid-template-columns: 1fr 30px;
+      gap: 2px;
+      font-family: $font-secondary;
+      font-size: large;
+      border: $border-black;
+
+      .attribute-label {
+        padding: 3px;
+      }
+
+      .clear-input {
+        border-left: $border-black;
+      }
+    }
+
+
+    .skill {
+      display: grid;
+      grid-template-columns: 1fr 30px;
+      gap: 2px;
+      font-family: $font-secondary;
+      font-size: large;
+      border: $border-black;
+
+      .skill-label {
+        padding: 3px;
+      }
+
+      .clear-input {
+        border-left: $border-black;
+      }
+    }
+  }
+}

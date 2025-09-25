@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Handjet:wght@100..900&family=Scada:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@font-face {
+  font-family: 'Overseer';
+  src: url('/systems/wastelanders/fonts/Overseer.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+$padding-sm: 5px;
+$padding-md: 10px;
+$padding-lg: 20px;
+
+$light-black: #222;
+$light-grey: #ccc;
+$grey: #999;
+$light-white: #eee;
+$shadow: 0 0 8px red;
+$border: 1px solid #b5b3a4;
+$border-black: 1px solid #222;
+$border-hard: 2px solid black;
+
+$dark-paper: rgba(0, 0, 0, 0.1);
+
+$font-header: 'Overseer', sans-serif;
+$font-primary: "Scada", sans-serif;
+$font-secondary: "Handjet", sans-serif;
+
+
