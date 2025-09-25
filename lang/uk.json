@@ -1,0 +1,40 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "Персонаж",
+      "caravan": "Караван"
+    },
+    "Item": {
+      "weapon": "Зброя",
+      "armor": "Захист",
+      "tool": "Предмет",
+      "perk": "Перк",
+      "feat": "Особливість",
+      "upgrade": "Покращення",
+      "cargo": "Вантаж",
+      "passenger": "Пасажири"
+    }
+  },
+  "WASTELANDERS": {
+    "Actor": {
+      "Name": "Ім'я",
+      "Inventory": "Інвентар",
+      "Items": "Предмети",
+      "Notes": "Нотатки"
+    },
+    "Item": {
+      "Name": "Назва",
+      "Show": "Показати",
+      "Add": "Додати",
+      "Delete": "Видалити",
+      "Edit": "Відредагувати",
+      "New": "Нове"
+    },
+    "Roll": {
+      "Title": "Кидок",
+      "Modifier": "Модифікатор",
+      "Submit": "Кинути"
+    },
+    "Description": "Опис"
+  }
+}

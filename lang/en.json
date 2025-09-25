@@ -1,0 +1,88 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "Персонаж",
+      "caravan": "Караван"
+    },
+    "Item": {
+      "weapon": "Зброя",
+      "armor": "Захист",
+      "tool": "Предмет",
+      "perk": "Перк",
+      "feat": "Особливість",
+      "upgrade": "Покращення",
+      "cargo": "Вантаж",
+      "passenger": "Пасажири"
+    }
+  },
+  "WASTELANDERS": {
+    "Actor": {
+      "Name": "Ім'я",
+      "General": "Основне",
+      "Inventory": "Інвентар",
+      "Items": "Предмети",
+      "Notes": "Нотатки",
+      "Character": {
+        "Archetype": "Архетип",
+        "Race": "Вид",
+        "Concept": "Концепція",
+        "Problem": "Проблема",
+        "Goal": "Ціль",
+        "Consequence": {
+          "Light": "Легкий наслідок",
+          "Moderate": "Середній наслідок",
+          "Heavy": "Тяжкий наслідок"
+        },
+        "Attributes": "Атрибути",
+        "Attribute": {
+          "Strength": "Сила",
+          "Perception": "Сприйняття",
+          "Endurance": "Витривалість",
+          "Attractiveness": "Привабливість",
+          "Dexterity": "Вправність",
+          "Luck": "Удача"
+        },
+        "AttributeShort": {
+          "Strength": "СЛ",
+          "Perception": "СПР",
+          "Endurance": "ВТР",
+          "Attractiveness": "ПВ",
+          "Dexterity": "ВПР",
+          "Luck": "УДЧ"
+        },
+        "Skills": "Навички",
+        "Skill": {
+          "athletics": "Атлетика",
+          "thievery": "Крадіж",
+          "marksmanship": "Стрільба",
+          "dueling": "Герць",
+          "medicine": "Медицина",
+          "mechanics": "Техніка",
+          "knowledge": "Знання",
+          "survival": "Виживання",
+          "manipulation": "Маніпуляція",
+          "intimidation": "Примус"
+        },
+        "SkillLevels": {
+          "Student": "Учень",
+          "Assistant": "Підмайстер",
+          "Master": "Майстер"
+        }
+      }
+    },
+    "Item": {
+      "Name": "Назва",
+      "Show": "Показати",
+      "Add": "Додати",
+      "Delete": "Видалити",
+      "Edit": "Відредагувати",
+      "New": "Нове"
+    },
+    "Roll": {
+      "Title": "Кидок",
+      "Modifier": "Модифікатор",
+      "Submit": "Кинути"
+    },
+    "Description": "Опис"
+  }
+}
