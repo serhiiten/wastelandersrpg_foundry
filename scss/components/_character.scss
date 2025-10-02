@@ -54,37 +54,7 @@
     }
 
     .attribute {
-      display: grid;
-      grid-template-columns: 1fr 30px;
-      gap: 2px;
-      border: $border-black;
       font-size: x-large;
-      font-family: $font-secondary;
-
-      .attribute-label {
-        padding: 3px;
-      }
-
-      .clear-input {
-        border-left: $border-black;
-      }
-    }
-
-    .skill {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 2px;
-      border: $border-black;
-      font-size: large;
-      font-family: $font-secondary;
-
-      .skill-label {
-        padding: 3px;
-      }
-
-      .clear-select {
-        border-left: $border-black;
-      }
     }
 
     .fate-points {

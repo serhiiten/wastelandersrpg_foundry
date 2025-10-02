@@ -2,24 +2,20 @@ input.all-width {
   width: 100%;
 }
 
-.window-content {
-  background: #eee;
+.sheet-header {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  column-gap: $padding-md;
 
-  .sheet-header {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    column-gap: $padding-md;
+  .profile-img {
+    height: auto;
+  }
 
-    .profile-img {
-      height: auto;
-    }
-
-    .character-name {
-      margin: 0;
-      margin-bottom: 5px;
-      width: 100%;
-      font-size: x-large;
-      font-family: $font-header;
-    }
+  .character-name {
+    margin: 0;
+    margin-bottom: 5px;
+    width: 100%;
+    font-size: x-large;
+    font-family: $font-header;
   }
 }

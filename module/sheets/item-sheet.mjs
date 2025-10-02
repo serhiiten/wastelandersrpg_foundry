@@ -20,7 +20,9 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
 
   /** @override */
   get template() {
-    return "systems/wastelanders/templates/item/item-sheet.hbs";
+    const sheetTemplate = `systems/wastelanders/templates/item/${this.item.type}-sheet.hbs`;
+
+    return sheetTemplate;
   }
 
   /* -------------------------------------------- */
@@ -49,6 +51,7 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     // Add the actor's data to context.data for easier access, as well as flags.
     context.system = itemData.system;
     context.flags = itemData.flags;
+    context.config = CONFIG.WASTELANDERS;
 
     return context;
   }

@@ -67,16 +67,46 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       }),
 
       skills: new fields.SchemaField({
-        athletics: new fields.StringField(),
-        thievery: new fields.StringField(),
-        marksmanship: new fields.StringField(),
-        dueling: new fields.StringField(),
-        medicine: new fields.StringField(),
-        mechanics: new fields.StringField(),
-        knowledge: new fields.StringField(),
-        survival: new fields.StringField(),
-        manipulation: new fields.StringField(),
-        intimidation: new fields.StringField(),
+        athletics: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        thievery: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        marksmanship: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        dueling: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        medicine: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        mechanics: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        knowledge: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        survival: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        manipulation: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
+        intimidation: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
       }),
 
       supplies: new fields.NumberField({

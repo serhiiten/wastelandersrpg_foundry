@@ -30,6 +30,8 @@ Hooks.once("init", async function () {
 
   CONFIG.Item.documentClass = WastelandersItem;
   CONFIG.Item.dataModels = {
+    feat: models.FeatData,
+    perk: models.PerkData,
     tool: models.ToolData,
   };
 

@@ -1,3 +1,43 @@
+.attribute {
+  display: grid;
+  grid-template-columns: 1fr 30px;
+  gap: 2px;
+  border: $border-black;
+  font-size: large;
+  font-family: $font-secondary;
+
+  .attribute-label {
+    padding: 3px;
+  }
+
+  .clear-input {
+    height: auto;
+    border-left: $border-black;
+  }
+}
+
+.skill {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px;
+  border: $border-black;
+  font-size: large;
+  font-family: $font-secondary;
+
+  .skill-label {
+    padding: 3px;
+  }
+
+  .clear-select {
+    height: auto;
+    border-left: $border-black;
+  }
+}
+
+.window-content {
+  background: #eee;
+}
+
 .detail-window {
   .detail-trigger {
     cursor: pointer;
