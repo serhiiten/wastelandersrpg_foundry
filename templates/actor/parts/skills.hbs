@@ -1,12 +1,9 @@
 <div class="skills-block">
   <h2>{{localize 'WASTELANDERS.Actor.Character.Skills'}}</h2>
-  {{log system.skills}}
   {{#each system.skills as |skill key|}}
-    {{log skill}}
     <div class="skill">
       <label class="skill-label" for="system.skills.{{key}}">{{getLocalize "WASTELANDERS.Actor.Character.Skill." key}}</label>
-      <select>{{selectOptions config.skillLevels selected=0 localize=true
-        }}</select>
+      <select class="clear-select">{{selectOptions @root.config.skillLevels selected=0 localize=true}}</select>
     </div>
   {{/each}}
 </div>

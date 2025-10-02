@@ -12,30 +12,18 @@
         </h3>
       </div>
 
-      <div class="brief-info grid-2col">
+      <div class="brief-info">
         <div class="prop">
           <label class="prop-label" for="system.concept">{{localize 'WASTELANDERS.Actor.Character.Concept'}}:</label>
           <input class="clear-input all-width" name="system.concept" type="text" value="{{system.concept}}"/>
-        </div>
-        <div class="prop">
-          <label class="prop-label" for="system.consequences.light">{{localize 'WASTELANDERS.Actor.Character.Consequence.Light'}}:</label>
-          <input class="clear-input all-width" name="system.consequences.light" type="text" value="{{system.consequences.light}}"/>
         </div>
         <div class="prop">
           <label class="prop-label" for="system.problem">{{localize 'WASTELANDERS.Actor.Character.Problem'}}:</label>
           <input class="clear-input all-width" name="system.problem" type="text" value="{{system.problem}}"/>
         </div>
         <div class="prop">
-          <label class="prop-label" for="system.consequences.moderate">{{localize 'WASTELANDERS.Actor.Character.Consequence.Moderate'}}:</label>
-          <input class="clear-input all-width" name="system.consequences.moderate" type="text" value="{{system.consequences.moderate}}"/>
-        </div>
-        <div class="prop">
           <label class="prop-label" for="system.goal">{{localize 'WASTELANDERS.Actor.Character.Goal'}}:</label>
           <input class="clear-input all-width" name="system.goal" type="text" value="{{system.goal}}"/>
-        </div>
-        <div class="prop">
-          <label class="prop-label" for="system.problem.heavy">{{localize 'WASTELANDERS.Actor.Character.Consequence.Heavy'}}:</label>
-          <input class="clear-input all-width" name="system.consequences.heavy" type="text" value="{{system.consequences.heavy}}"/>
         </div>
       </div>
     </div>
@@ -53,9 +41,39 @@
 
     {{!-- General Tab --}}
     <div class="tab general" data-group="primary" data-tab="general">
-      <div class="general-container grid-2col">
-        {{> "systems/wastelanders/templates/actor/parts/attributes.hbs"}}
-        {{> "systems/wastelanders/templates/actor/parts/skills.hbs"}}
+      <div class="general-container">
+        <div>
+          {{> "systems/wastelanders/templates/actor/parts/attributes.hbs"}}
+          {{> "systems/wastelanders/templates/actor/parts/skills.hbs"}}
+        </div>
+        <div>
+          <div class="fate-points grid-2col">
+            <h2>
+              <label class="prop-label" for="system.fate.value">{{localize 'WASTELANDERS.Actor.Character.FatePoints.Value'}}:</label>
+              {{numberInput system.fate.value name="system.fate.value" class="clear-input" step=1 min=0 max=50}}
+            </h2>
+            <h2>
+              <label class="prop-label" for="system.fate.recover">{{localize 'WASTELANDERS.Actor.Character.FatePoints.Recover'}}:</label>
+              {{numberInput system.fate.recover name="system.fate.recover" class="clear-input" step=1 min=0 max=50}}
+            </h2>
+          </div>
+          <div class="prop">
+            <label class="prop-label" for="system.consequences.light">{{localize 'WASTELANDERS.Actor.Character.Consequence.Light'}}:</label>
+            <input class="clear-input all-width" name="system.consequences.light" type="text" value="{{system.consequences.light}}"/>
+          </div>
+          <div class="prop">
+            <label class="prop-label" for="system.consequences.moderate">{{localize 'WASTELANDERS.Actor.Character.Consequence.Moderate'}}:</label>
+            <input class="clear-input all-width" name="system.consequences.moderate" type="text" value="{{system.consequences.moderate}}"/>
+          </div>
+          <div class="prop">
+            <label class="prop-label" for="system.problem.heavy">{{localize 'WASTELANDERS.Actor.Character.Consequence.Heavy'}}:</label>
+            <input class="clear-input all-width" name="system.consequences.heavy" type="text" value="{{system.consequences.heavy}}"/>
+          </div>
+
+          {{> "systems/wastelanders/templates/actor/parts/feats.hbs"}}
+          {{> "systems/wastelanders/templates/actor/parts/perks.hbs"}}
+
+        </div>
       </div>
     </div>
 

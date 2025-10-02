@@ -14,14 +14,25 @@
 
     .item {
       position: relative;
-      align-items: center;
       margin-bottom: 5px;
 
       .item-description {
+        display: flex;
+        align-items: center;
         padding-right: 55px;
 
-        .item-name.active {
-          font-weight: bold;
+        .item-checkbox {
+          margin: 0;
+          width: 15px;
+          height: 15px;
+        }
+
+        .item-name {
+          cursor: pointer;
+          font-family: $font-secondary;
+          font-size: large;
+          margin-left: 5px;
+          color: gray;
         }
 
         .item-tags {
@@ -54,6 +65,7 @@
     .item.active {
       .item-name {
         font-weight: bold;
+        color: black;
       }
     }
   }

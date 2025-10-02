@@ -21,7 +21,7 @@ export class WastelandersItem extends Item {
       description: item.system.description
     };
 
-    const message = await renderTemplate("systems/wastelanders/templates/apps/rollItem.hbs", renderData);
+    const message = await foundry.applications.handlebars.renderTemplate("systems/wastelanders/templates/apps/rollItem.hbs", renderData);
     const chatData = {
       user: game.user.id,
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),

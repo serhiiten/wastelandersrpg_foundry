@@ -238,6 +238,7 @@ input.clear-input:focus {
 select.clear-select {
   border: none;
   background: none;
+  border-radius: 0;
 }
 
 .window-app {
@@ -315,14 +316,24 @@ select.clear-select {
 }
 .wastelanders .items-block .items-list .item {
   position: relative;
-  align-items: center;
   margin-bottom: 5px;
 }
 .wastelanders .items-block .items-list .item .item-description {
+  display: flex;
+  align-items: center;
   padding-right: 55px;
 }
-.wastelanders .items-block .items-list .item .item-description .item-name.active {
-  font-weight: bold;
+.wastelanders .items-block .items-list .item .item-description .item-checkbox {
+  margin: 0;
+  width: 15px;
+  height: 15px;
+}
+.wastelanders .items-block .items-list .item .item-description .item-name {
+  cursor: pointer;
+  font-family: "Handjet", sans-serif;
+  font-size: large;
+  margin-left: 5px;
+  color: gray;
 }
 .wastelanders .items-block .items-list .item .item-description .item-tags {
   font-style: italic;
@@ -348,6 +359,7 @@ select.clear-select {
 }
 .wastelanders .items-block .items-list .item.active .item-name {
   font-weight: bold;
+  color: black;
 }
 
 .wastelanders.actor input.all-width {
@@ -402,15 +414,22 @@ select.clear-select {
   flex: 1;
   border-bottom: 1px solid #b5b3a4;
 }
+.wastelanders.actor .character .general-container {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 2fr;
+  gap: 10px;
+}
 .wastelanders.actor .character .general-container h2 {
   border: none;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 .wastelanders.actor .character .general-container .attribute {
   display: grid;
   grid-template-columns: 1fr 30px;
   gap: 2px;
   font-family: "Handjet", sans-serif;
-  font-size: large;
+  font-size: x-large;
   border: 1px solid #222;
 }
 .wastelanders.actor .character .general-container .attribute .attribute-label {
@@ -421,7 +440,7 @@ select.clear-select {
 }
 .wastelanders.actor .character .general-container .skill {
   display: grid;
-  grid-template-columns: 1fr 30px;
+  grid-template-columns: 1fr auto;
   gap: 2px;
   font-family: "Handjet", sans-serif;
   font-size: large;
@@ -430,8 +449,23 @@ select.clear-select {
 .wastelanders.actor .character .general-container .skill .skill-label {
   padding: 3px;
 }
-.wastelanders.actor .character .general-container .skill .clear-input {
+.wastelanders.actor .character .general-container .skill .clear-select {
   border-left: 1px solid #222;
+}
+.wastelanders.actor .character .general-container .fate-points {
+  gap: 0;
+}
+.wastelanders.actor .character .general-container .prop {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.wastelanders.actor .character .general-container .prop .prop-label {
+  margin-right: 3px;
+}
+.wastelanders.actor .character .general-container .prop .clear-input {
+  flex: 1;
+  border-bottom: 1px solid #b5b3a4;
 }
 
 .wastelanders.item input.all-width {

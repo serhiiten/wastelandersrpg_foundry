@@ -28,6 +28,10 @@
         "Concept": "Концепція",
         "Problem": "Проблема",
         "Goal": "Ціль",
+        "FatePoints": {
+          "Value": "Поточні ЖД",
+          "Recover": "Відновлення ЖД"
+        },
         "Consequence": {
           "Light": "Легкий наслідок",
           "Moderate": "Середній наслідок",
@@ -52,22 +56,24 @@
         },
         "Skills": "Навички",
         "Skill": {
-          "athletics": "Атлетика",
-          "thievery": "Крадіж",
-          "marksmanship": "Стрільба",
-          "dueling": "Герць",
-          "medicine": "Медицина",
-          "mechanics": "Техніка",
-          "knowledge": "Знання",
-          "survival": "Виживання",
-          "manipulation": "Маніпуляція",
-          "intimidation": "Примус"
+          "Athletics": "Атлетика",
+          "Thievery": "Крадіж",
+          "Marksmanship": "Стрільба",
+          "Dueling": "Герць",
+          "Medicine": "Медицина",
+          "Mechanics": "Техніка",
+          "Knowledge": "Знання",
+          "Survival": "Виживання",
+          "Manipulation": "Маніпуляція",
+          "Intimidation": "Примус"
         },
         "SkillLevels": {
-          "Student": "Учень",
-          "Assistant": "Підмайстер",
-          "Master": "Майстер"
-        }
+          "Student": "Учень (d6)",
+          "Assistant": "Підмайстер (d8)",
+          "Master": "Майстер (d10)"
+        },
+        "Feats": "Особливості",
+        "Perks": "Перки"
       }
     },
     "Item": {

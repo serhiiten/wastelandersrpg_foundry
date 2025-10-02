@@ -8,7 +8,7 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["wastelanders", "sheet", "actor"],
-      width: 800,
+      width: 700,
       height: 800,
       tabs: [{
         navSelector: ".sheet-tabs",
@@ -41,6 +41,7 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
     // Add the actor's data to context.data for easier access, as well as flags.
     context.system = context.actor.system;
     context.flags = context.actor.flags;
+    context.config = CONFIG.WASTELANDERS;
     this._prepareItems(context);
 
     return context;
@@ -48,19 +49,23 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
 
   _prepareItems(context) {
     // Initialize containers.
-    const item = [];
+    const feats = [];
+    const perks = [];
 
     // Iterate through items, allocating to containers
     for (let i of context.items) {
       i.img = i.img || DEFAULT_TOKEN;
       // Append to item.
-      if (i.type === 'tool') {
-        item.push(i);
+      if (i.type === 'feat') {
+        feats.push(i);
+      } else if (i.type === "perk") {
+        perks.push(i);
       }
     }
 
     // Assign and return
-    context.item = item;
+    context.feats = feats;
+    context.perks = perks;
   }
 
 

@@ -43,8 +43,14 @@
   }
 
   .general-container {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 2fr;
+    gap: 10px;
+
     h2 {
       border: none;
+      margin-top: 10px;
+      margin-bottom: 0;
     }
 
     .attribute {
@@ -52,7 +58,7 @@
       grid-template-columns: 1fr 30px;
       gap: 2px;
       font-family: $font-secondary;
-      font-size: large;
+      font-size: x-large;
       border: $border-black;
 
       .attribute-label {
@@ -67,7 +73,7 @@
 
     .skill {
       display: grid;
-      grid-template-columns: 1fr 30px;
+      grid-template-columns: 1fr auto;
       gap: 2px;
       font-family: $font-secondary;
       font-size: large;
@@ -77,8 +83,27 @@
         padding: 3px;
       }
 
-      .clear-input {
+      .clear-select {
         border-left: $border-black;
+      }
+    }
+
+    .fate-points {
+      gap: 0;
+    }
+
+    .prop {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+
+      .prop-label {
+        margin-right: 3px;
+      }
+
+      .clear-input {
+        flex: 1;
+        border-bottom: $border;
       }
     }
   }
