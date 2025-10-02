@@ -1,20 +1,22 @@
-import * as models from './data/_module.mjs';
+import * as models from "./data/_module.mjs";
 import { WastelandersActor } from "./documents/actor.mjs";
 import { WastelandersItem } from "./documents/item.mjs";
 import { WastelandersActorSheet } from "./sheets/actor-sheet.mjs";
 import { WastelandersItemSheet } from "./sheets/item-sheet.mjs";
 
 // Import modules
-import { preprocessChatMessage, renderChatMessage } from "./applications/chat-portraits.mjs";
+import {
+  preprocessChatMessage,
+  renderChatMessage,
+} from "./applications/chat-portraits.mjs";
 import { preloadHandlebarsTemplates } from "./helpers/templates.mjs";
 import { registerHandlebarsHelpers } from "./helpers/handlebars-helpers.mjs";
-import { WASTELANDERS } from './helpers/config.mjs';
+import { WASTELANDERS } from "./helpers/config.mjs";
 
-Hooks.once('init', async function() {
-
+Hooks.once("init", async function () {
   game.wastelanders = {
     WastelandersActor,
-    WastelandersItem
+    WastelandersItem,
   };
 
   CONFIG.WASTELANDERS = WASTELANDERS;
@@ -22,21 +24,34 @@ Hooks.once('init', async function() {
   // Define custom Entity classes and Data Models
   CONFIG.Actor.documentClass = WastelandersActor;
   CONFIG.Actor.dataModels = {
-    'character': models.CharacterData,
-    'caravan': models.CaravanData
+    character: models.CharacterData,
+    caravan: models.CaravanData,
   };
 
   CONFIG.Item.documentClass = WastelandersItem;
   CONFIG.Item.dataModels = {
-    'tool': models.ToolData
+    tool: models.ToolData,
   };
 
-
   // Register sheet application classes
-  foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
-  foundry.documents.collections.Actors.registerSheet("wastelanders", WastelandersActorSheet, { makeDefault: true });
-  foundry.documents.collections.Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
-  foundry.documents.collections.Items.registerSheet("wastelanders", WastelandersItemSheet, { makeDefault: true });
+  foundry.documents.collections.Actors.unregisterSheet(
+    "core",
+    foundry.appv1.sheets.ActorSheet,
+  );
+  foundry.documents.collections.Actors.registerSheet(
+    "wastelanders",
+    WastelandersActorSheet,
+    { makeDefault: true },
+  );
+  foundry.documents.collections.Items.unregisterSheet(
+    "core",
+    foundry.appv1.sheets.ItemSheet,
+  );
+  foundry.documents.collections.Items.registerSheet(
+    "wastelanders",
+    WastelandersItemSheet,
+    { makeDefault: true },
+  );
 
   registerHandlebarsHelpers();
 
@@ -49,4 +64,3 @@ Hooks.on("preCreateChatMessage", preprocessChatMessage);
 
 // Render chat message hook
 Hooks.on("renderChatMessageHTML", renderChatMessage);
-

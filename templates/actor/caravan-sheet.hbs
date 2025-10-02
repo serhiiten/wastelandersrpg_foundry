@@ -1,29 +1,58 @@
 <form class="{{cssClass}} {{actor.type}}" autocomplete="off">
-  {{!-- Sheet Header --}}
+  {{! Sheet Header }}
   <header class="sheet-header">
-    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+    <img
+      class="profile-img"
+      src="{{actor.img}}"
+      data-edit="img"
+      title="{{actor.name}}"
+    />
     <div class="header-fields">
-      <h1><input class="character-name" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'WASTELANDERS.Item.Name'}}"/></h1>
+      <h1><input
+          class="character-name"
+          name="name"
+          type="text"
+          value="{{actor.name}}"
+          placeholder="{{localize 'WASTELANDERS.Item.Name'}}"
+        /></h1>
 
       <div class="brief-info grid-2col">
         <div class="prop">
-          <label class="prop-label" for="system.greatness">{{localize 'WASTELANDERS.Actor.Greatness'}}:</label>
-          {{numberInput system.greatness.value name="system.greatness.value" step=1 min=0 max=system.greatness.max}}
+          <label class="prop-label" for="system.greatness">{{localize
+              "WASTELANDERS.Actor.Greatness"
+            }}:</label>
+          {{numberInput
+            system.greatness.value
+            name="system.greatness.value"
+            step=1
+            min=0
+            max=system.greatness.max
+          }}
           <span>/</span>
-          {{numberInput system.greatness.max name="system.greatness.max" step=1 min=0 max=100}}
+          {{numberInput
+            system.greatness.max
+            name="system.greatness.max"
+            step=1
+            min=0
+            max=100
+          }}
         </div>
       </div>
     </div>
   </header>
 
-  {{!-- Sheet Body --}}
+  {{! Sheet Body }}
   <section class="sheet-body">
-    <hr>
+    <hr />
 
     <div class="items-block">
       <div class="item-header">
-        <a class="item-create" title="{{localize 'WASTELANDERS.Item.Add'}}" data-type="tool"><i class="fas fa-plus"></i></a>
-        <h3>{{localize 'WASTELANDERS.Actor.Items'}}</h3>
+        <a
+          class="item-create"
+          title="{{localize 'WASTELANDERS.Item.Add'}}"
+          data-type="tool"
+        ><i class="fas fa-plus"></i></a>
+        <h3>{{localize "WASTELANDERS.Actor.Items"}}</h3>
       </div>
       <ol class="items-list">
         {{#each item as |item id|}}
@@ -37,9 +66,18 @@
             </div>
 
             <div class="item-controls">
-              <a class="item-control item-show" title="{{localize 'WASTELANDERS.Item.Show'}}"><i class="fa fa-comment"></i></a>
-              <a class="item-control item-edit" title="{{localize 'WASTELANDERS.Item.Edit'}}"><i class="fas fa-edit"></i></a>
-              <a class="item-control item-delete" title="{{localize 'WASTELANDERS.Item.Delete'}}"><i class="fas fa-trash"></i></a>
+              <a
+                class="item-control item-show"
+                title="{{localize 'WASTELANDERS.Item.Show'}}"
+              ><i class="fa fa-comment"></i></a>
+              <a
+                class="item-control item-edit"
+                title="{{localize 'WASTELANDERS.Item.Edit'}}"
+              ><i class="fas fa-edit"></i></a>
+              <a
+                class="item-control item-delete"
+                title="{{localize 'WASTELANDERS.Item.Delete'}}"
+              ><i class="fas fa-trash"></i></a>
             </div>
           </li>
         {{/each}}
@@ -47,13 +85,29 @@
     </div>
 
     <div class="description">
-      <h3>{{localize 'WASTELANDERS.Description'}}</h3>
-      {{editor enrichedDescription target="system.description" rollData=rollData button=true engine="prosemirror" editable=editable collaborate=true}}
+      <h3>{{localize "WASTELANDERS.Description"}}</h3>
+      {{editor
+        enrichedDescription
+        target="system.description"
+        rollData=rollData
+        button=true
+        engine="prosemirror"
+        editable=editable
+        collaborate=true
+      }}
     </div>
 
     <div class="notes">
-      <h3>{{localize 'WASTELANDERS.Actor.Notes'}}</h3>
-      {{editor enrichedNotes target="system.notes" rollData=rollData button=true engine="prosemirror" editable=editable collaborate=true}}
+      <h3>{{localize "WASTELANDERS.Actor.Notes"}}</h3>
+      {{editor
+        enrichedNotes
+        target="system.notes"
+        rollData=rollData
+        button=true
+        engine="prosemirror"
+        editable=editable
+        collaborate=true
+      }}
     </div>
 
   </section>

@@ -1,15 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Handjet:wght@100..900&family=Scada:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 @font-face {
-  font-family: "Overseer";
-  src: url("/systems/wastelanders/fonts/Overseer.ttf") format("truetype");
-  font-weight: 400;
   font-style: normal;
+  font-weight: 400;
+  src: url("/systems/wastelanders/fonts/Overseer.ttf") format("truetype");
+  font-family: "Overseer";
 }
 /* Global styles */
 .portrait {
   flex: none;
-  border-width: 0;
   margin-right: 5px;
+  border-width: 0;
 }
 
 .roll-message .roll-header {
@@ -109,8 +109,8 @@
 
 .grid-9col {
   display: grid;
-  grid-column: span 9/span 9;
   grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-column: span 9 / span 9;
   gap: 10px;
 }
 
@@ -221,13 +221,13 @@
 }
 
 input.clear-input {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
   border-width: 0;
   border-radius: 0;
   background-image: none;
   background-color: transparent;
-  -webkit-box-shadow: none;
-  -moz-box-shadow: none;
-  box-shadow: none;
   --color-shadow-primary: none;
 }
 
@@ -237,18 +237,18 @@ input.clear-input:focus {
 
 select.clear-select {
   border: none;
-  background: none;
   border-radius: 0;
+  background: none;
 }
 
 .window-app {
   font-family: "Scada", sans-serif;
 }
 
-.window-content input[type=number] {
+.window-content input[type="number"] {
   max-width: 35px;
 }
-.window-content input[type=text] {
+.window-content input[type="text"] {
   width: auto;
 }
 
@@ -272,16 +272,19 @@ select.clear-select {
 .wastelanders .detail-window .detail-block:not(.active) {
   display: none;
 }
-.wastelanders .rollable:hover, .wastelanders .rollable:focus {
-  color: black;
+.wastelanders .rollable:hover,
+.wastelanders .rollable:focus {
   cursor: pointer;
+  color: black;
 }
-.wastelanders h1, .wastelanders h2, .wastelanders h3 {
+.wastelanders h1,
+.wastelanders h2,
+.wastelanders h3 {
   font-family: "Overseer", sans-serif;
 }
 .wastelanders .sheet-tabs {
-  font-family: "Overseer", sans-serif;
   font-size: medium;
+  font-family: "Overseer", sans-serif;
 }
 .wastelanders .sheet-tabs .item.active {
   background: rgba(0, 0, 0, 0.1);
@@ -297,9 +300,9 @@ select.clear-select {
   padding: 0 5px;
 }
 .wastelanders .editor {
-  min-height: 200px;
-  padding: 0 5px;
   border: 1px solid #b5b3a4;
+  padding: 0 5px;
+  min-height: 200px;
 }
 .wastelanders .items-block {
   position: relative;
@@ -310,9 +313,9 @@ select.clear-select {
   right: 5px;
 }
 .wastelanders .items-block .items-list {
-  list-style: none;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 .wastelanders .items-block .items-list .item {
   position: relative;
@@ -330,36 +333,36 @@ select.clear-select {
 }
 .wastelanders .items-block .items-list .item .item-description .item-name {
   cursor: pointer;
-  font-family: "Handjet", sans-serif;
-  font-size: large;
   margin-left: 5px;
   color: gray;
+  font-size: large;
+  font-family: "Handjet", sans-serif;
 }
 .wastelanders .items-block .items-list .item .item-description .item-tags {
   font-style: italic;
 }
 .wastelanders .items-block .items-list .item .item-summary {
   flex: auto;
+  transition: height 0.3s ease;
   margin: 0;
   height: 0;
   overflow: hidden;
-  transition: height 0.3s ease;
 }
 .wastelanders .items-block .items-list .item .item-controls {
+  display: flex;
   position: absolute;
   top: 4px;
   right: 0;
-  display: flex;
   justify-content: flex-end;
 }
 .wastelanders .items-block .items-list .item .item-controls a {
+  margin: 0 3px;
   font-size: 12px;
   text-align: center;
-  margin: 0 3px;
 }
 .wastelanders .items-block .items-list .item.active .item-name {
-  font-weight: bold;
   color: black;
+  font-weight: bold;
 }
 
 .wastelanders.actor input.all-width {
@@ -370,28 +373,28 @@ select.clear-select {
 }
 .wastelanders.actor .window-content .sheet-header {
   display: grid;
-  column-gap: 10px;
   grid-template-columns: 120px 1fr;
+  column-gap: 10px;
 }
 .wastelanders.actor .window-content .sheet-header .profile-img {
   height: auto;
 }
 .wastelanders.actor .window-content .sheet-header .character-name {
-  font-size: x-large;
-  font-family: "Overseer", sans-serif;
-  width: 100%;
   margin: 0;
   margin-bottom: 5px;
+  width: 100%;
+  font-size: x-large;
+  font-family: "Overseer", sans-serif;
 }
 .wastelanders.actor .character .sheet-header .name-block .character-name {
   border-bottom: 2px solid black;
 }
 .wastelanders.actor .character .sheet-header .name-block .prop {
   display: flex;
-  align-items: center;
   justify-content: center;
-  text-decoration: none;
+  align-items: center;
   border: none;
+  text-decoration: none;
 }
 .wastelanders.actor .character .sheet-header .name-block .prop input {
   max-width: 160px;
@@ -420,17 +423,17 @@ select.clear-select {
   gap: 10px;
 }
 .wastelanders.actor .character .general-container h2 {
-  border: none;
   margin-top: 10px;
   margin-bottom: 0;
+  border: none;
 }
 .wastelanders.actor .character .general-container .attribute {
   display: grid;
   grid-template-columns: 1fr 30px;
   gap: 2px;
-  font-family: "Handjet", sans-serif;
-  font-size: x-large;
   border: 1px solid #222;
+  font-size: x-large;
+  font-family: "Handjet", sans-serif;
 }
 .wastelanders.actor .character .general-container .attribute .attribute-label {
   padding: 3px;
@@ -442,9 +445,9 @@ select.clear-select {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 2px;
-  font-family: "Handjet", sans-serif;
-  font-size: large;
   border: 1px solid #222;
+  font-size: large;
+  font-family: "Handjet", sans-serif;
 }
 .wastelanders.actor .character .general-container .skill .skill-label {
   padding: 3px;
@@ -472,35 +475,33 @@ select.clear-select {
   width: 100%;
 }
 .wastelanders.item .items-header {
-  flex: 100px auto;
   display: flex;
+  flex: 100px auto;
   flex-direction: row;
   justify-content: flex-start;
   margin-bottom: 10px;
 }
 .wastelanders.item .items-header .item-img {
   flex: 0 0 100px;
-  height: 100px;
   margin-right: 10px;
   border: none;
+  height: 100px;
 }
 .wastelanders.item .items-header .header-fields {
   flex: 1;
 }
 .wastelanders.item .items-header .header-fields .item-name {
-  height: 35px;
-  padding: 0px;
   margin: 5px 0;
   border-bottom: 0;
+  padding: 0px;
+  height: 35px;
   font-family: "Handjet", sans-serif;
 }
 .wastelanders.item .items-header .header-fields .item-name input {
+  margin: 0;
   width: 100%;
   height: 100%;
-  margin: 0;
 }
 .wastelanders.item .sheet-body .editor-block {
   flex: auto;
 }
-
-/*# sourceMappingURL=wastelanders.css.map */

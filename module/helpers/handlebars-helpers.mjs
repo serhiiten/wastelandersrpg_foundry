@@ -1,4 +1,4 @@
-export const registerHandlebarsHelpers = function() {
+export const registerHandlebarsHelpers = function () {
   Handlebars.registerHelper("numLoop", function (num, options) {
     let result = "";
     for (let i = 0, j = num; i < j; i++) {
@@ -37,7 +37,7 @@ export const registerHandlebarsHelpers = function() {
         }
         break;
       default:
-      throw "Unknown operator " + operator;
+        throw "Unknown operator " + operator;
     }
 
     if (bool) {
@@ -53,4 +53,4 @@ export const registerHandlebarsHelpers = function() {
 
     return localizeName;
   });
-}
+};

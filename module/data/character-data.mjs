@@ -19,7 +19,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         max: new fields.NumberField({
           requiredPositiveInteger,
           initial: 15,
-        })
+        }),
       }),
 
       fate: new fields.SchemaField({
@@ -30,13 +30,13 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         recover: new fields.NumberField({
           requiredPositiveInteger,
           initial: 2,
-        })
+        }),
       }),
 
       consequences: new fields.SchemaField({
         light: new fields.StringField(),
         moderate: new fields.StringField(),
-        heavy: new fields.StringField()
+        heavy: new fields.StringField(),
       }),
 
       attributes: new fields.SchemaField({
@@ -63,7 +63,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         luck: new fields.NumberField({
           requiredInteger,
           initial: 0,
-        })
+        }),
       }),
 
       skills: new fields.SchemaField({
@@ -76,7 +76,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         knowledge: new fields.StringField(),
         survival: new fields.StringField(),
         manipulation: new fields.StringField(),
-        intimidation: new fields.StringField()
+        intimidation: new fields.StringField(),
       }),
 
       supplies: new fields.NumberField({

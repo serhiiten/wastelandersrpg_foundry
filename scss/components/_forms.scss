@@ -11,18 +11,20 @@
 .rollable {
   &:hover,
   &:focus {
-    color: black;
     cursor: pointer;
+    color: black;
   }
 }
 
-h1,h2,h3 {
+h1,
+h2,
+h3 {
   font-family: $font-header;
 }
 
 .sheet-tabs {
-  font-family: $font-header;
   font-size: medium;
+  font-family: $font-header;
 
   .item.active {
     background: $dark-paper;
@@ -43,7 +45,7 @@ h1,h2,h3 {
 }
 
 .editor {
-  min-height: 200px;
-  padding: 0 $padding-sm;
   border: $border;
+  padding: 0 $padding-sm;
+  min-height: 200px;
 }

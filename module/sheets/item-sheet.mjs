@@ -3,17 +3,18 @@
  * @extends {ItemSheet}
  */
 export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
-
   /** @override */
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["wastelanders", "sheet", "item"],
       width: 450,
       height: 450,
-      tabs: [{
-        navSelector: ".sheet-tabs",
-        contentSelector: ".sheet-body"
-      }]
+      tabs: [
+        {
+          navSelector: ".sheet-tabs",
+          contentSelector: ".sheet-body",
+        },
+      ],
     });
   }
 
@@ -40,7 +41,10 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     }
 
     // Encrich editor content
-    context.enrichedDescription = await TextEditor.enrichHTML(this.object.system.description, { async: true })
+    context.enrichedDescription = await TextEditor.enrichHTML(
+      this.object.system.description,
+      { async: true },
+    );
 
     // Add the actor's data to context.data for easier access, as well as flags.
     context.system = itemData.system;

@@ -1,13 +1,7 @@
 {
   "Actor": {
-    "types": [
-      "character",
-      "caravan"
-    ],
-    "htmlFields": [
-      "description",
-      "notes"
-    ]
+    "types": ["character", "caravan"],
+    "htmlFields": ["description", "notes"]
   },
   "Item": {
     "types": [

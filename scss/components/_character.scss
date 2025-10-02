@@ -7,10 +7,10 @@
 
       .prop {
         display: flex;
-        align-items: center;
         justify-content: center;
-        text-decoration: none;
+        align-items: center;
         border: none;
+        text-decoration: none;
 
         input {
           max-width: 160px;
@@ -48,18 +48,18 @@
     gap: 10px;
 
     h2 {
-      border: none;
       margin-top: 10px;
       margin-bottom: 0;
+      border: none;
     }
 
     .attribute {
       display: grid;
       grid-template-columns: 1fr 30px;
       gap: 2px;
-      font-family: $font-secondary;
-      font-size: x-large;
       border: $border-black;
+      font-size: x-large;
+      font-family: $font-secondary;
 
       .attribute-label {
         padding: 3px;
@@ -70,14 +70,13 @@
       }
     }
 
-
     .skill {
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 2px;
-      font-family: $font-secondary;
-      font-size: large;
       border: $border-black;
+      font-size: large;
+      font-family: $font-secondary;
 
       .skill-label {
         padding: 3px;

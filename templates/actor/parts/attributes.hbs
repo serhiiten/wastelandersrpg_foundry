@@ -1,9 +1,23 @@
 <div class="attributes-block">
-  <h2>{{localize 'WASTELANDERS.Actor.Character.Attributes'}}</h2>
+  <h2>{{localize "WASTELANDERS.Actor.Character.Attributes"}}</h2>
   {{#each system.attributes as |attribute key|}}
     <div class="attribute">
-      <label class="attribute-label" for="system.attributes.{{key}}">{{getLocalize "WASTELANDERS.Actor.Character.Attribute." key}} [{{getLocalize "WASTELANDERS.Actor.Character.AttributeShort." key}}]</label>
-      {{numberInput attribute name="attribute" class="clear-input" step=1 min=0 max=5}}
+      <label
+        class="attribute-label"
+        for="system.attributes.{{key}}"
+      >{{getLocalize "WASTELANDERS.Actor.Character.Attribute." key}}
+        [{{getLocalize
+          "WASTELANDERS.Actor.Character.AttributeShort."
+          key
+        }}]</label>
+      {{numberInput
+        attribute
+        name="attribute"
+        class="clear-input"
+        step=1
+        min=0
+        max=5
+      }}
     </div>
   {{/each}}
 </div>
