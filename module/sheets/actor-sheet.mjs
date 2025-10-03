@@ -60,6 +60,9 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
     // Initialize containers.
     const feats = [];
     const perks = [];
+    const weapons = [];
+    const armors = [];
+    const tools = [];
 
     // Iterate through items, allocating to containers
     for (let i of context.items) {
@@ -69,12 +72,21 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
         feats.push(i);
       } else if (i.type === "perk") {
         perks.push(i);
+      } else if (i.type === "weapon") {
+        weapons.push(i);
+      } else if (i.type === "armor") {
+        armors.push(i);
+      } else if (i.type === "tool") {
+        tools.push(i);
       }
     }
 
     // Assign and return
     context.feats = feats;
     context.perks = perks;
+    context.weapons = weapons;
+    context.armors = armors;
+    context.tools = tools;
   }
 
   /** @override */

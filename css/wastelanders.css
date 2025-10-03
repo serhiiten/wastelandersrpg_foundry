@@ -259,8 +259,8 @@ select.clear-select {
 }
 
 .wastelanders.sheet.actor {
-  min-width: 400px;
-  min-height: 500px;
+  min-width: 600px;
+  min-height: 600px;
 }
 
 .wastelanders.sheet.item {
@@ -370,7 +370,6 @@ select.clear-select {
 .wastelanders .items-block .items-list .item .item-description .item-name {
   cursor: pointer;
   margin-left: 5px;
-  color: gray;
   font-size: large;
   font-family: "Handjet", sans-serif;
 }
@@ -381,8 +380,11 @@ select.clear-select {
   flex: auto;
   transition: height 0.3s ease;
   margin: 0;
+  margin-left: 2px;
   height: 0;
   overflow: hidden;
+  border-left: 1px solid #b5b3a4;
+  padding-left: 3px;
 }
 .wastelanders .items-block .items-list .item .item-controls {
   display: flex;
@@ -396,7 +398,10 @@ select.clear-select {
   font-size: 12px;
   text-align: center;
 }
-.wastelanders .items-block .items-list .item.active .item-name {
+.wastelanders .items-block .check-list .item .item-name {
+  color: gray;
+}
+.wastelanders .items-block .check-list .item.active .item-name {
   color: black;
   font-weight: bold;
 }
@@ -509,6 +514,9 @@ select.clear-select {
   margin: 0;
   width: 100%;
   height: 100%;
+}
+.wastelanders.item .items-header .header-fields .brief-info .prop {
+  margin-top: 3px;
 }
 .wastelanders.item .sheet-body .editor-block {
   flex: auto;

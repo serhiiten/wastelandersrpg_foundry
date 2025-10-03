@@ -32,6 +32,8 @@ Hooks.once("init", async function () {
   CONFIG.Item.dataModels = {
     feat: models.FeatData,
     perk: models.PerkData,
+    tool: models.WeaponData,
+    tool: models.ArmorData,
     tool: models.ToolData,
   };
 

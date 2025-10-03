@@ -89,12 +89,55 @@ export class PerkData extends foundry.abstract.TypeDataModel {
   }
 }
 
-export class ToolData extends foundry.abstract.TypeDataModel {
+export class WeaponData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
+    const requiredInteger = { required: true, nullable: false, integer: true };
+    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
 
     return {
       description: new fields.HTMLField(),
+      price: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+      damage: new fields.StringField(),
+    };
+  }
+}
+
+export class ArmorData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const requiredInteger = { required: true, nullable: false, integer: true };
+    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
+
+    return {
+      description: new fields.HTMLField(),
+      price: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+      protection: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+    };
+  }
+}
+
+export class ToolData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const requiredInteger = { required: true, nullable: false, integer: true };
+    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
+
+    return {
+      description: new fields.HTMLField(),
+      price: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
     };
   }
 }

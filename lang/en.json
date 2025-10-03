@@ -73,7 +73,12 @@
           "Master": "Майстер (d10)"
         },
         "Feats": "Особливості",
-        "Perks": "Перки"
+        "Perks": "Перки",
+        "Supplies": "Припаси",
+        "Caps": "Кришки",
+        "Weapons": "Зброя",
+        "Armors": "Броня",
+        "Tools": "Все інше"
       }
     },
     "Item": {
@@ -84,13 +89,17 @@
       "Edit": "Відредагувати",
       "New": "Нове",
       "IsActive": "Активний",
-      "Requirements": "Вимоги"
+      "Requirements": "Вимоги",
+      "Damage": "Шкода",
+      "Price": "Ціна",
+      "Protection": "Броня"
     },
     "Roll": {
       "Title": "Кидок",
       "Modifier": "Модифікатор",
       "Submit": "Кинути"
     },
-    "Description": "Опис"
+    "Description": "Опис",
+    "Notes": "Нотатки"
   }
 }

@@ -7,5 +7,6 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/wastelanders/templates/actor/parts/skills.hbs",
     "systems/wastelanders/templates/actor/parts/feats.hbs",
     "systems/wastelanders/templates/actor/parts/perks.hbs",
+    "systems/wastelanders/templates/actor/parts/inventory.hbs",
   ]);
 };

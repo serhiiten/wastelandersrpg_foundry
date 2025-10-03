@@ -28,7 +28,6 @@
         .item-name {
           cursor: pointer;
           margin-left: 5px;
-          color: gray;
           font-size: large;
           font-family: $font-secondary;
         }
@@ -42,8 +41,11 @@
         flex: auto;
         transition: height 0.3s ease;
         margin: 0;
+        margin-left: 2px;
         height: 0;
         overflow: hidden;
+        border-left: $border;
+        padding-left: 3px;
       }
 
       .item-controls {
@@ -57,6 +59,14 @@
           font-size: 12px;
           text-align: center;
         }
+      }
+    }
+  }
+
+  .check-list {
+    .item {
+      .item-name {
+        color: gray;
       }
     }
 

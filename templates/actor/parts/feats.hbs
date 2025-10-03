@@ -5,7 +5,7 @@
     <h2>{{localize 'WASTELANDERS.Actor.Character.Feats'}}</h2>
   </div>
 
-  <ol class="items-list">
+  <ol class="items-list check-list">
     {{#each feats as |item id|}}
       <li class="item {{item.type}} {{#if item.system.active}}active{{/if}}" data-item-id="{{item._id}}">
         <div class="item-description flex-centration">
