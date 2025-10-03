@@ -20,7 +20,12 @@
           <label class="prop-label" for="system.protection">{{localize
               "WASTELANDERS.Item.Protection"
             }}:</label>
-          {{numberInput system.protection name="system.protection" step=1 min=0}}
+          {{numberInput
+            system.protection
+            name="system.protection"
+            step=1
+            min=0
+          }}
         </div>
         <div class="prop">
           <label class="prop-label" for="system.price">{{localize
@@ -34,7 +39,7 @@
 
   {{! Sheet Body }}
   <section class="sheet-body">
-    <hr/>
+    <hr />
     {{editor
       enrichedDescription
       target="system.description"

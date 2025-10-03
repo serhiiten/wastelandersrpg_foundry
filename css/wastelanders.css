@@ -284,8 +284,8 @@ select.clear-select {
   padding: 3px;
 }
 .wastelanders .attribute .clear-input {
-  height: auto;
   border-left: 1px solid #222;
+  height: auto;
 }
 .wastelanders .skill {
   display: grid;
@@ -299,8 +299,8 @@ select.clear-select {
   padding: 3px;
 }
 .wastelanders .skill .clear-select {
-  height: auto;
   border-left: 1px solid #222;
+  height: auto;
 }
 .wastelanders .window-content {
   background: #eee;
@@ -381,10 +381,10 @@ select.clear-select {
   transition: height 0.3s ease;
   margin: 0;
   margin-left: 2px;
-  height: 0;
-  overflow: hidden;
   border-left: 1px solid #b5b3a4;
   padding-left: 3px;
+  height: 0;
+  overflow: hidden;
 }
 .wastelanders .items-block .items-list .item .item-controls {
   display: flex;

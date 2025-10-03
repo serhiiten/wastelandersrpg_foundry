@@ -42,10 +42,10 @@
         transition: height 0.3s ease;
         margin: 0;
         margin-left: 2px;
-        height: 0;
-        overflow: hidden;
         border-left: $border;
         padding-left: 3px;
+        height: 0;
+        overflow: hidden;
       }
 
       .item-controls {

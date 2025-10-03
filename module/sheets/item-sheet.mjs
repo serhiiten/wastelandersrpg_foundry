@@ -43,10 +43,11 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     }
 
     // Encrich editor content
-    context.enrichedDescription = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
-      this.object.system.description,
-      { async: true },
-    );
+    context.enrichedDescription =
+      await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+        this.object.system.description,
+        { async: true },
+      );
 
     // Add the actor's data to context.data for easier access, as well as flags.
     context.system = itemData.system;
