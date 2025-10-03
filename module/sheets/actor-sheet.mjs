@@ -110,6 +110,9 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
     // Everything below here is only needed if the sheet is editable
     if (!this.options.editable) return;
 
+    // Item checkbox in Actor Sheet
+    html.find(".item-checkbox").click(this._onItemCheckbox.bind(this));
+
     // Add Item
     html.find(".item-create").click(this._onItemCreate.bind(this));
 
@@ -138,6 +141,19 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
   }
 
   /* -------------------------------------------- */
+
+  async _onItemCheckbox(event) {
+    const element = event.currentTarget;
+    const dataset = element.dataset;
+    const key = dataset.key;
+    const updateKey = "system." + key;
+
+    const parent = $(event.currentTarget).parents(".item");
+    const item = this.actor.items.get(parent.data("itemId"));
+
+    const checked = !item.system[key];
+    await item.update({ [updateKey]: checked });
+  }
 
   /**
    * Handle creating a new Owned Item for the actor using initial data defined in the HTML dataset
