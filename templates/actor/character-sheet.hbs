@@ -1,7 +1,20 @@
 <form class="{{cssClass}} {{actor.type}}" autocomplete="off">
   {{!-- Sheet Header --}}
   <header class="sheet-header">
-    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+    <div class="img-block">
+
+      <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+
+      <div class="hp-bar">
+        <div class="hp-bar-fill" style="width: {{hpBarWidth system.hp}};"></div>
+        <div class="hp-values">
+          {{numberInput system.hp.value name="system.hp.value" class="hp-input clear-input" step=1 min=0}}
+          <span class="hp-separator">/</span>
+          {{numberInput system.hp.max name="system.hp.max" class="hp-input clear-input" step=1 min=0}}
+        </div>
+      </div>
+
+    </div>
     <div class="header-fields">
       <div class="name-block flexrow">
         <h1><input class="character-name clear-input" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'WASTELANDERS.Actor.Name'}}"/></h1>
