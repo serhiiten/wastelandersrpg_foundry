@@ -56,6 +56,10 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
           requiredInteger,
           initial: 0,
         }),
+        intelligence: new fields.NumberField({
+          requiredInteger,
+          initial: 0,
+        }),
         dexterity: new fields.NumberField({
           requiredInteger,
           initial: 0,

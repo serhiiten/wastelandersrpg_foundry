@@ -43,6 +43,7 @@
           "Perception": "Сприйняття",
           "Endurance": "Витривалість",
           "Attractiveness": "Привабливість",
+          "Intelligence": "Інтелект",
           "Dexterity": "Вправність",
           "Luck": "Удача"
         },
@@ -51,6 +52,7 @@
           "Perception": "СПР",
           "Endurance": "ВТР",
           "Attractiveness": "ПВ",
+          "Intelligence": "ІН",
           "Dexterity": "ВПР",
           "Luck": "УДЧ"
         },

@@ -4,6 +4,7 @@ export const WASTELANDERS = {
     perception: "WASTELANDERS.Actor.Character.Attribute.Perception",
     endurance: "WASTELANDERS.Actor.Character.Attribute.Endurance",
     attractiveness: "WASTELANDERS.Actor.Character.Attribute.Attractiveness",
+    intelligence: "WASTELANDERS.Actor.Character.Attribute.Intelligence",
     dexterity: "WASTELANDERS.Actor.Character.Attribute.Dexterity",
     luck: "WASTELANDERS.Actor.Character.Attribute.Luck"
   },
