@@ -1,0 +1,43 @@
+<div>
+  <div class="inputs-block">
+    <div class="attributes">
+      <label for="attribute">{{localize "WASTELANDERS.Actor.Character.Attributes"}}:
+      </label>
+      <select
+        id="attribute"
+        class="dice-listen"
+        name="attribute"
+        data-type="String"
+      >
+        {{selectOptions
+          rollConfig.attributes
+          selected="strength"
+          localize=true
+        }}
+      </select>
+    </div>
+
+    <div class="skill">
+      <label for="skill">{{localize "WASTELANDERS.Actor.Character.Skills"}}: </label>
+      <select
+        id="skill"
+        class="dice-listen"
+        name="skill"
+        data-type="String"
+      >
+        {{selectOptions
+          rollConfig.skills
+          selected="athletics"
+          localize=true
+        }}
+      </select>
+    </div>
+
+    <div class="modifier">
+      <label for="modifier">{{localize 'WASTELANDERS.Roll.Modifier'}}: </label>
+      <input id="modifier" name="modifier" type="number" value="0" data-dtype="Number">
+    </div>
+  </div>
+
+  <button type="submit">{{localize "WASTELANDERS.Roll.Submit"}}</button>
+</div>

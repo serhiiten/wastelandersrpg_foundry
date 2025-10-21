@@ -314,6 +314,8 @@ select.clear-select {
 .wastelanders .rollable:hover, .wastelanders .rollable:focus {
   cursor: pointer;
   color: black;
+  text-shadow: 0 0 8px var(--color-shadow-primary);
+  color: var(--color-text-primary);
 }
 .wastelanders h1,
 .wastelanders h2,

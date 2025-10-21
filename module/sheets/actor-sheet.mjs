@@ -1,3 +1,5 @@
+import WastelandersRollerApp from "../applications/roll.mjs";
+
 /**
  * Extend the basic ActorSheet with some very simple modifications
  * @extends {ActorSheet}
@@ -113,6 +115,9 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
     // Item checkbox in Actor Sheet
     html.find(".item-checkbox").click(this._onItemCheckbox.bind(this));
 
+    // Roll dice
+    html.find(".rollable").click(this._onRoll.bind(this));
+
     // Add Item
     html.find(".item-create").click(this._onItemCreate.bind(this));
 
@@ -153,6 +158,25 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
 
     const checked = !item.system[key];
     await item.update({ [updateKey]: checked });
+  }
+
+  /**
+   * Handle clickable rolls.
+   * @param {Event} the originating click event
+   * @private
+   */
+  _onRoll(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const dataset = element.dataset;
+
+    const rollApp = new WastelandersRollerApp({
+      type: dataset.rollType,
+      actor: this.actor,
+      note: dataset.rollNote,
+    });
+
+    rollApp.render(true);
   }
 
   /**

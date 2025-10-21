@@ -2,7 +2,7 @@
   <h2>{{localize "WASTELANDERS.Actor.Character.Skills"}}</h2>
   {{#each system.skills as |skill key|}}
     <div class="skill">
-      <label class="skill-label" for="system.skills.{{key}}">
+      <label class="skill-label rollable" for="system.skills.{{key}}" data-type="check" data-note="{{key}}">
         {{getLocalize "WASTELANDERS.Actor.Character.Skill." key}}
       </label>
       <select class="clear-select" name="system.skills.{{key}}">
