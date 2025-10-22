@@ -15,7 +15,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     classes: ["wastelanders-rolls"],
     tag: "form",
     window: {
-      width: 400,
+      width: 300,
       height: "auto",
       minimizable: false,
       resizable: false,
@@ -39,7 +39,25 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
       game.user.character ??
       (canvas.ready ? canvas.tokens.controlled[0]?.actor : null) ??
       null;
+
     this.rollConfig = { ...CONFIG.WASTELANDERS };
+
+    this.defaults = this._prepareDefaults(options.note);
+  }
+
+  _prepareDefaults(note) {
+    const defaults = {
+      attribute: "strength",
+      skill: "athletics"
+    }
+
+    if (Object.hasOwn(this.rollConfig.attributes, note)) {
+      defaults.attribute = note;
+    } else if (Object.hasOwn(this.rollConfig.skills, note)) {
+      defaults.skill = note;
+    }
+
+    return defaults
   }
 
   get title() {
@@ -55,6 +73,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     const context = await super._prepareContext(options);
     context.rollConfig = this.rollConfig;
     context.actor = this.actor;
+    context.defaults = this.defaults;
 
     return context;
   }
@@ -73,7 +92,51 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
   static async #onSubmit(event, form) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    const actor = this.actor.system;
 
-    console.log(data)
+    const attribute = actor.attributes[data.attribute];
+    const skill = actor.skills[data.skill];
+
+    const modifier = {
+      value: parseInt(data.advantage),
+      adv: 0,
+      disAdv: 0
+    };
+    if (modifier.value) {
+      if (modifier.value > 0) modifier.adv = modifier.value;
+      if (modifier.value < 0) modifier.disAdv = Math.abs(modifier.value);
+    }
+
+    const rollData = {
+      dice: 2 + Math.abs(modifier.value),
+      operator: "d10"
+    }
+    if (modifier.adv) rollData.operator = "d10kh2";
+    if (modifier.disAdv) rollData.operator = "d10kl2";
+
+    if (skill) {
+      rollData.formula = `{${rollData.dice}${rollData.operator}, d${skill}} + ${attribute}`;
+    } else {
+      rollData.formula = `${rollData.dice}${rollData.operator} + ${attribute}`;
+    }
+
+    const rollResult = await new Roll(rollData.formula).evaluate();
+
+    // Calculate result with skill roll
+    if (skill) {
+      const mainResult = rollResult.dice[0].results.filter(d => d.active);
+      const skillResult = rollResult.dice[1].results[0];
+
+      let competitionPool = [...mainResult, skillResult];
+      competitionPool.sort((a, b) => a.result - b.result);
+
+      competitionPool[0].active = false;
+      competitionPool[0].discarded = true;
+
+      rollResult._total = rollResult.total - competitionPool[0].result;
+    }
+
+    console.log(rollResult)
+    rollResult.toMessage()
   }
 }

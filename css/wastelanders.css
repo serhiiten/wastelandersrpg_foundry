@@ -12,6 +12,16 @@
   border-width: 0;
 }
 
+.wastelanders-rolls {
+  font-family: "Scada", sans-serif;
+}
+.wastelanders-rolls .inputs-block div {
+  margin-bottom: 5px;
+}
+.wastelanders-rolls .inputs-block div label {
+  font-weight: bold;
+}
+
 .roll-message .roll-header {
   margin-bottom: 10px;
 }

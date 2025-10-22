@@ -171,9 +171,9 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
     const dataset = element.dataset;
 
     const rollApp = new WastelandersRollerApp({
-      type: dataset.rollType,
+      type: dataset.type,
       actor: this.actor,
-      note: dataset.rollNote,
+      note: dataset.note,
     });
 
     rollApp.render(true);

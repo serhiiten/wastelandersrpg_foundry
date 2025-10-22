@@ -26,4 +26,11 @@ export const WASTELANDERS = {
     8: "WASTELANDERS.Actor.Character.SkillLevels.Assistant",
     10: "WASTELANDERS.Actor.Character.SkillLevels.Master",
   },
+  rollAdvantage: {
+    0: "",
+    1: "WASTELANDERS.Roll.Advantage",
+    "-1": "WASTELANDERS.Roll.Disadvantage",
+    2: "WASTELANDERS.Roll.DoubleAdvantage",
+    "-2": "WASTELANDERS.Roll.DoubleDisadvantage",
+  }
 };

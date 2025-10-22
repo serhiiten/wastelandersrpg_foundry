@@ -39,6 +39,7 @@
         },
         "Attributes": "Атрибути",
         "Attribute": {
+          "Single": "Атрибут",
           "Strength": "Сила",
           "Perception": "Сприйняття",
           "Endurance": "Витривалість",
@@ -58,6 +59,7 @@
         },
         "Skills": "Навички",
         "Skill": {
+          "Single": "Навичка",
           "Athletics": "Атлетика",
           "Thievery": "Крадіж",
           "Marksmanship": "Стрільба",
@@ -99,7 +101,12 @@
     "Roll": {
       "Title": "Кидок",
       "Modifier": "Модифікатор",
-      "Submit": "Кинути"
+      "Submit": "Кинути",
+      "AdvantageTitle": "Посилення/Послаблення",
+      "DoubleAdvantage": "Посилення (2)",
+      "Advantage": "Посилення",
+      "Disadvantage": "Послаблення",
+      "DoubleDisadvantage": "Послаблення (2)"
     },
     "Description": "Опис",
     "Notes": "Нотатки"
