@@ -40,9 +40,12 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
       (canvas.ready ? canvas.tokens.controlled[0]?.actor : null) ??
       null;
 
+    this.rollType = options.type;
     this.rollConfig = { ...CONFIG.WASTELANDERS };
 
     this.defaults = this._prepareDefaults(options.note);
+
+    if (this.rollType == "weapon") this.weapon = this.actor.items.get(options.note);
   }
 
   _prepareDefaults(note) {
@@ -74,6 +77,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     context.rollConfig = this.rollConfig;
     context.actor = this.actor;
     context.defaults = this.defaults;
+    if (this.weapon && this.weapon.system.damage) context.damage = this.weapon.system.damage;
 
     return context;
   }
@@ -92,10 +96,18 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
   static async #onSubmit(event, form) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+
+    await this.baseRoll(data);
+    if (this.rollType == "weapon") await this.weaponRoll(data);
+  }
+
+  async baseRoll(data) {
     const actor = this.actor.system;
 
     const attribute = actor.attributes[data.attribute];
+    const attributeLabel = game.i18n.localize(this.rollConfig.attributes[data.attribute]);
     const skill = actor.skills[data.skill];
+    const skillLabel = game.i18n.localize(this.rollConfig.skills[data.skill]);
 
     const modifier = {
       value: parseInt(data.advantage),
@@ -136,7 +148,32 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
       rollResult._total = rollResult.total - competitionPool[0].result;
     }
 
-    console.log(rollResult)
-    rollResult.toMessage()
+    // Calculate degree of succes
+    if (rollResult.total < 10) {
+      rollResult.resultType = "failure";
+      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Failure");
+    } else if (rollResult.total <= 14) {
+      rollResult.resultType = "partial";
+      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Partial");
+    } else if (rollResult.total <= 18) {
+      rollResult.resultType = "success";
+      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Success");
+    } else {
+      rollResult.resultType = "crit";
+      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Crit");
+    }
+
+    rollResult.toMessage({
+      flavor: rollResult.resultLabel
+    })
+  }
+
+  async weaponRoll(data) {
+    const formula = this.weapon.system.damage;
+    const rollResult = await new Roll(formula).evaluate();
+
+    rollResult.toMessage({
+      flavor: this.weapon.name
+    })
   }
 }

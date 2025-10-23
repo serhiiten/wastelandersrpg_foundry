@@ -106,7 +106,13 @@
       "DoubleAdvantage": "Посилення (2)",
       "Advantage": "Посилення",
       "Disadvantage": "Послаблення",
-      "DoubleDisadvantage": "Послаблення (2)"
+      "DoubleDisadvantage": "Послаблення (2)",
+      "Results": {
+        "Failure": "Невдача",
+        "Partial": "Частковий успіх",
+        "Success": "Успіх",
+        "Crit": "Критичний успіх"
+      }
     },
     "Description": "Опис",
     "Notes": "Нотатки"

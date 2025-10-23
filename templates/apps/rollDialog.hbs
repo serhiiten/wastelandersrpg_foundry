@@ -47,6 +47,13 @@
         }}
       </select>
     </div>
+
+    {{#if damage}}
+      <div class="damage">
+        <label for="damage">{{localize "WASTELANDERS.Item.Damage"}}:</label>
+        <span>{{damage}}</span>
+      </div>
+    {{/if}}
   </div>
 
   <button type="submit">{{localize "WASTELANDERS.Roll.Submit"}}</button>

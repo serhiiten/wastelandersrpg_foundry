@@ -17,7 +17,27 @@
       margin-bottom: 5px;
 
       .item-description {
+        align-items: center;
         padding-right: 55px;
+
+        .item-image {
+          flex: 0 0 20px;
+          height: 20px;
+          width: 20px;
+          background-size: 18px;
+          background-position: center;
+          background-repeat: no-repeat;
+          margin-right: 2px;
+          transition: .5s ease;
+        }
+
+        &:hover .item-image {
+          background-image: url("/icons/svg/d20-grey.svg") !important;
+        }
+
+        .item-image:hover {
+          background-image: url("/icons/svg/d20-black.svg") !important;
+        }
 
         .item-checkbox {
           margin: 0;
@@ -26,14 +46,15 @@
         }
 
         .item-name {
+          flex: 0;
           cursor: pointer;
           margin-left: 5px;
           font-size: large;
           font-family: $font-secondary;
         }
 
-        .item-tags {
-          font-style: italic;
+        .item-damage {
+          margin-left: 3px;
         }
       }
 

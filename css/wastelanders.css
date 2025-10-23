@@ -372,7 +372,24 @@ select.clear-select {
   margin-bottom: 5px;
 }
 .wastelanders .items-block .items-list .item .item-description {
+  align-items: center;
   padding-right: 55px;
+}
+.wastelanders .items-block .items-list .item .item-description .item-image {
+  flex: 0 0 20px;
+  height: 20px;
+  width: 20px;
+  background-size: 18px;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin-right: 2px;
+  transition: 0.5s ease;
+}
+.wastelanders .items-block .items-list .item .item-description:hover .item-image {
+  background-image: url("/icons/svg/d20-grey.svg") !important;
+}
+.wastelanders .items-block .items-list .item .item-description .item-image:hover {
+  background-image: url("/icons/svg/d20-black.svg") !important;
 }
 .wastelanders .items-block .items-list .item .item-description .item-checkbox {
   margin: 0;
@@ -380,13 +397,14 @@ select.clear-select {
   height: 15px;
 }
 .wastelanders .items-block .items-list .item .item-description .item-name {
+  flex: 0;
   cursor: pointer;
   margin-left: 5px;
   font-size: large;
   font-family: "Handjet", sans-serif;
 }
-.wastelanders .items-block .items-list .item .item-description .item-tags {
-  font-style: italic;
+.wastelanders .items-block .items-list .item .item-description .item-damage {
+  margin-left: 3px;
 }
 .wastelanders .items-block .items-list .item .item-summary {
   flex: auto;
