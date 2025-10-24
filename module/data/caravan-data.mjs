@@ -36,9 +36,15 @@ export default class CaravanData extends foundry.abstract.TypeDataModel {
         }),
       }),
 
-      range: new fields.NumberField({
-        requiredPositiveInteger,
-        initial: 0,
+      range: new fields.SchemaField({
+        value: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 10,
+        }),
+        max: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 10,
+        }),
       }),
 
       description: new fields.HTMLField(),

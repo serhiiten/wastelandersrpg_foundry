@@ -2,6 +2,8 @@ import * as models from "./data/_module.mjs";
 import { WastelandersActor } from "./documents/actor.mjs";
 import { WastelandersItem } from "./documents/item.mjs";
 import { WastelandersActorSheet } from "./sheets/actor-sheet.mjs";
+import { WastelandersCharacterSheet } from "./sheets/character-sheet.mjs";
+import { WastelandersCaravanSheet } from "./sheets/caravan-sheet.mjs";
 import { WastelandersItemSheet } from "./sheets/item-sheet.mjs";
 
 // Import modules
@@ -47,6 +49,23 @@ Hooks.once("init", async function () {
     WastelandersActorSheet,
     { makeDefault: true },
   );
+  foundry.documents.collections.Actors.registerSheet(
+    "wastelanders",
+    WastelandersCharacterSheet,
+    {
+      types: ["character"],
+      makeDefault: true,
+    },
+  );
+  foundry.documents.collections.Actors.registerSheet(
+    "wastelanders",
+    WastelandersCaravanSheet,
+    {
+      types: ["caravan"],
+      makeDefault: true,
+    },
+  );
+
   foundry.documents.collections.Items.unregisterSheet(
     "core",
     foundry.appv1.sheets.ItemSheet,

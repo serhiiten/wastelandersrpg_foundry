@@ -62,6 +62,15 @@
     {{!-- General Tab --}}
     <div class="tab general" data-group="primary" data-tab="general">
       <div class="general-container">
+        <h2>
+          <span>{{localize 'WASTELANDERS.Actor.Caravan.Range'}}:</span>
+          {{numberInput system.range.value name="system.range.value" class="clear-input" step=1 min=0 max=20}}
+          <span>/</span>
+          {{numberInput system.range.max name="system.range.max" class="clear-input" step=1 min=0 max=20}}
+        </h2>
+        <p class="subheader">{{localize 'WASTELANDERS.Actor.Caravan.RangeTips'}}</p>
+
+        {{> "systems/wastelanders/templates/actor/parts/upgrades.hbs"}}
       </div>
     </div>
 
