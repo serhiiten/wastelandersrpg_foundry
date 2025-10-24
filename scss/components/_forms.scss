@@ -53,8 +53,8 @@
   &:focus {
     cursor: pointer;
     color: black;
-    text-shadow: $shadow;
     color: var(--color-text-primary);
+    text-shadow: $shadow;
   }
 }
 

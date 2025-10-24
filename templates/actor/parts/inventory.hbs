@@ -41,7 +41,12 @@
       {{#each weapons as |item id|}}
         <li class="item {{item.type}}" data-item-id="{{item._id}}">
           <div class="item-description flexrow">
-            <a class="item-image rollable" data-type="weapon" data-note="{{item._id}}" style="background-image: url({{item.img}})"></a>
+            <a
+              class="item-image rollable"
+              data-type="weapon"
+              data-note="{{item._id}}"
+              style="background-image: url({{item.img}})"
+            ></a>
             <span class="item-name">{{item.name}}</span>
             {{#if item.system.damage}}
               <span class="item-damage">({{item.system.damage}})</span>

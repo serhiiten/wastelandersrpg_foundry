@@ -122,6 +122,11 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         initial: 15,
       }),
 
+      exp: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+
       description: new fields.HTMLField(),
       notes: new fields.HTMLField(),
     };

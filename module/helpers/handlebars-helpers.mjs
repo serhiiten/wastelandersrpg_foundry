@@ -54,9 +54,9 @@ export const registerHandlebarsHelpers = function () {
     return localizeName;
   });
 
-  Handlebars.registerHelper('hpBarWidth', function(hp) {
+  Handlebars.registerHelper("hpBarWidth", function (hp) {
     if (isNaN(hp.value) || isNaN(hp.max) || hp.max <= 0) {
-      return '0%';
+      return "0%";
     }
     const width = (hp.value / hp.max) * 100;
     const clampedWidth = Math.max(0, Math.min(width, 100));

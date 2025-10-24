@@ -1,9 +1,11 @@
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
  * A Foundry VTT ApplicationV2 for handling custom dice rolls.
  */
-export default class WastelandersRollerApp extends HandlebarsApplicationMixin(ApplicationV2) {
+export default class WastelandersRollerApp extends HandlebarsApplicationMixin(
+  ApplicationV2,
+) {
   /**
    * Default ApplicationV2 options.
    * @returns {object} Default options for this application.
@@ -23,14 +25,14 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     form: {
       handler: this.#onSubmit,
       closeOnSubmit: true,
-    }
+    },
   };
 
   static PARTS = {
     form: {
-      template: "systems/wastelanders/templates/apps/rollDialog.hbs"
-    }
-  }
+      template: "systems/wastelanders/templates/apps/rollDialog.hbs",
+    },
+  };
 
   constructor(options = {}) {
     super(options);
@@ -45,14 +47,15 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
 
     this.defaults = this._prepareDefaults(options.note);
 
-    if (this.rollType == "weapon") this.weapon = this.actor.items.get(options.note);
+    if (this.rollType == "weapon")
+      this.weapon = this.actor.items.get(options.note);
   }
 
   _prepareDefaults(note) {
     const defaults = {
       attribute: "strength",
-      skill: "athletics"
-    }
+      skill: "athletics",
+    };
 
     if (Object.hasOwn(this.rollConfig.attributes, note)) {
       defaults.attribute = note;
@@ -60,7 +63,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
       defaults.skill = note;
     }
 
-    return defaults
+    return defaults;
   }
 
   get title() {
@@ -77,11 +80,11 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     context.rollConfig = this.rollConfig;
     context.actor = this.actor;
     context.defaults = this.defaults;
-    if (this.weapon && this.weapon.system.damage) context.damage = this.weapon.system.damage;
+    if (this.weapon && this.weapon.system.damage)
+      context.damage = this.weapon.system.damage;
 
     return context;
   }
-
 
   /* -------------------------------------------- */
   /* Event Handlers                              */
@@ -105,14 +108,16 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     const actor = this.actor.system;
 
     const attribute = actor.attributes[data.attribute];
-    const attributeLabel = game.i18n.localize(this.rollConfig.attributes[data.attribute]);
+    const attributeLabel = game.i18n.localize(
+      this.rollConfig.attributes[data.attribute],
+    );
     const skill = actor.skills[data.skill];
     const skillLabel = game.i18n.localize(this.rollConfig.skills[data.skill]);
 
     const modifier = {
       value: parseInt(data.advantage),
       adv: 0,
-      disAdv: 0
+      disAdv: 0,
     };
     if (modifier.value) {
       if (modifier.value > 0) modifier.adv = modifier.value;
@@ -121,8 +126,8 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
 
     const rollData = {
       dice: 2 + Math.abs(modifier.value),
-      operator: "d10"
-    }
+      operator: "d10",
+    };
     if (modifier.adv) rollData.operator = "d10kh2";
     if (modifier.disAdv) rollData.operator = "d10kl2";
 
@@ -136,7 +141,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
 
     // Calculate result with skill roll
     if (skill) {
-      const mainResult = rollResult.dice[0].results.filter(d => d.active);
+      const mainResult = rollResult.dice[0].results.filter((d) => d.active);
       const skillResult = rollResult.dice[1].results[0];
 
       let competitionPool = [...mainResult, skillResult];
@@ -151,21 +156,29 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     // Calculate degree of succes
     if (rollResult.total < 10) {
       rollResult.resultType = "failure";
-      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Failure");
+      rollResult.resultLabel = game.i18n.localize(
+        "WASTELANDERS.Roll.Results.Failure",
+      );
     } else if (rollResult.total <= 14) {
       rollResult.resultType = "partial";
-      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Partial");
+      rollResult.resultLabel = game.i18n.localize(
+        "WASTELANDERS.Roll.Results.Partial",
+      );
     } else if (rollResult.total <= 18) {
       rollResult.resultType = "success";
-      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Success");
+      rollResult.resultLabel = game.i18n.localize(
+        "WASTELANDERS.Roll.Results.Success",
+      );
     } else {
       rollResult.resultType = "crit";
-      rollResult.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Crit");
+      rollResult.resultLabel = game.i18n.localize(
+        "WASTELANDERS.Roll.Results.Crit",
+      );
     }
 
     rollResult.toMessage({
-      flavor: rollResult.resultLabel
-    })
+      flavor: rollResult.resultLabel,
+    });
   }
 
   async weaponRoll(data) {
@@ -173,7 +186,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(Ap
     const rollResult = await new Roll(formula).evaluate();
 
     rollResult.toMessage({
-      flavor: this.weapon.name
-    })
+      flavor: this.weapon.name,
+    });
   }
 }

@@ -6,7 +6,7 @@ export const WASTELANDERS = {
     attractiveness: "WASTELANDERS.Actor.Character.Attribute.Attractiveness",
     intelligence: "WASTELANDERS.Actor.Character.Attribute.Intelligence",
     dexterity: "WASTELANDERS.Actor.Character.Attribute.Dexterity",
-    luck: "WASTELANDERS.Actor.Character.Attribute.Luck"
+    luck: "WASTELANDERS.Actor.Character.Attribute.Luck",
   },
   skills: {
     athletics: "WASTELANDERS.Actor.Character.Skill.Athletics",
@@ -18,7 +18,7 @@ export const WASTELANDERS = {
     knowledge: "WASTELANDERS.Actor.Character.Skill.Knowledge",
     survival: "WASTELANDERS.Actor.Character.Skill.Survival",
     manipulation: "WASTELANDERS.Actor.Character.Skill.Manipulation",
-    intimidation: "WASTELANDERS.Actor.Character.Skill.Intimidation"
+    intimidation: "WASTELANDERS.Actor.Character.Skill.Intimidation",
   },
   skillLevels: {
     0: "",
@@ -32,5 +32,5 @@ export const WASTELANDERS = {
     "-1": "WASTELANDERS.Roll.Disadvantage",
     2: "WASTELANDERS.Roll.DoubleAdvantage",
     "-2": "WASTELANDERS.Roll.DoubleDisadvantage",
-  }
+  },
 };

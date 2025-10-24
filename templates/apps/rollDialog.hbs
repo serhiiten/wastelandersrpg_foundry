@@ -1,7 +1,9 @@
 <div>
   <div class="inputs-block">
     <div class="attributes flexrow">
-      <label for="attribute">{{localize "WASTELANDERS.Actor.Character.Attribute.Single"}}:
+      <label for="attribute">{{localize
+          "WASTELANDERS.Actor.Character.Attribute.Single"
+        }}:
       </label>
       <select
         id="attribute"
@@ -18,13 +20,11 @@
     </div>
 
     <div class="skills flexrow">
-      <label for="skill">{{localize "WASTELANDERS.Actor.Character.Skill.Single"}}: </label>
-      <select
-        id="skill"
-        class="dice-listen"
-        name="skill"
-        data-type="String"
-      >
+      <label for="skill">{{localize
+          "WASTELANDERS.Actor.Character.Skill.Single"
+        }}:
+      </label>
+      <select id="skill" class="dice-listen" name="skill" data-type="String">
         {{selectOptions
           rollConfig.skills
           selected=defaults.skill
@@ -34,17 +34,15 @@
     </div>
 
     <div class="modifier flexrow">
-      <label for="advantage">{{localize "WASTELANDERS.Roll.AdvantageTitle"}}: </label>
+      <label for="advantage">{{localize "WASTELANDERS.Roll.AdvantageTitle"}}:
+      </label>
       <select
         id="advantage"
         class="dice-listen"
         name="advantage"
         data-type="String"
       >
-        {{selectOptions
-          rollConfig.rollAdvantage
-          localize=true
-        }}
+        {{selectOptions rollConfig.rollAdvantage localize=true}}
       </select>
     </div>
 
