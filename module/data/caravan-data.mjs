@@ -5,6 +5,42 @@ export default class CaravanData extends foundry.abstract.TypeDataModel {
     const requiredPositiveInteger = { ...requiredInteger, min: 0 };
 
     return {
+      karmicAspect: new fields.StringField(),
+      reputation: new fields.StringField(),
+
+      caps: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+      karma: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+      luck: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+      armor: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+
+      hp: new fields.SchemaField({
+        value: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 0,
+        }),
+        max: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 0,
+        }),
+      }),
+
+      range: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+
       description: new fields.HTMLField(),
       notes: new fields.HTMLField(),
     };

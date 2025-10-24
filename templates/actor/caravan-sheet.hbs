@@ -1,113 +1,80 @@
 <form class="{{cssClass}} {{actor.type}}" autocomplete="off">
   {{! Sheet Header }}
   <header class="sheet-header">
-    <img
-      class="profile-img"
-      src="{{actor.img}}"
-      data-edit="img"
-      title="{{actor.name}}"
-    />
+    <div class="img-block">
+
+      <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+
+      <div class="hp-bar">
+        <div class="hp-bar-fill" style="width: {{hpBarWidth system.hp}};"></div>
+        <div class="hp-values">
+          {{numberInput system.hp.value name="system.hp.value" class="hp-input clear-input" step=1 min=0}}
+          <span class="hp-separator">/</span>
+          {{numberInput system.hp.max name="system.hp.max" class="hp-input clear-input" step=1 min=0}}
+        </div>
+      </div>
+
+    </div>
+
     <div class="header-fields">
-      <h1><input
-          class="character-name"
-          name="name"
-          type="text"
-          value="{{actor.name}}"
-          placeholder="{{localize 'WASTELANDERS.Item.Name'}}"
-        /></h1>
+      <h1><input class="character-name clear-input" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'WASTELANDERS.Actor.Caravan.Name'}}"/></h1>
 
       <div class="brief-info grid-2col">
         <div class="prop">
-          <label class="prop-label" for="system.greatness">{{localize
-              "WASTELANDERS.Actor.Greatness"
-            }}:</label>
-          {{numberInput
-            system.greatness.value
-            name="system.greatness.value"
-            step=1
-            min=0
-            max=system.greatness.max
-          }}
-          <span>/</span>
-          {{numberInput
-            system.greatness.max
-            name="system.greatness.max"
-            step=1
-            min=0
-            max=100
-          }}
+          <label class="prop-label" for="system.karmicAspect">{{localize 'WASTELANDERS.Actor.Caravan.KarmicAspect'}}:</label>
+          <input class="clear-input" name="system.karmicAspect" type="text" value="{{system.karmicAspect}}"/>
+        </div>
+        <div class="prop">
+          <label class="prop-label" for="system.reputation">{{localize 'WASTELANDERS.Actor.Caravan.Reputation'}}:</label>
+          <input class="clear-input" name="system.reputation" type="text" value="{{system.reputation}}"/>
+        </div>
+        <div class="prop">
+          <label class="prop-label" for="system.caps">{{localize 'WASTELANDERS.Actor.Caravan.Caps'}}:</label>
+          {{numberInput system.caps name="system.caps" class="clear-input" step=1 min=0 max=500}}
+        </div>
+        <div class="prop">
+          <label class="prop-label" for="system.armor">{{localize 'WASTELANDERS.Actor.Caravan.Armor'}}:</label>
+          {{numberInput system.armor name="system.armor" class="clear-input" step=1 min=0 max=20}}
+        </div>
+        <div class="prop">
+          <label class="prop-label" for="system.karma">{{localize 'WASTELANDERS.Actor.Caravan.Karma'}}:</label>
+          {{numberInput system.karma name="system.karma" class="clear-input" step=1 min=0 max=20}}
+        </div>
+        <div class="prop">
+          <label class="prop-label" for="system.luck">{{localize 'WASTELANDERS.Actor.Caravan.Luck'}}:</label>
+          {{numberInput system.luck name="system.luck" class="clear-input" step=1 min=0 max=20}}
         </div>
       </div>
+
     </div>
   </header>
 
+  {{!-- Sheet Tab Navigation --}}
+  <nav class="sheet-tabs tabs flexrow" data-group="primary">
+    <a class="item" data-tab="general">{{localize 'WASTELANDERS.Actor.General'}}</a>
+    <a class="item" data-tab="cargo">{{localize 'WASTELANDERS.Actor.Inventory'}}</a>
+    <a class="item" data-tab="notes">{{localize 'WASTELANDERS.Actor.Notes'}}</a>
+  </nav>
+
   {{! Sheet Body }}
   <section class="sheet-body">
-    <hr />
 
-    <div class="items-block">
-      <div class="item-header">
-        <a
-          class="item-create"
-          title="{{localize 'WASTELANDERS.Item.Add'}}"
-          data-type="tool"
-        ><i class="fas fa-plus"></i></a>
-        <h3>{{localize "WASTELANDERS.Actor.Items"}}</h3>
+    {{!-- General Tab --}}
+    <div class="tab general" data-group="primary" data-tab="general">
+      <div class="general-container">
       </div>
-      <ol class="items-list">
-        {{#each item as |item id|}}
-          <li class="item {{item.type}}" data-item-id="{{item._id}}">
-            <div class="item-description">
-              <span class="item-name">{{item.name}}</span>
-            </div>
-
-            <div class="item-summary">
-              {{{item.system.description}}}
-            </div>
-
-            <div class="item-controls">
-              <a
-                class="item-control item-show"
-                title="{{localize 'WASTELANDERS.Item.Show'}}"
-              ><i class="fa fa-comment"></i></a>
-              <a
-                class="item-control item-edit"
-                title="{{localize 'WASTELANDERS.Item.Edit'}}"
-              ><i class="fas fa-edit"></i></a>
-              <a
-                class="item-control item-delete"
-                title="{{localize 'WASTELANDERS.Item.Delete'}}"
-              ><i class="fas fa-trash"></i></a>
-            </div>
-          </li>
-        {{/each}}
-      </ol>
     </div>
 
-    <div class="description">
-      <h3>{{localize "WASTELANDERS.Description"}}</h3>
-      {{editor
-        enrichedDescription
-        target="system.description"
-        rollData=rollData
-        button=true
-        engine="prosemirror"
-        editable=editable
-        collaborate=true
-      }}
+    {{!-- Inventory Tab --}}
+    <div class="tab cargo" data-group="primary" data-tab="cargo">
+      <div class="cargo-container">
+        {{> "systems/wastelanders/templates/actor/parts/cargo.hbs"}}
+      </div>
     </div>
 
-    <div class="notes">
-      <h3>{{localize "WASTELANDERS.Actor.Notes"}}</h3>
-      {{editor
-        enrichedNotes
-        target="system.notes"
-        rollData=rollData
-        button=true
-        engine="prosemirror"
-        editable=editable
-        collaborate=true
-      }}
+    {{!-- Notes Tab --}}
+    <div class="tab notes" data-group="primary" data-tab="notes">
+      {{> "systems/wastelanders/templates/actor/parts/caravan-notes.hbs"}}
     </div>
 
   </section>

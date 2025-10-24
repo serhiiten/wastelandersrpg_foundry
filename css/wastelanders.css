@@ -444,20 +444,10 @@ select.clear-select {
   grid-template-columns: 120px 1fr;
   column-gap: 10px;
 }
-.wastelanders.actor .sheet-header .profile-img {
-  height: auto;
-}
-.wastelanders.actor .sheet-header .character-name {
-  margin: 0;
-  margin-bottom: 5px;
-  width: 100%;
-  font-size: x-large;
-  font-family: "Overseer", sans-serif;
-}
-.wastelanders.actor .character .sheet-header .img-block {
+.wastelanders.actor .sheet-header .img-block {
   position: relative;
 }
-.wastelanders.actor .character .sheet-header .img-block .hp-bar {
+.wastelanders.actor .sheet-header .img-block .hp-bar {
   position: relative;
   top: -10px;
   border: 1px solid #222;
@@ -467,13 +457,13 @@ select.clear-select {
   height: 20px;
   overflow: hidden;
 }
-.wastelanders.actor .character .sheet-header .img-block .hp-bar .hp-bar-fill {
+.wastelanders.actor .sheet-header .img-block .hp-bar .hp-bar-fill {
   transition: width 1s ease-in-out;
   border-radius: 8px;
   background-color: #222;
   height: 100%;
 }
-.wastelanders.actor .character .sheet-header .img-block .hp-bar .hp-values {
+.wastelanders.actor .sheet-header .img-block .hp-bar .hp-values {
   display: flex;
   position: absolute;
   top: 0;
@@ -486,7 +476,7 @@ select.clear-select {
   font-weight: bold;
   font-size: small;
 }
-.wastelanders.actor .character .sheet-header .img-block .hp-bar .hp-values .hp-input {
+.wastelanders.actor .sheet-header .img-block .hp-bar .hp-values .hp-input {
   background-color: transparent;
   color: white;
   font-weight: bold;
@@ -495,8 +485,31 @@ select.clear-select {
   text-align: center;
   text-shadow: inherit;
 }
-.wastelanders.actor .character .sheet-header .name-block .character-name {
+.wastelanders.actor .sheet-header .profile-img {
+  height: auto;
+}
+.wastelanders.actor .sheet-header .character-name {
+  margin: 0;
+  margin-bottom: 5px;
   border-bottom: 2px solid black;
+  width: 100%;
+  font-size: x-large;
+  font-family: "Overseer", sans-serif;
+}
+.wastelanders.actor .sheet-header .brief-info {
+  gap: 2px 5px;
+}
+.wastelanders.actor .sheet-header .brief-info .prop {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.wastelanders.actor .sheet-header .brief-info .prop .prop-label {
+  margin-right: 3px;
+}
+.wastelanders.actor .sheet-header .brief-info .prop .clear-input {
+  flex: 1;
+  border-bottom: 1px solid #b5b3a4;
 }
 .wastelanders.actor .character .sheet-header .name-block .prop {
   display: flex;
@@ -510,21 +523,6 @@ select.clear-select {
 }
 .wastelanders.actor .character .sheet-header .name-block .prop .archetype {
   text-align: right;
-}
-.wastelanders.actor .character .sheet-header .brief-info {
-  gap: 2px 5px;
-}
-.wastelanders.actor .character .sheet-header .brief-info .prop {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-.wastelanders.actor .character .sheet-header .brief-info .prop .prop-label {
-  margin-right: 3px;
-}
-.wastelanders.actor .character .sheet-header .brief-info .prop .clear-input {
-  flex: 1;
-  border-bottom: 1px solid #b5b3a4;
 }
 .wastelanders.actor .character .general-container {
   display: grid;
