@@ -34,9 +34,12 @@ Hooks.once("init", async function () {
   CONFIG.Item.dataModels = {
     feat: models.FeatData,
     perk: models.PerkData,
-    tool: models.WeaponData,
-    tool: models.ArmorData,
+    weapon: models.WeaponData,
+    armor: models.ArmorData,
     tool: models.ToolData,
+    upgrade: models.UpgradeData,
+    cargo: models.CargoData,
+    passenger: models.PassengerData,
   };
 
   // Register sheet application classes

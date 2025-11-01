@@ -141,3 +141,49 @@ export class ToolData extends foundry.abstract.TypeDataModel {
     };
   }
 }
+
+export class UpgradeData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const requiredInteger = { required: true, nullable: false, integer: true };
+    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
+
+    return {
+      description: new fields.HTMLField(),
+      active: new fields.SchemaField({
+        value: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 1,
+        }),
+        max: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 1,
+        }),
+      }),
+    };
+  }
+}
+
+export class CargoData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const requiredInteger = { required: true, nullable: false, integer: true };
+    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
+
+    return {
+      description: new fields.HTMLField(),
+    };
+  }
+}
+
+export class PassengerData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const requiredInteger = { required: true, nullable: false, integer: true };
+    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
+
+    return {
+      description: new fields.HTMLField(),
+    };
+  }
+}

@@ -6,4 +6,7 @@ export {
   WeaponData,
   ArmorData,
   ToolData,
+  UpgradeData,
+  CargoData,
+  PassengerData
 } from "./items-data.mjs";
