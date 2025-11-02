@@ -9,6 +9,7 @@ export const WASTELANDERS = {
     luck: "WASTELANDERS.Actor.Character.Attribute.Luck",
   },
   skills: {
+    none: "",
     athletics: "WASTELANDERS.Actor.Character.Skill.Athletics",
     thievery: "WASTELANDERS.Actor.Character.Skill.Thievery",
     marksmanship: "WASTELANDERS.Actor.Character.Skill.Marksmanship",
