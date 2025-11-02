@@ -113,9 +113,15 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         }),
       }),
 
-      supplies: new fields.NumberField({
-        requiredPositiveInteger,
-        initial: 3,
+      supplies: new fields.SchemaField({
+        value: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 3,
+        }),
+        max: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 3,
+        }),
       }),
       caps: new fields.NumberField({
         requiredPositiveInteger,

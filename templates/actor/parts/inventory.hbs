@@ -3,8 +3,17 @@
       "WASTELANDERS.Actor.Character.Supplies"
     }}:</label>
   {{numberInput
-    system.supplies
-    name="system.supplies"
+    system.supplies.value
+    name="system.supplies.value"
+    class="clear-input"
+    step=1
+    min=0
+    max=system.supplies.max
+  }}
+  <span>/</span>
+  {{numberInput
+    system.supplies.max
+    name="system.supplies.max"
     class="clear-input"
     step=1
     min=0
