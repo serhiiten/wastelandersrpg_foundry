@@ -1,3 +1,5 @@
+@use "../utils/variables" as *;
+
 input.clear-input {
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
@@ -20,6 +22,10 @@ select.clear-select {
 }
 
 .window-app {
+  font-family: $font-primary;
+}
+
+.wastelanders {
   font-family: $font-primary;
 }
 

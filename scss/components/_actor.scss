@@ -1,85 +1,89 @@
-input.all-width {
-  width: 100%;
-}
+@use "../utils/variables" as *;
 
-.sheet-header {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  column-gap: $padding-md;
+.wastelanders.actor {
+  input.all-width {
+    width: 100%;
+  }
 
-  .img-block {
-    position: relative;
+  .sheet-header {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    column-gap: $padding-md;
 
-    .hp-bar {
+    .img-block {
       position: relative;
-      top: -10px;
-      border: $border-black;
-      border-radius: 10px;
-      background-color: #aaa;
-      width: 100%;
-      height: 20px;
-      overflow: hidden;
 
-      .hp-bar-fill {
-        transition: width 1s ease-in-out;
-        border-radius: 8px;
-        background-color: #222;
-        height: 100%;
-      }
-
-      .hp-values {
-        display: flex;
-        position: absolute;
-        top: 0;
-        left: 0;
-        justify-content: center;
-        align-items: center;
+      .hp-bar {
+        position: relative;
+        top: -10px;
+        border: $border-black;
+        border-radius: 10px;
+        background-color: #aaa;
         width: 100%;
-        height: 100%;
-        color: white;
-        font-weight: bold;
-        font-size: small;
+        height: 20px;
+        overflow: hidden;
 
-        .hp-input {
-          background-color: transparent;
+        .hp-bar-fill {
+          transition: width 1s ease-in-out;
+          border-radius: 8px;
+          background-color: #222;
+          height: 100%;
+        }
+
+        .hp-values {
+          display: flex;
+          position: absolute;
+          top: 0;
+          left: 0;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 100%;
           color: white;
           font-weight: bold;
           font-size: small;
-          font-family: inherit;
-          text-align: center;
-          text-shadow: inherit;
+
+          .hp-input {
+            background-color: transparent;
+            color: white;
+            font-weight: bold;
+            font-size: small;
+            font-family: inherit;
+            text-align: center;
+            text-shadow: inherit;
+          }
         }
       }
     }
-  }
 
-  .profile-img {
-    height: auto;
-  }
+    .profile-img {
+      height: auto;
+    }
 
-  .character-name {
-    margin: 0;
-    margin-bottom: 5px;
-    border-bottom: $border-hard;
-    width: 100%;
-    font-size: x-large;
-    font-family: $font-header;
-  }
+    .character-name {
+      margin: 0;
+      margin-bottom: 5px;
+      border-bottom: $border-hard;
+      width: 100%;
+      font-size: x-large;
+      font-family: $font-header;
+    }
 
-  .brief-info {
-    gap: 2px 5px;
-    .prop {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
+    .brief-info {
+      gap: 2px 5px;
+      .prop {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
 
-      .prop-label {
-        margin-right: 3px;
-      }
+        .prop-label {
+          margin-right: 3px;
+        }
 
-      .clear-input {
-        flex: 1;
-        border-bottom: $border;
+        .clear-input {
+          flex: 1;
+          border-bottom: $border;
+        }
       }
     }
   }

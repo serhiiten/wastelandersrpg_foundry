@@ -1,26 +1,18 @@
 // Import utilities.
-@import "utils/variables";
+@use "utils/variables";
 
 /* Global styles */
-@import "global/apps";
-@import "global/flex";
-@import "global/grid";
-@import "global/window";
+@use "global/apps";
+@use "global/flex";
+@use "global/grid";
+@use "global/window";
 
 /* Styles limited to system sheets */
-.wastelanders {
-  font-family: $font-primary;
+@use "components/forms";
+@use "components/item-list";
 
-  @import "components/forms";
-  @import "components/item-list";
-}
+@use "components/actor";
+@use "components/character";
+@use "components/caravan";
 
-.wastelanders.actor {
-  @import "components/actor";
-  @import "components/character";
-  @import "components/caravan";
-}
-
-.wastelanders.item {
-  @import "components/item";
-}
+@use "components/item";
