@@ -7,6 +7,7 @@
       title="{{item.name}}"
     />
     <div class="header-fields">
+
       <h1 class="item-name">
         <input
           name="name"
@@ -15,6 +16,22 @@
           placeholder="{{localize 'WASTELANDERS.Item.Name'}}"
         />
       </h1>
+
+      <div class="brief-info">
+        <div class="prop">
+          <label class="prop-label" for="system.quantity">{{localize
+              "WASTELANDERS.Item.Quantity"
+            }}:</label>
+          {{numberInput system.quantity name="system.quantity" step=1 min=1}}
+        </div>
+        <div class="prop">
+          <label class="prop-label" for="system.price">{{localize
+              "WASTELANDERS.Item.Price"
+            }}:</label>
+          {{numberInput system.price name="system.price" step=1 min=0}}
+        </div>
+      </div>
+
     </div>
   </header>
 

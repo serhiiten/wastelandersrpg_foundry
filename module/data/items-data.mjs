@@ -172,6 +172,14 @@ export class CargoData extends foundry.abstract.TypeDataModel {
 
     return {
       description: new fields.HTMLField(),
+      price: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+      quantity: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 1,
+      })
     };
   }
 }

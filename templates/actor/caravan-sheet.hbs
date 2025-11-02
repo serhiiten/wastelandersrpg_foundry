@@ -52,7 +52,7 @@
   {{!-- Sheet Tab Navigation --}}
   <nav class="sheet-tabs tabs flexrow" data-group="primary">
     <a class="item" data-tab="general">{{localize 'WASTELANDERS.Actor.General'}}</a>
-    <a class="item" data-tab="cargo">{{localize 'WASTELANDERS.Actor.Inventory'}}</a>
+    <a class="item" data-tab="cargo">{{localize 'WASTELANDERS.Actor.Caravan.CargoNav'}}</a>
     <a class="item" data-tab="notes">{{localize 'WASTELANDERS.Actor.Notes'}}</a>
   </nav>
 
@@ -76,7 +76,7 @@
 
     {{!-- Inventory Tab --}}
     <div class="tab cargo" data-group="primary" data-tab="cargo">
-      <div class="cargo-container">
+      <div class="cargo-container grid-2col">
         {{> "systems/wastelanders/templates/actor/parts/cargo.hbs"}}
       </div>
     </div>

@@ -437,6 +437,7 @@ select.clear-select {
   margin-left: 5px;
   font-size: large;
   font-family: "Handjet", sans-serif;
+  margin-right: 3px;
 }
 .wastelanders .items-block .items-list .item .item-description .item-damage {
   margin-left: 3px;
