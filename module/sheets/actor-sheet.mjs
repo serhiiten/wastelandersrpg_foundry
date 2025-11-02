@@ -67,6 +67,18 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
       }
     });
 
+    // Count dot
+    html.find(".value-step-block").each(function () {
+      const value = Number(this.dataset.value);
+      $(this)
+      .find(".value-step")
+      .each(function (i) {
+        if (i + 1 <= value) {
+          $(this).addClass("active");
+        }
+      });
+    });
+
     // Everything below here is only needed if the sheet is editable
     if (!this.options.editable) return;
 

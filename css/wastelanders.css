@@ -329,11 +329,17 @@ select.clear-select {
   text-shadow: 0 0 8px var(--color-shadow-primary);
 }
 .wastelanders .value-step-block {
-  display: inline-block;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-left: 3px;
 }
 .wastelanders .value-step-block .value-step {
   display: inline-block;
   cursor: pointer;
+}
+.wastelanders .value-step-block .value-step:not(:first-child) {
+  margin-left: 2px;
 }
 .wastelanders .value-step-block .value-dot {
   border: 1px solid black;

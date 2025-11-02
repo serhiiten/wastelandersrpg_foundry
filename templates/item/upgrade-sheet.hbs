@@ -16,6 +16,33 @@
         />
       </h1>
       <div class="brief-info">
+        <div class="prop flex-centration">
+          <label class="prop-label" for="system.active">{{localize
+              "WASTELANDERS.Item.IsActive"
+            }}</label>
+          <div
+            class="value-step-block"
+            data-value="{{system.active.value}}"
+            data-key="system.active.value"
+          >
+            {{#numLoop system.active.max}}
+              <span class="value-step value-dot" data-index="{{this}}"></span>
+            {{/numLoop}}
+          </div>
+        </div>
+        <div class="prop flex-centration">
+          <label class="prop-label" for="system.active">{{localize
+              "WASTELANDERS.Item.CanBeActivated"
+            }}:</label>
+          {{numberInput
+            system.active.max
+            name="system.active.max"
+            class="clear-input"
+            step=1
+            min=1
+            max=10
+          }}
+        </div>
       </div>
     </div>
   </header>

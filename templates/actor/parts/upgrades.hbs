@@ -7,10 +7,19 @@
   </div>
 
   <ol class="items-list check-list">
-    {{#each feats as |item id|}}
+    {{#each upgrades as |item id|}}
       <li class="item {{item.type}} {{#if item.system.active}}active{{/if}}" data-item-id="{{item._id}}">
         <div class="item-description flex-centration">
-          <input class="item-checkbox" data-key="active" type="checkbox" name="item.system.active" data-dtype="Boolean" {{checked item.system.active}}></input>
+          <div
+            class="multiple-activation value-step-block"
+            data-value="{{item.system.active.value}}"
+            data-key="system.active.value"
+          >
+            {{#numLoop system.active.max}}
+              <span class="value-step value-dot" data-index="{{this}}"></span>
+            {{/numLoop}}
+          </div>
+
           <span class="item-name">{{item.name}}</span>
         </div>
 

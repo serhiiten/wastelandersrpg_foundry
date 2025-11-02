@@ -153,7 +153,7 @@ export class UpgradeData extends foundry.abstract.TypeDataModel {
       active: new fields.SchemaField({
         value: new fields.NumberField({
           requiredPositiveInteger,
-          initial: 1,
+          initial: 0,
         }),
         max: new fields.NumberField({
           requiredPositiveInteger,
