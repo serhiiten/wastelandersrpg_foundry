@@ -179,7 +179,7 @@ export class CargoData extends foundry.abstract.TypeDataModel {
       quantity: new fields.NumberField({
         requiredPositiveInteger,
         initial: 1,
-      })
+      }),
     };
   }
 }

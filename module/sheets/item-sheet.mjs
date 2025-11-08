@@ -65,12 +65,12 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     html.find(".value-step-block").each(function () {
       const value = Number(this.dataset.value);
       $(this)
-      .find(".value-step")
-      .each(function (i) {
-        if (i + 1 <= value) {
-          $(this).addClass("active");
-        }
-      });
+        .find(".value-step")
+        .each(function (i) {
+          if (i + 1 <= value) {
+            $(this).addClass("active");
+          }
+        });
     });
 
     // Everything below here is only needed if the sheet is editable
@@ -78,10 +78,9 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
 
     // Activation dots
     html
-    .find(".value-step-block > .value-step")
-    .click(this._onDotChange.bind(this));
+      .find(".value-step-block > .value-step")
+      .click(this._onDotChange.bind(this));
   }
-
 
   /* -------------------------------------------- */
 
@@ -103,8 +102,8 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     let value = index + 1;
 
     const nextElement =
-    index === steps.length - 1 ||
-    !steps[index + 1].classList.contains("active");
+      index === steps.length - 1 ||
+      !steps[index + 1].classList.contains("active");
 
     if (element.classList.contains("active") && nextElement) {
       steps.removeClass("active");

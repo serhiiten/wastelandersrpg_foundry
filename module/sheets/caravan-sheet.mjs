@@ -59,10 +59,9 @@ export class WastelandersCaravanSheet extends WastelandersActorSheet {
 
     // Activation dots
     html
-    .find(".multiple-activation > .value-step")
-    .click(this._onDotChange.bind(this));
+      .find(".multiple-activation > .value-step")
+      .click(this._onDotChange.bind(this));
   }
-
 
   /* -------------------------------------------- */
 
@@ -87,8 +86,8 @@ export class WastelandersCaravanSheet extends WastelandersActorSheet {
     const item = this.actor.items.get(itemElement.data("itemId"));
 
     const nextElement =
-    index === steps.length - 1 ||
-    !steps[index + 1].classList.contains("active");
+      index === steps.length - 1 ||
+      !steps[index + 1].classList.contains("active");
 
     if (element.classList.contains("active") && nextElement) {
       steps.removeClass("active");
@@ -107,8 +106,6 @@ export class WastelandersCaravanSheet extends WastelandersActorSheet {
       });
     }
 
-    console.log(item)
     await item.update({ [key]: value });
-    // await this.actor.update({ [key]: value });
   }
 }

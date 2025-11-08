@@ -8,5 +8,5 @@ export {
   ToolData,
   UpgradeData,
   CargoData,
-  PassengerData
+  PassengerData,
 } from "./items-data.mjs";
