@@ -1,12 +1,12 @@
 <div class="grid-2col">
   <div class="epx-block">
     <div class="experience">
-      <label for="system.exp">{{localize
+      <label for="system.exp.value">{{localize
           "WASTELANDERS.Actor.Character.Experience.Short"
         }}:</label>
       {{numberInput
-        system.exp
-        name="system.exp"
+        system.exp.value
+        name="system.exp.value"
         class="clear-input"
         step=1
         min=0
@@ -28,25 +28,32 @@
     </ul>
 
     <h2>{{localize "WASTELANDERS.Actor.Character.Experience.Consumption"}}</h2>
-    <ul>
-      <li>{{localize "WASTELANDERS.Actor.Character.Experience.NewPerk"}}</li>
-      <li>{{localize "WASTELANDERS.Actor.Character.Experience.LearnSkill"}}</li>
-      <li>{{localize
-          "WASTELANDERS.Actor.Character.Experience.SkillToJourneyman"
-        }}</li>
-      <li>{{localize
-          "WASTELANDERS.Actor.Character.Experience.SkillToMaster"
-        }}</li>
-      <li>{{localize
-          "WASTELANDERS.Actor.Character.Experience.AttributeToPlus2"
-        }}</li>
-      <li>{{localize
-          "WASTELANDERS.Actor.Character.Experience.AttributeToPlus3"
-        }}</li>
-      <li>{{localize
-          "WASTELANDERS.Actor.Character.Experience.AttributeToPlus4"
-        }}</li>
-    </ul>
+    <table class="exp-options">
+
+      <thead>
+        <tr>
+          <th>{{localize "WASTELANDERS.Actor.Character.Experience.Upgrade"}}</th>
+          <th>{{localize "WASTELANDERS.Actor.Character.Experience.Price"}}</th>
+          <th>{{localize "WASTELANDERS.Actor.Character.Experience.Checked"}}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each system.exp.options}}
+          {{log this}}
+          <tr>
+            <td>{{this.name}}</td>
+            <td>{{this.price}}</td>
+            <td class="value-step-block" data-value="{{this.active}}" data-key="system.exp.options.active">
+              {{#numLoop this.max}}
+                <span class="value-step value-dot" data-index="{{this}}"></span>
+              {{/numLoop}}
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+
+    </table>
 
   </div>
   <div>

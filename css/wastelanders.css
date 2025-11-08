@@ -126,7 +126,7 @@
 .grid-9col {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
-  grid-column: span 9 / span 9;
+  grid-column: span 9/span 9;
   gap: 10px;
 }
 
@@ -265,10 +265,10 @@ select.clear-select {
   font-family: "Scada", sans-serif;
 }
 
-.window-content input[type="number"] {
+.window-content input[type=number] {
   max-width: 35px;
 }
-.window-content input[type="text"] {
+.window-content input[type=text] {
   width: auto;
 }
 
@@ -322,8 +322,7 @@ select.clear-select {
 .wastelanders .detail-window .detail-block:not(.active) {
   display: none;
 }
-.wastelanders .rollable:hover,
-.wastelanders .rollable:focus {
+.wastelanders .rollable:hover, .wastelanders .rollable:focus {
   cursor: pointer;
   color: black;
   color: var(--color-text-primary);
@@ -421,20 +420,10 @@ select.clear-select {
   width: 20px;
   height: 20px;
 }
-.wastelanders
-  .items-block
-  .items-list
-  .item
-  .item-description:hover
-  .item-image {
+.wastelanders .items-block .items-list .item .item-description:hover .item-image {
   background-image: url("/icons/svg/d20-grey.svg") !important;
 }
-.wastelanders
-  .items-block
-  .items-list
-  .item
-  .item-description
-  .item-image:hover {
+.wastelanders .items-block .items-list .item .item-description .item-image:hover {
   background-image: url("/icons/svg/d20-black.svg") !important;
 }
 .wastelanders .items-block .items-list .item .item-description .item-checkbox {
@@ -558,6 +547,9 @@ select.clear-select {
   flex: 1;
   border-bottom: 1px solid #b5b3a4;
 }
+.wastelanders.actor .notes .exp-options th, .wastelanders.actor .notes .exp-options td {
+  padding: 0.25em;
+}
 
 .wastelanders.actor .character .sheet-header .name-block .prop {
   display: flex;
@@ -649,3 +641,5 @@ select.clear-select {
 .wastelanders.item .sheet-body .editor-block {
   flex: auto;
 }
+
+/*# sourceMappingURL=wastelanders.css.map */

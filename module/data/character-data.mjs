@@ -128,9 +128,28 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         initial: 15,
       }),
 
-      exp: new fields.NumberField({
-        requiredPositiveInteger,
-        initial: 0,
+      exp: new fields.SchemaField({
+        value: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 0,
+        }),
+        options: new fields.ArrayField(
+          new fields.SchemaField({
+            name: new fields.StringField(),
+            price: new fields.NumberField({
+              requiredPositiveInteger,
+              initial: 10,
+            }),
+            active: new fields.NumberField({
+              requiredPositiveInteger,
+              initial: 0,
+            }),
+            max: new fields.NumberField({
+              requiredPositiveInteger,
+              initial: 3,
+            }),
+          }),
+        ),
       }),
 
       description: new fields.HTMLField(),
