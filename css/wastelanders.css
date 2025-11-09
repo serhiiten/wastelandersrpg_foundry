@@ -432,7 +432,6 @@ select.clear-select {
   height: 15px;
 }
 .wastelanders .items-block .items-list .item .item-description .item-name {
-  flex: 0;
   cursor: pointer;
   margin-right: 3px;
   margin-left: 5px;
@@ -463,6 +462,11 @@ select.clear-select {
   margin: 0 3px;
   font-size: 12px;
   text-align: center;
+}
+.wastelanders .items-block .items-list .item.weapon .item-description {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 .wastelanders .items-block .check-list .item .item-name {
   color: gray;

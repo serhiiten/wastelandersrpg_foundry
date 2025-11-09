@@ -67,8 +67,20 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
 
     // Activation dots
     html
-    .find(".multiple-activation > .value-step")
-    .click(this._onDotChange.bind(this));
+      .find(".multiple-activation > .value-step")
+      .click(this._onDotChange.bind(this));
+
+    // Perk activation
+    // html.find(".perk-activation").change(event => {
+    //   const element = event.currentTarget;
+    //   const isActivated = element.checked;
+    //   if (!isActivated) return
+    //
+    //   const itemId = element.closest(".item").dataset.itemId;
+    //   const item = this.actor.items.get(itemId);
+    //
+    //   this.actor.perkRequirements(item);
+    // });
   }
 
   /* -------------------------------------------- */
