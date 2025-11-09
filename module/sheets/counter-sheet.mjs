@@ -9,8 +9,8 @@ export class WastelandersCounterSheet extends WastelandersActorSheet {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["wastelanders", "sheet", "actor", "counter"],
-      width: 300,
-      height: 400,
+      width: 400,
+      height: 500,
     });
   }
 }

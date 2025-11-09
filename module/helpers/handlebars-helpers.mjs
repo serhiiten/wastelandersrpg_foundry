@@ -63,4 +63,8 @@ export const registerHandlebarsHelpers = function () {
 
     return `${clampedWidth}%`;
   });
+
+  Handlebars.registerHelper("add", function (a, b) {
+    return a + b;
+  });
 };

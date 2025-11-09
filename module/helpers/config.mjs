@@ -34,4 +34,34 @@ export const WASTELANDERS = {
     2: "WASTELANDERS.Roll.DoubleAdvantage",
     "-2": "WASTELANDERS.Roll.DoubleDisadvantage",
   },
+  expOptions: [
+    {
+      name: "WASTELANDERS.Actor.Character.Experience.NewPerk",
+    },
+    {
+      name: "WASTELANDERS.Actor.Character.Experience.LearnSkill",
+    },
+    {
+      name: "WASTELANDERS.Actor.Character.Experience.SkillToJourneyman",
+      max: 2,
+    },
+    {
+      name: "WASTELANDERS.Actor.Character.Experience.SkillToMaster",
+      price: 15,
+      max: 1,
+    },
+    {
+      name: "WASTELANDERS.Actor.Character.Experience.AttributeToPlus2",
+    },
+    {
+      name: "WASTELANDERS.Actor.Character.Experience.AttributeToPlus3",
+      price: 15,
+      max: 2,
+    },
+    {
+      name: "WASTELANDERS.Actor.Character.Experience.AttributeToPlus4",
+      price: 20,
+      max: 1,
+    },
+  ],
 };

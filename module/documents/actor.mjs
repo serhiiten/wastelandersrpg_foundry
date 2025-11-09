@@ -16,59 +16,20 @@ export class WastelandersActor extends Actor {
     this.updateSource({ prototypeToken });
   }
 
+  // Add exp options to actor
   async _onCreate(data, options, userId) {
     super._onCreate(data, options, userId);
 
-    if (this.type != "character") return;
+    if (this.type === "character") {
+      this._addExpOptions();
+    };
 
-    const expOptions = [
-      {
-        name: game.i18n.localize(
-          "WASTELANDERS.Actor.Character.Experience.NewPerk",
-        ),
-      },
-      {
-        name: game.i18n.localize(
-          "WASTELANDERS.Actor.Character.Experience.LearnSkill",
-        ),
-      },
-      {
-        name: game.i18n.localize(
-          "WASTELANDERS.Actor.Character.Experience.SkillToJourneyman",
-        ),
-        max: 2,
-      },
-      {
-        name: game.i18n.localize(
-          "WASTELANDERS.Actor.Character.Experience.SkillToMaster",
-        ),
-        price: 15,
-        max: 1,
-      },
-      {
-        name: game.i18n.localize(
-          "WASTELANDERS.Actor.Character.Experience.AttributeToPlus2",
-        ),
-      },
-      {
-        name: game.i18n.localize(
-          "WASTELANDERS.Actor.Character.Experience.AttributeToPlus3",
-        ),
-        price: 15,
-        max: 2,
-      },
-      {
-        name: game.i18n.localize(
-          "WASTELANDERS.Actor.Character.Experience.AttributeToPlus4",
-        ),
-        price: 20,
-        max: 1,
-      },
-    ];
-
-    await this.update({ "system.exp.options": expOptions });
+    if (this.type === "counter") {
+      this._counterDescriptions();
+    };
   }
 
+  // Hook for adding perks
   _onCreateDescendantDocuments(
     parent,
     collection,
@@ -86,14 +47,15 @@ export class WastelandersActor extends Actor {
       userId,
     );
 
-    if (game.user.id === userId) {
-      for (const dataItem of data) {
-        if (dataItem.type != "perk") return
-        this._perkRequirements(dataItem);
-      }
+    if (game.user.id != userId) return
+
+    for (const dataItem of data) {
+      if (dataItem.type != "perk") return
+      this._perkRequirements(dataItem);
     }
   }
 
+  // Hook for updating perks
   _onUpdateDescendantDocuments(
     parent,
     collection,
@@ -111,15 +73,54 @@ export class WastelandersActor extends Actor {
       userId,
     );
 
-    if (game.user.id === userId) {
-      for (const changeData of changes) {
-        const item = this.items.get(changeData._id);
-        if (item.type != "perk") return
-        this._perkRequirements(item);
-      }
+    if (game.user.id != userId) return
+
+    for (const changeData of changes) {
+      const item = this.items.get(changeData._id);
+      if (item.type != "perk") return
+      this._perkRequirements(item);
     }
   }
 
+  _onUpdate(changed, options, userId) {
+    super._onUpdate(changed, options, userId);
+
+    if (game.user.id != userId) return
+    if (this.type != "counter") return
+
+    if (changed?.system?.progress?.max !== undefined) {
+      this._counterDescriptions();
+    }
+  }
+
+  // Add exp options
+  async _addExpOptions() {
+    const expOptions = CONFIG.WASTELANDERS.expOptions;
+    const localizedOptions = expOptions.map(option => {
+      return {
+        ...option,
+        name: game.i18n.localize(option.name)
+      };
+    });
+    await this.update({ "system.exp.options": localizedOptions });
+  }
+
+  // Make counter description array
+  async _counterDescriptions() {
+    const progress = this.system.progress;
+    const currentLength = progress.descriptions.length;
+
+    if (currentLength < progress.max) {
+      const diff = progress.max - currentLength;
+      progress.descriptions.push(...Array(diff).fill(""));
+    } else if (currentLength > progress.max) {
+      progress.descriptions.length = progress.max;
+    }
+
+    await this.update({ "system.progress.descriptions": progress.descriptions })
+  }
+
+  // Check if perk meets requirements
   async _perkRequirements(item) {
     const actorData = this.system;
     const itemData = item.system;

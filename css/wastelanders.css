@@ -624,6 +624,9 @@ select.clear-select {
 .wastelanders.actor .counter .sheet-header {
   display: block;
 }
+.wastelanders.actor .counter .sheet-body .descriptions th, .wastelanders.actor .counter .sheet-body .descriptions td {
+  padding: 0.25em;
+}
 
 .wastelanders.item input.all-width {
   width: 100%;
