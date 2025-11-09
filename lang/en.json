@@ -2,7 +2,8 @@
   "TYPES": {
     "Actor": {
       "character": "Персонаж",
-      "caravan": "Караван"
+      "caravan": "Караван",
+      "counter": "Лічильник"
     },
     "Item": {
       "weapon": "Зброя",
@@ -121,6 +122,10 @@
         "CargoNav": "Вантажі та пасажири",
         "Cargo": "Вантаж",
         "Passengers": "Пасажири"
+      },
+      "Counter": {
+        "Filled": "Заповнено",
+        "Size": "Розмір"
       }
     },
     "Item": {

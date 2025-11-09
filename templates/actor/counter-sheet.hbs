@@ -1,0 +1,57 @@
+<form class="{{cssClass}} {{actor.type}}" autocomplete="off">
+  {{! Sheet Header }}
+  <header class="sheet-header">
+    <h2 class="counter-name">
+      <input
+        class="clear-input"
+        name="name"
+        type="text"
+        value="{{actor.name}}"
+        placeholder="{{localize 'WASTELANDERS.Item.Name'}}"
+      />
+    </h2>
+
+{{!--    <div class="clock-img-block">
+      <img class="clock-img" src="{{actor.img}}" title="{{actor.name}}" />
+    </div>--}}
+
+    <div class="counter-info flex-group-center">
+      <div class="filled">
+        <label for="system.progress.value">{{localize
+            "WASTELANDERS.Actor.Counter.Filled"
+          }}:</label>
+        <input
+          class="clear-input"
+          name="system.progress.value"
+          type="number"
+          max="{{system.progress.max}}"
+          value="{{system.progress.value}}"
+        />
+      </div>
+      <div class="size">
+        <label for="system.progress.max">{{localize "WASTELANDERS.Actor.Counter.Size"}}:</label>
+        <input
+          class="clear-input"
+          name="system.progress.max"
+          type="number"
+          max=12
+          value="{{system.progress.max}}"
+        />
+      </div>
+    </div>
+  </header>
+
+  {{! Sheet Body }}
+  <section class="sheet-body">
+    <hr />
+    {{editor
+      enrichedDescription
+      target="system.description"
+      rollData=rollData
+      button=true
+      engine="prosemirror"
+      editable=editable
+      collaborate=true
+    }}
+  </section>
+</form>

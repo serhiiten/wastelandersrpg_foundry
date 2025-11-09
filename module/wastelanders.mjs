@@ -4,6 +4,7 @@ import { WastelandersItem } from "./documents/item.mjs";
 import { WastelandersActorSheet } from "./sheets/actor-sheet.mjs";
 import { WastelandersCharacterSheet } from "./sheets/character-sheet.mjs";
 import { WastelandersCaravanSheet } from "./sheets/caravan-sheet.mjs";
+import { WastelandersCounterSheet } from "./sheets/counter-sheet.mjs";
 import { WastelandersItemSheet } from "./sheets/item-sheet.mjs";
 
 // Import modules
@@ -28,6 +29,7 @@ Hooks.once("init", async function () {
   CONFIG.Actor.dataModels = {
     character: models.CharacterData,
     caravan: models.CaravanData,
+    counter: models.CounterData,
   };
 
   CONFIG.Item.documentClass = WastelandersItem;
@@ -65,6 +67,14 @@ Hooks.once("init", async function () {
     WastelandersCaravanSheet,
     {
       types: ["caravan"],
+      makeDefault: true,
+    },
+  );
+  foundry.documents.collections.Actors.registerSheet(
+    "wastelanders",
+    WastelandersCounterSheet,
+    {
+      types: ["counter"],
       makeDefault: true,
     },
   );

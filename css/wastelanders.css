@@ -39,13 +39,21 @@
 }
 
 .flex-group-left {
+  display: flex;
   justify-content: flex-start;
   text-align: left;
 }
 
 .flex-group-right {
+  display: flex;
   justify-content: flex-end;
   text-align: right;
+}
+
+.flex-group-center {
+  display: flex;
+  justify-content: center;
+  text-align: center;
 }
 
 .flexshrink {
@@ -275,6 +283,11 @@ select.clear-select {
 .wastelanders.sheet.actor {
   min-width: 600px;
   min-height: 600px;
+}
+
+.wastelanders.sheet.actor.counter {
+  min-width: 300px;
+  min-height: 300px;
 }
 
 .wastelanders.sheet.item {
@@ -606,6 +619,10 @@ select.clear-select {
 }
 .wastelanders.actor .caravan .general-container .subheader {
   text-align: center;
+}
+
+.wastelanders.actor .counter .sheet-header {
+  display: block;
 }
 
 .wastelanders.item input.all-width {
