@@ -64,5 +64,56 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
 
     // Everything below here is only needed if the sheet is editable
     if (!this.options.editable) return;
+
+    // Activation dots
+    html
+    .find(".multiple-activation > .value-step")
+    .click(this._onDotChange.bind(this));
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Handle dot counter.
+   * @param {Event} the originating click event
+   * @private
+   */
+  async _onDotChange(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const dataset = element.dataset;
+
+    const index = Number(dataset.index);
+    const parent = $(element.parentNode);
+    const steps = parent.find(".value-step");
+    const key = parent[0].dataset.key;
+    const arrayIndex = parent[0].dataset.arrayIndex;
+
+    let value = index + 1;
+
+    const nextElement =
+    index === steps.length - 1 ||
+    !steps[index + 1].classList.contains("active");
+
+    if (element.classList.contains("active") && nextElement) {
+      steps.removeClass("active");
+      steps.each(function (i) {
+        if (i < index) {
+          $(this).addClass("active");
+        }
+      });
+      value = index;
+    } else {
+      steps.removeClass("active");
+      steps.each(function (i) {
+        if (i <= index) {
+          $(this).addClass("active");
+        }
+      });
+    }
+
+    const array = this.actor.system.exp.options;
+    array[arrayIndex].active = value;
+    await this.actor.update({ "system.exp.options" : array });
   }
 }

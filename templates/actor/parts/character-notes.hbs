@@ -40,11 +40,10 @@
 
       <tbody>
         {{#each system.exp.options}}
-          {{log this}}
           <tr>
             <td>{{this.name}}</td>
             <td>{{this.price}}</td>
-            <td class="value-step-block" data-value="{{this.active}}" data-key="system.exp.options.active">
+            <td class="value-step-block multiple-activation" data-value="{{this.active}}" data-array-index="{{@index}}">
               {{#numLoop this.max}}
                 <span class="value-step value-dot" data-index="{{this}}"></span>
               {{/numLoop}}
