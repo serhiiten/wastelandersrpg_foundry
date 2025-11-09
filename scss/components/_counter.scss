@@ -9,6 +9,15 @@
         th,td {
           padding: 0.25em;
         }
+
+        .col-index {
+          width: 50px;
+          text-align: center;
+
+          .fa-check {
+            margin-right: 2px;
+          }
+        }
       }
     }
   }

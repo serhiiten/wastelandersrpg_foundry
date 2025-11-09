@@ -47,7 +47,7 @@
 
       <thead>
         <tr>
-          <th>{{localize "WASTELANDERS.Actor.Counter.Time"}}</th>
+          <th class="col-index">{{localize "WASTELANDERS.Actor.Counter.Time"}}</th>
           <th>{{localize "WASTELANDERS.Actor.Counter.Description"}}</th>
         </tr>
       </thead>
@@ -55,14 +55,13 @@
       <tbody>
         {{#each system.progress.descriptions}}
           <tr>
-            <td>{{add @index 1}}</td>
+            <td class="col-index">{{#iff @root.system.progress.value ">" @index}}<i class="fa-solid fa-check"></i>{{/iff}}{{add @index 1}}</td>
             <td><input class="all-width" type="text" value="{{this.description}}"/></td>
           </tr>
         {{/each}}
       </tbody>
     </table>
 
-    <hr />
     {{editor
       enrichedDescription
       target="system.description"

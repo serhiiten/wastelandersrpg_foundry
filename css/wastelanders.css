@@ -627,6 +627,13 @@ select.clear-select {
 .wastelanders.actor .counter .sheet-body .descriptions th, .wastelanders.actor .counter .sheet-body .descriptions td {
   padding: 0.25em;
 }
+.wastelanders.actor .counter .sheet-body .descriptions .col-index {
+  width: 50px;
+  text-align: center;
+}
+.wastelanders.actor .counter .sheet-body .descriptions .col-index .fa-check {
+  margin-right: 2px;
+}
 
 .wastelanders.item input.all-width {
   width: 100%;
