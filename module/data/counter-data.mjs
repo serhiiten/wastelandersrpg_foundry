@@ -7,18 +7,14 @@ export default class CounterData extends foundry.abstract.TypeDataModel {
       integer: true,
       min: 0,
     };
-    const defaultDescription = Array.from({ length: 4 }, () => ({
-      description: "",
-    }));
+    const defaultDescription = Array.from({ length: 4 }, () => (""));
 
     return {
       progress: new fields.SchemaField({
         value: new fields.NumberField({ requiredPositiveInteger, initial: 0 }),
         max: new fields.NumberField({ requiredPositiveInteger, initial: 4, max: 12 }),
         descriptions: new fields.ArrayField(
-          new fields.SchemaField({
-            description: new fields.StringField(),
-          }),
+          new fields.StringField(),
           {
             required: true,
             initial: defaultDescription,

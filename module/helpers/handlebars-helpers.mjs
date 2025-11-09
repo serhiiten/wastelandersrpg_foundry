@@ -9,7 +9,6 @@ export const registerHandlebarsHelpers = function () {
   });
 
   Handlebars.registerHelper("iff", function (a, operator, b, opts) {
-    console.log(a, operator, b)
     let bool = false;
     switch (operator) {
       case "==":
@@ -41,7 +40,6 @@ export const registerHandlebarsHelpers = function () {
         throw "Unknown operator " + operator;
     }
 
-    console.log(bool, opts)
     if (bool) {
       return opts.fn(this);
     } else {
