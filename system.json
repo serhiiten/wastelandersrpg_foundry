@@ -34,6 +34,74 @@
       "path": "lang/uk.json"
     }
   ],
+  "packs": [
+    {
+      "label": "Зброя",
+      "type": "Item",
+      "name": "weapons",
+      "path": "packs/weapons",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "label": "Броня",
+      "type": "Item",
+      "name": "armors",
+      "path": "packs/armors",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "label": "Спорядження",
+      "type": "Item",
+      "name": "tools",
+      "path": "packs/tools",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "label": "Перки",
+      "type": "Item",
+      "name": "perks",
+      "path": "packs/perks",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "label": "Особливості",
+      "type": "Item",
+      "name": "feats",
+      "path": "packs/feats",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "label": "Покращення",
+      "type": "Item",
+      "name": "upgrades",
+      "path": "packs/upgrades",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ],
   "socket": true,
   "packFolders": [],
   "url": "https://github.com/serhiiten/wastelandersrpg_foundry",
