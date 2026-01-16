@@ -12,77 +12,63 @@ export class FeatData extends foundry.abstract.TypeDataModel {
 export class PerkData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
-    const requiredInteger = { required: true, nullable: false, integer: true };
 
     return {
       active: new fields.BooleanField({ initial: false }),
       description: new fields.HTMLField(),
       attributes: new fields.SchemaField({
         strength: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         perception: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         endurance: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         attractiveness: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
+        }),
+        intelligence: new fields.NumberField({
+          integer: true
         }),
         dexterity: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         luck: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
       }),
       skills: new fields.SchemaField({
         athletics: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         thievery: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         marksmanship: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         dueling: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         medicine: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         mechanics: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         knowledge: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         survival: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         manipulation: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
         intimidation: new fields.NumberField({
-          requiredInteger,
-          initial: 0,
+          integer: true
         }),
       }),
     };
