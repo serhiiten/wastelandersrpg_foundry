@@ -108,8 +108,8 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     let value = index + 1;
 
     const nextElement =
-    index === steps.length - 1 ||
-    !steps[index + 1].classList.contains("active");
+      index === steps.length - 1 ||
+      !steps[index + 1].classList.contains("active");
 
     if (element.classList.contains("active") && nextElement) {
       steps.removeClass("active");
@@ -130,6 +130,6 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
 
     const array = this.actor.system.exp.options;
     array[arrayIndex].active = value;
-    await this.actor.update({ "system.exp.options" : array });
+    await this.actor.update({ "system.exp.options": array });
   }
 }

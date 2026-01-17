@@ -22,11 +22,11 @@ export class WastelandersActor extends Actor {
 
     if (this.type === "character") {
       this._addExpOptions();
-    };
+    }
 
     if (this.type === "counter") {
       this._counterDescriptions();
-    };
+    }
   }
 
   // Hook for adding perks
@@ -47,10 +47,10 @@ export class WastelandersActor extends Actor {
       userId,
     );
 
-    if (game.user.id != userId) return
+    if (game.user.id != userId) return;
 
     for (const dataItem of data) {
-      if (dataItem.type != "perk") return
+      if (dataItem.type != "perk") return;
       this._perkRequirements(dataItem);
     }
   }
@@ -73,11 +73,11 @@ export class WastelandersActor extends Actor {
       userId,
     );
 
-    if (game.user.id != userId) return
+    if (game.user.id != userId) return;
 
     for (const changeData of changes) {
       const item = this.items.get(changeData._id);
-      if (item.type != "perk") return
+      if (item.type != "perk") return;
       this._perkRequirements(item);
     }
   }
@@ -85,8 +85,8 @@ export class WastelandersActor extends Actor {
   _onUpdate(changed, options, userId) {
     super._onUpdate(changed, options, userId);
 
-    if (game.user.id != userId) return
-    if (this.type != "counter") return
+    if (game.user.id != userId) return;
+    if (this.type != "counter") return;
 
     if (changed?.system?.progress?.max !== undefined) {
       this._counterDescriptions();
@@ -96,10 +96,10 @@ export class WastelandersActor extends Actor {
   // Add exp options
   async _addExpOptions() {
     const expOptions = CONFIG.WASTELANDERS.expOptions;
-    const localizedOptions = expOptions.map(option => {
+    const localizedOptions = expOptions.map((option) => {
       return {
         ...option,
-        name: game.i18n.localize(option.name)
+        name: game.i18n.localize(option.name),
       };
     });
     await this.update({ "system.exp.options": localizedOptions });
@@ -117,7 +117,9 @@ export class WastelandersActor extends Actor {
       progress.descriptions.length = progress.max;
     }
 
-    await this.update({ "system.progress.descriptions": progress.descriptions })
+    await this.update({
+      "system.progress.descriptions": progress.descriptions,
+    });
   }
 
   // Check if perk meets requirements
@@ -125,10 +127,10 @@ export class WastelandersActor extends Actor {
     const actorData = this.system;
     const itemData = item.system;
 
-    if (!itemData.active) return
+    if (!itemData.active) return;
 
     const failed = {
-      result: false
+      result: false,
     };
 
     for (const key in itemData.attributes) {
@@ -164,18 +166,21 @@ export class WastelandersActor extends Actor {
     }
 
     if (failed.result) {
-      const localizeKey = `WASTELANDERS.Actor.Character.${failed.check}.` + failed.item.charAt(0).toUpperCase() + failed.item.slice(1);
+      const localizeKey =
+        `WASTELANDERS.Actor.Character.${failed.check}.` +
+        failed.item.charAt(0).toUpperCase() +
+        failed.item.slice(1);
       const localizedItem = game.i18n.localize(localizeKey);
       const notification = game.i18n.format(
         "WASTELANDERS.Actor.Character.FailedPerkCheck",
         {
           perk: item.name,
-          requirement: `${localizedItem} ${failed.requirement}`
-        }
-      )
+          requirement: `${localizedItem} ${failed.requirement}`,
+        },
+      );
 
       ui.notifications.info(notification);
-      await item.update({ "system.active" : false })
+      await item.update({ "system.active": false });
     }
   }
 }

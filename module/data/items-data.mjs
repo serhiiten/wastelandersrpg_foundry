@@ -18,57 +18,57 @@ export class PerkData extends foundry.abstract.TypeDataModel {
       description: new fields.HTMLField(),
       attributes: new fields.SchemaField({
         strength: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         perception: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         endurance: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         attractiveness: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         intelligence: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         dexterity: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         luck: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
       }),
       skills: new fields.SchemaField({
         athletics: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         thievery: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         marksmanship: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         dueling: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         medicine: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         mechanics: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         knowledge: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         survival: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         manipulation: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
         intimidation: new fields.NumberField({
-          integer: true
+          integer: true,
         }),
       }),
     };
@@ -100,6 +100,7 @@ export class ArmorData extends foundry.abstract.TypeDataModel {
 
     return {
       description: new fields.HTMLField(),
+      heavy: new fields.BooleanField({ initial: false }),
       price: new fields.NumberField({
         requiredPositiveInteger,
         initial: 0,

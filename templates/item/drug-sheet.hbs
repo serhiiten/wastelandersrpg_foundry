@@ -23,10 +23,19 @@
           {{numberInput system.price name="system.price" step=1 min=0}}
         </div>
         <div class="prop">
-          <label class="prop-label rollable" data-type="drug" data-note="{{item._id}}" for="system.addiction">{{localize
-              "WASTELANDERS.Item.Addiction"
-            }}:</label>
-          {{numberInput system.addiction name="system.addiction" step=1 min=0 max=10}}
+          <label
+            class="prop-label rollable"
+            data-type="drug"
+            data-note="{{item._id}}"
+            for="system.addiction"
+          >{{localize "WASTELANDERS.Item.Addiction"}}:</label>
+          {{numberInput
+            system.addiction
+            name="system.addiction"
+            step=1
+            min=0
+            max=10
+          }}
         </div>
       </div>
     </div>

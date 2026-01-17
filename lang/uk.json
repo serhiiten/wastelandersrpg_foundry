@@ -84,7 +84,7 @@
         "Supplies": "Припаси",
         "Caps": "Кришки",
         "Weapons": "Зброя",
-        "Armors": "Броня",
+        "Armors": "Захист",
         "Drugs": "Медикаменти і наркотики",
         "Tools": "Все інше",
         "Experience": {
@@ -146,6 +146,7 @@
       "Damage": "Шкода",
       "Price": "Ціна",
       "Protection": "Броня",
+      "Heavy": "Важкий",
       "Quantity": "Кількість",
       "Addiction": "Шанс залежності"
     },

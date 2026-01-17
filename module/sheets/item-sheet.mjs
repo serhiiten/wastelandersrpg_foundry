@@ -145,9 +145,13 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     if (this.item.system.addiction) {
       const addiction = this.item.system.addiction;
       if (roll._total > addiction) {
-        roll.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Success");
+        roll.resultLabel = game.i18n.localize(
+          "WASTELANDERS.Roll.Results.Success",
+        );
       } else {
-        roll.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Failure");
+        roll.resultLabel = game.i18n.localize(
+          "WASTELANDERS.Roll.Results.Failure",
+        );
       }
     }
 

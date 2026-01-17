@@ -32,9 +32,13 @@
 
       <thead>
         <tr>
-          <th>{{localize "WASTELANDERS.Actor.Character.Experience.Upgrade"}}</th>
+          <th>{{localize
+              "WASTELANDERS.Actor.Character.Experience.Upgrade"
+            }}</th>
           <th>{{localize "WASTELANDERS.Actor.Character.Experience.Price"}}</th>
-          <th>{{localize "WASTELANDERS.Actor.Character.Experience.Checked"}}</th>
+          <th>{{localize
+              "WASTELANDERS.Actor.Character.Experience.Checked"
+            }}</th>
         </tr>
       </thead>
 
@@ -43,7 +47,11 @@
           <tr>
             <td>{{this.name}}</td>
             <td>{{this.price}}</td>
-            <td class="value-step-block multiple-activation" data-value="{{this.active}}" data-array-index="{{@index}}">
+            <td
+              class="value-step-block multiple-activation"
+              data-value="{{this.active}}"
+              data-array-index="{{@index}}"
+            >
               {{#numLoop this.max}}
                 <span class="value-step value-dot" data-index="{{this}}"></span>
               {{/numLoop}}

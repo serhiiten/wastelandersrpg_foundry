@@ -22,9 +22,7 @@ export class WastelandersCounterSheet extends WastelandersActorSheet {
     if (!this.options.editable) return;
 
     // Activation dots
-    html
-    .find(".check-description")
-    .change(this._onUpdateDesc.bind(this));
+    html.find(".check-description").change(this._onUpdateDesc.bind(this));
   }
 
   /* -------------------------------------------- */
@@ -36,8 +34,8 @@ export class WastelandersCounterSheet extends WastelandersActorSheet {
     const descriptions = this.actor.system.progress.descriptions;
     descriptions[index] = element.value;
 
-    console.log(descriptions)
+    console.log(descriptions);
 
-    await this.actor.update({ "system.progress.descriptions" : descriptions })
+    await this.actor.update({ "system.progress.descriptions": descriptions });
   }
 }
