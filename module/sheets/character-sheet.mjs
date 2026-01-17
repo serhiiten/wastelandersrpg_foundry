@@ -32,6 +32,7 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     const weapons = [];
     const armors = [];
     const tools = [];
+    const drugs = [];
 
     // Iterate through items, allocating to containers
     for (let i of context.items) {
@@ -47,6 +48,8 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
         armors.push(i);
       } else if (i.type === "tool") {
         tools.push(i);
+      } else if (i.type === "drug") {
+        drugs.push(i);
       }
     }
 
@@ -56,6 +59,7 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     context.weapons = weapons;
     context.armors = armors;
     context.tools = tools;
+    context.drugs = drugs;
   }
 
   /** @override */

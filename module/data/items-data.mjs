@@ -128,6 +128,26 @@ export class ToolData extends foundry.abstract.TypeDataModel {
   }
 }
 
+export class DrugData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    const requiredInteger = { required: true, nullable: false, integer: true };
+    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
+
+    return {
+      description: new fields.HTMLField(),
+      price: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+      addiction: new fields.NumberField({
+        requiredPositiveInteger,
+        initial: 0,
+      }),
+    };
+  }
+}
+
 export class UpgradeData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;

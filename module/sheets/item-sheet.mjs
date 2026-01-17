@@ -80,6 +80,9 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     html
       .find(".value-step-block > .value-step")
       .click(this._onDotChange.bind(this));
+
+    // Roll dice
+    html.find(".rollable").click(this._onRoll.bind(this));
   }
 
   /* -------------------------------------------- */
@@ -123,5 +126,33 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     }
 
     await this.item.update({ [key]: value });
+  }
+
+  /**
+   * Handle clickable rolls.
+   * @param {Event} the originating click event
+   * @private
+   */
+  async _onRoll(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const dataset = element.dataset;
+
+    if (dataset.type != "drug") return;
+
+    const roll = await new Roll("1d10").evaluate();
+
+    if (this.item.system.addiction) {
+      const addiction = this.item.system.addiction;
+      if (roll._total > addiction) {
+        roll.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Success");
+      } else {
+        roll.resultLabel = game.i18n.localize("WASTELANDERS.Roll.Results.Failure");
+      }
+    }
+
+    roll.toMessage({
+      flavor: roll.resultLabel,
+    });
   }
 }

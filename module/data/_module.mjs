@@ -7,6 +7,7 @@ export {
   WeaponData,
   ArmorData,
   ToolData,
+  DrugData,
   UpgradeData,
   CargoData,
   PassengerData,
