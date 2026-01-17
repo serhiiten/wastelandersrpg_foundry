@@ -127,8 +127,6 @@ export class WastelandersActor extends Actor {
     const actorData = this.system;
     const itemData = item.system;
 
-    if (!itemData.active) return;
-
     const failed = {
       result: false,
     };
@@ -180,7 +178,6 @@ export class WastelandersActor extends Actor {
       );
 
       ui.notifications.info(notification);
-      await item.update({ "system.active": false });
     }
   }
 }

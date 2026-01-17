@@ -5,11 +5,10 @@
     <h2>{{localize 'WASTELANDERS.Actor.Character.Feats'}}</h2>
   </div>
 
-  <ol class="items-list check-list">
+  <ol class="items-list">
     {{#each feats as |item id|}}
       <li class="item {{item.type}} {{#if item.system.active}}active{{/if}}" data-item-id="{{item._id}}">
-        <div class="item-description flex-centration">
-          <input class="item-checkbox" data-key="active" type="checkbox" name="item.system.active" data-dtype="Boolean" {{checked item.system.active}}></input>
+        <div class="item-description">
           <span class="item-name">{{item.name}}</span>
         </div>
 

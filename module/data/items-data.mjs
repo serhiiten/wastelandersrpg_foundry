@@ -3,7 +3,6 @@ export class FeatData extends foundry.abstract.TypeDataModel {
     const fields = foundry.data.fields;
 
     return {
-      active: new fields.BooleanField({ initial: false }),
       description: new fields.HTMLField(),
     };
   }
@@ -14,7 +13,6 @@ export class PerkData extends foundry.abstract.TypeDataModel {
     const fields = foundry.data.fields;
 
     return {
-      active: new fields.BooleanField({ initial: false }),
       description: new fields.HTMLField(),
       attributes: new fields.SchemaField({
         strength: new fields.NumberField({
