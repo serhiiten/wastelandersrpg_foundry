@@ -100,6 +100,28 @@
         "PLAYER": "OBSERVER",
         "ASSISTANT": "OWNER"
       }
+    },
+    {
+      "label": "Довідки по правилах",
+      "type": "JournalEntry",
+      "name": "rules",
+      "path": "packs/rules",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "guns-lots-of-guns",
+      "label": "Guns. Lots of Guns (доповнення)",
+      "path": "packs/guns-lots-of-guns",
+      "type": "Item",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
     }
   ],
   "socket": true,
