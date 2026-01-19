@@ -56,7 +56,7 @@
           "Endurance": "ВТР",
           "Attractiveness": "ПВ",
           "Intelligence": "ІН",
-          "Dexterity": "ВПР",
+          "Dexterity": "ВП",
           "Luck": "УДЧ"
         },
         "Skills": "Навички",
@@ -80,7 +80,7 @@
         },
         "Feats": "Особливості",
         "Perks": "Перки",
-        "FailedPerkCheck": "Ви не відопвідаєте вимогам перку {perk} ({requirement}) для активації ",
+        "FailedPerkCheck": "Ви не відопвідаєте вимогам перку {perk} ({requirement}) його використання",
         "Supplies": "Припаси",
         "Caps": "Кришки",
         "Weapons": "Зброя",
