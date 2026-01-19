@@ -15,7 +15,8 @@
       "feat": "Особливість",
       "upgrade": "Покращення",
       "cargo": "Вантаж",
-      "passenger": "Пасажири"
+      "passenger": "Пасажири",
+      "attack": "Атака"
     }
   },
   "WASTELANDERS": {
@@ -129,7 +130,15 @@
       },
       "Enemy": {
         "Name": "Ім'я",
-        "Armor": "Броня"
+        "Type": "Тип",
+        "Types": {
+          "Statistician": "Статист",
+          "Ordinary": "Рядовий",
+          "Elite": "Елітний",
+          "Boss": "Бос"
+        },
+        "Armor": "Броня",
+        "Attacks": "Атаки"
       },
       "Counter": {
         "Filled": "Заповнено",

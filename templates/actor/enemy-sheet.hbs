@@ -44,6 +44,14 @@
 
       <div class="brief-info">
         <div class="prop">
+          <label class="prop-label" for="system.type">{{localize
+              "WASTELANDERS.Actor.Enemy.Type"
+            }}:</label>
+          <select name="system.type">
+            {{selectOptions config.enemyType localize=true}}
+          </select>
+        </div>
+        <div class="prop">
           <label class="prop-label" for="system.armor">{{localize
               "WASTELANDERS.Actor.Enemy.Armor"
             }}:</label>

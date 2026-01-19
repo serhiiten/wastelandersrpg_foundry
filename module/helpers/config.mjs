@@ -64,4 +64,10 @@ export const WASTELANDERS = {
       max: 1,
     },
   ],
+  enemyType: {
+    statistician: "WASTELANDERS.Actor.Enemy.Types.Statistician",
+    ordinary: "WASTELANDERS.Actor.Enemy.Types.Ordinary",
+    elite: "WASTELANDERS.Actor.Enemy.Types.Elite",
+    boss: "WASTELANDERS.Actor.Enemy.Types.Boss",
+  },
 };
