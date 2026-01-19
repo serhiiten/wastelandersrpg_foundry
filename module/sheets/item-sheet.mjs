@@ -138,8 +138,6 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
     const element = event.currentTarget;
     const dataset = element.dataset;
 
-    if (dataset.type != "drug") return;
-
     const roll = await new Roll("1d10").evaluate();
 
     if (this.item.system.addiction) {
