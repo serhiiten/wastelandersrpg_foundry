@@ -4,6 +4,7 @@ import { WastelandersItem } from "./documents/item.mjs";
 import { WastelandersActorSheet } from "./sheets/actor-sheet.mjs";
 import { WastelandersCharacterSheet } from "./sheets/character-sheet.mjs";
 import { WastelandersCaravanSheet } from "./sheets/caravan-sheet.mjs";
+import { WastelandersEnemySheet } from "./sheets/enemy-sheet.mjs";
 import { WastelandersCounterSheet } from "./sheets/counter-sheet.mjs";
 import { WastelandersItemSheet } from "./sheets/item-sheet.mjs";
 
@@ -68,6 +69,14 @@ Hooks.once("init", async function () {
     WastelandersCaravanSheet,
     {
       types: ["caravan"],
+      makeDefault: true,
+    },
+  );
+  foundry.documents.collections.Actors.registerSheet(
+    "wastelanders",
+    WastelandersEnemySheet,
+    {
+      types: ["enemy"],
       makeDefault: true,
     },
   );
