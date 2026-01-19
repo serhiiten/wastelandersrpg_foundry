@@ -12,4 +12,5 @@ export {
   UpgradeData,
   CargoData,
   PassengerData,
+  AttackData,
 } from "./items-data.mjs";

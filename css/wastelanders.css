@@ -481,7 +481,8 @@ select.clear-select {
   font-size: 12px;
   text-align: center;
 }
-.wastelanders .items-block .items-list .item.weapon .item-description {
+.wastelanders .items-block .items-list .item.weapon .item-description,
+.wastelanders .items-block .items-list .item.attack .item-description {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;

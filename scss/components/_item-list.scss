@@ -86,7 +86,8 @@
         }
       }
 
-      .item.weapon {
+      .item.weapon,
+      .item.attack {
         .item-description {
           display: flex;
           flex-direction: row;

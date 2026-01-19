@@ -192,10 +192,19 @@ export class CargoData extends foundry.abstract.TypeDataModel {
 export class PassengerData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
-    const requiredInteger = { required: true, nullable: false, integer: true };
-    const requiredPositiveInteger = { ...requiredInteger, min: 0 };
 
     return {
+      description: new fields.HTMLField(),
+    };
+  }
+}
+
+export class AttackData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+
+    return {
+      damage: new fields.StringField(),
       description: new fields.HTMLField(),
     };
   }

@@ -44,6 +44,7 @@ Hooks.once("init", async function () {
     upgrade: models.UpgradeData,
     cargo: models.CargoData,
     passenger: models.PassengerData,
+    attack: models.AttackData,
   };
 
   // Register sheet application classes

@@ -7,6 +7,7 @@
       title="{{item.name}}"
     />
     <div class="header-fields">
+
       <h1 class="item-name">
         <input
           name="name"
@@ -17,24 +18,13 @@
       </h1>
       <div class="brief-info">
         <div class="prop">
-          <label class="prop-label" for="system.price">{{localize
-              "WASTELANDERS.Item.Price"
+          <label class="prop-label" for="system.damage">{{localize
+              "WASTELANDERS.Item.Damage"
             }}:</label>
-          {{numberInput system.price name="system.price" step=1 min=0}}
-        </div>
-        <div class="prop">
-          <label class="prop-label rollable" for="system.addiction">{{localize
-              "WASTELANDERS.Item.Addiction"
-            }}:</label>
-          {{numberInput
-            system.addiction
-            name="system.addiction"
-            step=1
-            min=0
-            max=10
-          }}
+          <input name="system.damage" type="text" value="{{system.damage}}" />
         </div>
       </div>
+
     </div>
   </header>
 

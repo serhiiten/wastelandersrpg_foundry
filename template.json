@@ -13,7 +13,8 @@
       "feat",
       "upgrade",
       "cargo",
-      "passenger"
+      "passenger",
+      "attack"
     ]
   }
 }
