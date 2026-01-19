@@ -126,6 +126,7 @@
   ],
   "socket": true,
   "packFolders": [],
+  "primaryTokenAttribute": "hp",
   "url": "https://github.com/serhiiten/wastelandersrpg_foundry",
   "manifest": "https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/main/system.json",
   "download": "https://github.com/serhiiten/wastelandersrpg_foundry/releases/download/v0.2/foundry.zip",
