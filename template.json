@@ -1,6 +1,6 @@
 {
   "Actor": {
-    "types": ["character", "caravan", "counter"],
+    "types": ["character", "caravan", "enemy", "counter"],
     "htmlFields": ["description", "notes"]
   },
   "Item": {

@@ -3,6 +3,7 @@
     "Actor": {
       "character": "Персонаж",
       "caravan": "Караван",
+      "enemy": "Супротивник",
       "counter": "Лічильник"
     },
     "Item": {
@@ -125,6 +126,10 @@
         "CargoNav": "Вантажі та пасажири",
         "Cargo": "Вантаж",
         "Passengers": "Пасажири"
+      },
+      "Enemy": {
+        "Name": "Ім'я",
+        "Armor": "Броня"
       },
       "Counter": {
         "Filled": "Заповнено",

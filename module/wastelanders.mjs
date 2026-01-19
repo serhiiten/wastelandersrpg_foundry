@@ -29,6 +29,7 @@ Hooks.once("init", async function () {
   CONFIG.Actor.dataModels = {
     character: models.CharacterData,
     caravan: models.CaravanData,
+    enemy: models.EnemyData,
     counter: models.CounterData,
   };
 
