@@ -122,6 +122,17 @@
         "PLAYER": "OBSERVER",
         "ASSISTANT": "OWNER"
       }
+    },
+    {
+      "name": "opponents",
+      "label": "Супротивники",
+      "path": "packs/opponents",
+      "type": "Actor",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "LIMITED",
+        "ASSISTANT": "OWNER"
+      }
     }
   ],
   "socket": true,

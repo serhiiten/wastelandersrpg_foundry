@@ -1,8 +1,5 @@
-2026/01/19-16:15:20.554824 7f6ce1b6d6c0 Recovering log #33
-2026/01/19-16:15:20.559932 7f6ce1b6d6c0 Delete type=3 #31
-2026/01/19-16:15:20.559958 7f6ce1b6d6c0 Delete type=0 #33
-2026/01/19-16:20:08.118802 7f6cd3fa56c0 Level-0 table #38: started
-2026/01/19-16:20:08.118846 7f6cd3fa56c0 Level-0 table #38: 0 bytes OK
-2026/01/19-16:20:08.121346 7f6cd3fa56c0 Delete type=0 #36
-2026/01/19-16:20:08.128858 7f6cd3fa56c0 Manual compaction at level-0 from '!folders!1SQW5cFh9fKmHQAp' @ 72057594037927935 : 1 .. '!items!x2bn4FfnTlyXQ871' @ 0 : 0; will stop at (end)
-2026/01/19-16:20:08.128904 7f6cd3fa56c0 Manual compaction at level-1 from '!folders!1SQW5cFh9fKmHQAp' @ 72057594037927935 : 1 .. '!items!x2bn4FfnTlyXQ871' @ 0 : 0; will stop at (end)
+2026/01/30-15:32:50.625287 7fc9fa8bd6c0 Log #47: 0 ops saved to Table #48 OK
+2026/01/30-15:32:50.625358 7fc9fa8bd6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/guns-lots-of-guns/000047.log: OK
+2026/01/30-15:32:50.625466 7fc9fa8bd6c0 Table #26: 91 entries OK
+2026/01/30-15:32:50.625555 7fc9fa8bd6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/guns-lots-of-guns/MANIFEST-000045: OK
+2026/01/30-15:32:50.626929 7fc9fa8bd6c0 **** Repaired leveldb /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/guns-lots-of-guns; recovered 1 files; 23208 bytes. Some data may have been lost. ****

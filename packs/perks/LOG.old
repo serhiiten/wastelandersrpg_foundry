@@ -1,8 +1,5 @@
-2026/01/19-16:15:20.526447 7f6ce2b6f6c0 Recovering log #29
-2026/01/19-16:15:20.530204 7f6ce2b6f6c0 Delete type=3 #27
-2026/01/19-16:15:20.530226 7f6ce2b6f6c0 Delete type=0 #29
-2026/01/19-16:20:08.110695 7f6cd3fa56c0 Level-0 table #34: started
-2026/01/19-16:20:08.110710 7f6cd3fa56c0 Level-0 table #34: 0 bytes OK
-2026/01/19-16:20:08.113131 7f6cd3fa56c0 Delete type=0 #32
-2026/01/19-16:20:08.118669 7f6cd3fa56c0 Manual compaction at level-0 from '!folders!4bNsAKB1jmixQ0iI' @ 72057594037927935 : 1 .. '!items!zsQqq8aySyz12h67' @ 0 : 0; will stop at (end)
-2026/01/19-16:20:08.118699 7f6cd3fa56c0 Manual compaction at level-1 from '!folders!4bNsAKB1jmixQ0iI' @ 72057594037927935 : 1 .. '!items!zsQqq8aySyz12h67' @ 0 : 0; will stop at (end)
+2026/01/30-15:32:50.560491 7fc9fa0bc6c0 Log #43: 0 ops saved to Table #44 OK
+2026/01/30-15:32:50.560575 7fc9fa0bc6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/perks/000043.log: OK
+2026/01/30-15:32:50.561069 7fc9fa0bc6c0 Table #22: 146 entries OK
+2026/01/30-15:32:50.561160 7fc9fa0bc6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/perks/MANIFEST-000041: OK
+2026/01/30-15:32:50.562559 7fc9fa0bc6c0 **** Repaired leveldb /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/perks; recovered 1 files; 92109 bytes. Some data may have been lost. ****
