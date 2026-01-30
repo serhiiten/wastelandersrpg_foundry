@@ -487,6 +487,9 @@ select.clear-select {
   flex-direction: row;
   flex-wrap: wrap;
 }
+.wastelanders .items-block .items-list .item.heavy .item-name {
+  font-weight: bold;
+}
 .wastelanders .items-block .check-list .item .item-name {
   color: gray;
 }

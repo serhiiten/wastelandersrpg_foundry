@@ -48,7 +48,7 @@
 
     <ol class="items-list">
       {{#each weapons as |item id|}}
-        <li class="item {{item.type}}" data-item-id="{{item._id}}">
+        <li class="item {{item.type}} {{#if item.system.heavy}}heavy{{/if}}" data-item-id="{{item._id}}">
           <div class="item-description">
             <a
               class="item-image rollable"
@@ -104,7 +104,7 @@
 
     <ol class="items-list">
       {{#each armors as |item id|}}
-        <li class="item {{item.type}}" data-item-id="{{item._id}}">
+        <li class="item {{item.type}} {{#if item.system.heavy}}heavy{{/if}}" data-item-id="{{item._id}}">
           <div class="item-description">
             <span class="item-name">{{item.name}}</span>
             {{#if item.system.protection}}
@@ -202,7 +202,7 @@
 
     <ol class="items-list">
       {{#each tools as |item id|}}
-        <li class="item {{item.type}}" data-item-id="{{item._id}}">
+        <li class="item {{item.type}} {{#if item.system.heavy}}heavy{{/if}}" data-item-id="{{item._id}}">
           <div class="item-description">
             <span class="item-name">{{item.name}}</span>
           </div>

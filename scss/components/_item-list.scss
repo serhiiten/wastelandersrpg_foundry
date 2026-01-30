@@ -94,6 +94,12 @@
           flex-wrap: wrap;
         }
       }
+
+      .item.heavy {
+        .item-name {
+          font-weight: bold;
+        }
+      }
     }
 
     .check-list {

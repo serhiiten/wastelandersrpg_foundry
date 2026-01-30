@@ -81,6 +81,7 @@ export class WeaponData extends foundry.abstract.TypeDataModel {
 
     return {
       description: new fields.HTMLField(),
+      heavy: new fields.BooleanField({ initial: false }),
       price: new fields.NumberField({
         requiredPositiveInteger,
         initial: 0,
@@ -119,6 +120,7 @@ export class ToolData extends foundry.abstract.TypeDataModel {
 
     return {
       description: new fields.HTMLField(),
+      heavy: new fields.BooleanField({ initial: false }),
       price: new fields.NumberField({
         requiredPositiveInteger,
         initial: 0,
