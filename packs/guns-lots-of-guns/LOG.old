@@ -1,5 +1,3 @@
-2026/01/30-15:32:50.625287 7fc9fa8bd6c0 Log #47: 0 ops saved to Table #48 OK
-2026/01/30-15:32:50.625358 7fc9fa8bd6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/guns-lots-of-guns/000047.log: OK
-2026/01/30-15:32:50.625466 7fc9fa8bd6c0 Table #26: 91 entries OK
-2026/01/30-15:32:50.625555 7fc9fa8bd6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/guns-lots-of-guns/MANIFEST-000045: OK
-2026/01/30-15:32:50.626929 7fc9fa8bd6c0 **** Repaired leveldb /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/guns-lots-of-guns; recovered 1 files; 23208 bytes. Some data may have been lost. ****
+2026/01/30-17:36:12.339861 7f894b9ed6c0 Recovering log #53
+2026/01/30-17:36:12.343755 7f894b9ed6c0 Delete type=0 #53
+2026/01/30-17:36:12.343780 7f894b9ed6c0 Delete type=3 #51

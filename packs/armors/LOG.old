@@ -1,5 +1,3 @@
-2026/01/30-15:32:50.524809 7fc9fa8bd6c0 Log #43: 0 ops saved to Table #44 OK
-2026/01/30-15:32:50.524892 7fc9fa8bd6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/armors/000043.log: OK
-2026/01/30-15:32:50.524968 7fc9fa8bd6c0 Table #22: 8 entries OK
-2026/01/30-15:32:50.525056 7fc9fa8bd6c0 Archiving /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/armors/MANIFEST-000041: OK
-2026/01/30-15:32:50.526855 7fc9fa8bd6c0 **** Repaired leveldb /home/vlad/dev-gm/foundrydata/Data/systems/wastelanders/packs/armors; recovered 1 files; 5229 bytes. Some data may have been lost. ****
+2026/01/30-17:36:12.302976 7f894b9ed6c0 Recovering log #49
+2026/01/30-17:36:12.306852 7f894b9ed6c0 Delete type=0 #49
+2026/01/30-17:36:12.306877 7f894b9ed6c0 Delete type=3 #47

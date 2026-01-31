@@ -48,7 +48,11 @@
               "WASTELANDERS.Actor.Enemy.Type"
             }}:</label>
           <select name="system.type">
-            {{selectOptions config.enemyType selected=system.type localize=true}}
+            {{selectOptions
+              config.enemyType
+              selected=system.type
+              localize=true
+            }}
           </select>
         </div>
         <div class="prop">

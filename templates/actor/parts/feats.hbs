@@ -1,13 +1,17 @@
 <div class="feats-block items-block">
 
   <div class="item-header">
-    <a class="item-create" title="{{localize 'WASTELANDERS.Item.Add'}}" data-type="feat"><i class="fas fa-plus"></i></a>
-    <h2>{{localize 'WASTELANDERS.Actor.Character.Feats'}}</h2>
+    <a
+      class="item-create"
+      title="{{localize 'WASTELANDERS.Item.Add'}}"
+      data-type="feat"
+    ><i class="fas fa-plus"></i></a>
+    <h2>{{localize "WASTELANDERS.Actor.Character.Feats"}}</h2>
   </div>
 
   <ol class="items-list">
     {{#each feats as |item id|}}
-      <li class="item {{item.type}} {{#if item.system.active}}active{{/if}}" data-item-id="{{item._id}}">
+      <li class="item {{item.type}}" data-item-id="{{item._id}}">
         <div class="item-description">
           <span class="item-name">{{item.name}}</span>
         </div>
@@ -17,9 +21,18 @@
         </div>
 
         <div class="item-controls">
-          <a class="item-control item-show" title="{{localize 'WASTELANDERS.Item.Show'}}"><i class="fa fa-comment"></i></a>
-          <a class="item-control item-edit" title="{{localize 'WASTELANDERS.Item.Edit'}}"><i class="fas fa-edit"></i></a>
-          <a class="item-control item-delete" title="{{localize 'WASTELANDERS.Item.Delete'}}"><i class="fas fa-trash"></i></a>
+          <a
+            class="item-control item-show"
+            title="{{localize 'WASTELANDERS.Item.Show'}}"
+          ><i class="fa fa-comment"></i></a>
+          <a
+            class="item-control item-edit"
+            title="{{localize 'WASTELANDERS.Item.Edit'}}"
+          ><i class="fas fa-edit"></i></a>
+          <a
+            class="item-control item-delete"
+            title="{{localize 'WASTELANDERS.Item.Delete'}}"
+          ><i class="fas fa-trash"></i></a>
         </div>
       </li>
     {{/each}}

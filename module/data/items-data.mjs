@@ -69,6 +69,7 @@ export class PerkData extends foundry.abstract.TypeDataModel {
           integer: true,
         }),
       }),
+      notMetRequirements: new fields.BooleanField({ initial: false }),
     };
   }
 }
