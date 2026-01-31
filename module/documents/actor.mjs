@@ -16,6 +16,26 @@ export class WastelandersActor extends Actor {
     this.updateSource({ prototypeToken });
   }
 
+  /** @override */
+  static getDefaultArtwork(actorData) {
+    const data = super.getDefaultArtwork(actorData);
+
+    const icons = {
+      character: "systems/wastelanders/assets/vault-boy.webp",
+      caravan: "systems/wastelanders/assets/cartwheel.png",
+      enemy: "systems/wastelanders/assets/daemon-skull.png",
+      counter: "systems/wastelanders/assets/time-bomb.png"
+    };
+
+    const defaultIcon = icons[actorData.type] || "icons/svg/mystery-man.svg";
+
+    // Set the Default Token Image (Prototype Token)
+    data.img = defaultIcon;
+    data.texture.src = defaultIcon;
+
+    return data;
+  }
+
   // Add exp options to actor
   async _onCreate(data, options, userId) {
     super._onCreate(data, options, userId);
