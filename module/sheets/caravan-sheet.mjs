@@ -115,6 +115,19 @@ export class WastelandersCaravanSheet extends WastelandersActorSheet {
   async _luckRoll(event) {
     const formula = "1d10+" + this.actor.system.luck;
     const roll = await new Roll(formula).evaluate();
-    roll.toMessage();
+
+    if (roll._total >= 6) {
+      roll.resultLabel = game.i18n.localize(
+        "WASTELANDERS.Roll.Results.Success",
+      );
+    } else {
+      roll.resultLabel = game.i18n.localize(
+        "WASTELANDERS.Roll.Results.Failure",
+      );
+    }
+
+    roll.toMessage({
+      flavor: roll.resultLabel,
+    });
   }
 }
