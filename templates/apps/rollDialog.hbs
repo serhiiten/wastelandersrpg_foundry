@@ -33,7 +33,7 @@
       </select>
     </div>
 
-    <div class="modifier flexrow">
+    <div class="advantage flexrow">
       <label for="advantage">{{localize "WASTELANDERS.Roll.AdvantageTitle"}}:
       </label>
       <select
@@ -44,6 +44,11 @@
       >
         {{selectOptions rollConfig.rollAdvantage localize=true}}
       </select>
+    </div>
+
+    <div class="modifier">
+      <label for="modifier">{{localize "WASTELANDERS.Roll.Modifier"}}:</label>
+      {{numberInput defaults.modifier name="modifier" step=1}}
     </div>
 
     {{#if damage}}

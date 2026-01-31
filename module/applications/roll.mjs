@@ -55,6 +55,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(
     const defaults = {
       attribute: "strength",
       skill: "athletics",
+      modifier: 0,
     };
 
     if (Object.hasOwn(this.rollConfig.attributes, note)) {
@@ -99,6 +100,7 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(
   static async #onSubmit(event, form) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
+    console.log(data);
 
     await this.baseRoll(data);
     if (this.rollType == "weapon") await this.weaponRoll(data);
@@ -114,27 +116,28 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(
     const skill = actor.skills[data.skill];
     const skillLabel = game.i18n.localize(this.rollConfig.skills[data.skill]);
 
-    const modifier = {
+    const advantage = {
       value: parseInt(data.advantage),
       adv: 0,
       disAdv: 0,
     };
-    if (modifier.value) {
-      if (modifier.value > 0) modifier.adv = modifier.value;
-      if (modifier.value < 0) modifier.disAdv = Math.abs(modifier.value);
+    if (advantage.value) {
+      if (advantage.value > 0) advantage.adv = advantage.value;
+      if (advantage.value < 0) advantage.disAdv = Math.abs(advantage.value);
     }
 
     const rollData = {
-      dice: 2 + Math.abs(modifier.value),
+      dice: 2 + Math.abs(advantage.value),
       operator: "d10",
+      modifier: data.modifier,
     };
-    if (modifier.adv) rollData.operator = "d10kh2";
-    if (modifier.disAdv) rollData.operator = "d10kl2";
+    if (advantage.adv) rollData.operator = "d10kh2";
+    if (advantage.disAdv) rollData.operator = "d10kl2";
 
     if (skill) {
-      rollData.formula = `{${rollData.dice}${rollData.operator}, d${skill}} + ${attribute}`;
+      rollData.formula = `{${rollData.dice}${rollData.operator}, d${skill}} + ${attribute}  + ${rollData.modifier}`;
     } else {
-      rollData.formula = `${rollData.dice}${rollData.operator} + ${attribute}`;
+      rollData.formula = `${rollData.dice}${rollData.operator} + ${attribute} + ${rollData.modifier}`;
     }
 
     const rollResult = await new Roll(rollData.formula).evaluate();
@@ -182,6 +185,8 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(
   }
 
   async weaponRoll(data) {
+    if (!this.weapon.system.damage) return;
+
     const formula = this.weapon.system.damage;
     const rollResult = await new Roll(formula).evaluate();
 
