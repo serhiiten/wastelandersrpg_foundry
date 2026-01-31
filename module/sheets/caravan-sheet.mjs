@@ -61,6 +61,9 @@ export class WastelandersCaravanSheet extends WastelandersActorSheet {
     html
       .find(".multiple-activation > .value-step")
       .click(this._onDotChange.bind(this));
+
+    // Roll luck
+    html.find(".luck-roll").click(this._luckRoll.bind(this));
   }
 
   /* -------------------------------------------- */
@@ -107,5 +110,11 @@ export class WastelandersCaravanSheet extends WastelandersActorSheet {
     }
 
     await item.update({ [key]: value });
+  }
+
+  async _luckRoll(event) {
+    const formula = "1d10+" + this.actor.system.luck;
+    const roll = await new Roll(formula).evaluate();
+    roll.toMessage();
   }
 }

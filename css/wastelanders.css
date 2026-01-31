@@ -340,7 +340,7 @@ select.clear-select {
 .wastelanders .detail-window .detail-block:not(.active) {
   display: none;
 }
-.wastelanders .rollable:hover, .wastelanders .rollable:focus {
+.wastelanders .rollable:hover, .wastelanders .rollable:focus, .wastelanders .luck-roll:hover, .wastelanders .luck-roll:focus {
   cursor: pointer;
   color: black;
   color: var(--color-text-primary);
