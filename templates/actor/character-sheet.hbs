@@ -79,6 +79,12 @@
             <label class="prop-label" for="system.consequences.moderate">{{localize 'WASTELANDERS.Actor.Character.Consequence.Moderate'}}:</label>
             <input class="clear-input all-width" name="system.consequences.moderate" type="text" value="{{system.consequences.moderate}}"/>
           </div>
+          {{#if system.consequences.doubleModerate}}
+          <div class="prop">
+            <label class="prop-label" for="system.consequences.secondModerate">{{localize 'WASTELANDERS.Actor.Character.Consequence.SecondModerate'}}:</label>
+            <input class="clear-input all-width" name="system.consequences.secondModerate" type="text" value="{{system.consequences.secondModerate}}"/>
+          </div>
+          {{/if}}
           <div class="prop">
             <label class="prop-label" for="system.problem.heavy">{{localize 'WASTELANDERS.Actor.Character.Consequence.Heavy'}}:</label>
             <input class="clear-input all-width" name="system.consequences.heavy" type="text" value="{{system.consequences.heavy}}"/>
