@@ -100,7 +100,6 @@ export default class WastelandersRollerApp extends HandlebarsApplicationMixin(
   static async #onSubmit(event, form) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
-    console.log(data);
 
     await this.baseRoll(data);
     if (this.rollType == "weapon") await this.weaponRoll(data);

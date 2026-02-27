@@ -1,4 +1,16 @@
 export const WASTELANDERS = {
+  archetypes: {
+    none: "WASTELANDERS.Actor.Character.Archetypes.None",
+    brute: "WASTELANDERS.Actor.Character.Archetypes.Brute",
+    marksman: "WASTELANDERS.Actor.Character.Archetypes.Marksman",
+    trader: "WASTELANDERS.Actor.Character.Archetypes.Trader",
+    charmer: "WASTELANDERS.Actor.Character.Archetypes.Charmer",
+    thief: "WASTELANDERS.Actor.Character.Archetypes.Thief",
+    technician: "WASTELANDERS.Actor.Character.Archetypes.Technician",
+    madScientist: "WASTELANDERS.Actor.Character.Archetypes.MadScientist",
+    ranger: "WASTELANDERS.Actor.Character.Archetypes.Ranger",
+    psionic: "WASTELANDERS.Actor.Character.Archetypes.Psionic",
+  },
   attributes: {
     strength: "WASTELANDERS.Actor.Character.Attribute.Strength",
     perception: "WASTELANDERS.Actor.Character.Attribute.Perception",

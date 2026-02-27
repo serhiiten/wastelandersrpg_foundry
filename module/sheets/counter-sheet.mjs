@@ -34,8 +34,6 @@ export class WastelandersCounterSheet extends WastelandersActorSheet {
     const descriptions = this.actor.system.progress.descriptions;
     descriptions[index] = element.value;
 
-    console.log(descriptions);
-
     await this.actor.update({ "system.progress.descriptions": descriptions });
   }
 }

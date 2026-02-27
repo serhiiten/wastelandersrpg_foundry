@@ -27,11 +27,22 @@
       "Items": "Предмети",
       "Notes": "Нотатки",
       "Character": {
-        "Archetype": "Архетип",
         "Race": "Вид",
         "Concept": "Концепція",
         "Problem": "Проблема",
         "Goal": "Ціль",
+        "Archetypes": {
+          "None": "Архетип",
+          "Brute": "Здоровило",
+          "Marksman": "Стрілець",
+          "Trader": "Торгаш",
+          "Charmer": "Спокусник",
+          "Thief": "Злодюга",
+          "Technician": "Технік",
+          "MadScientist": "(Боже)вільний вчений ",
+          "Ranger": "Рейнджер",
+          "Psionic": "Псионік"
+        },
         "FatePoints": {
           "Value": "Поточні ЖД",
           "Recover": "Відновлення ЖД"
@@ -114,7 +125,8 @@
         "Settings": {
           "Title": "Налаштування персонажа",
           "DoubleModerate": "Друга комірка середніх наслідків",
-          "CountFateAutomatically": "Рахувати відновлення ЖД автоматично"
+          "CountFateAutomatically": "Рахувати відновлення ЖД автоматично",
+          "HPBonus": "Бонус ОЗ"
         }
       },
       "Caravan": {

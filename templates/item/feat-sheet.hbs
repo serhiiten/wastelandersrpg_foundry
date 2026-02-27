@@ -15,6 +15,14 @@
           placeholder="{{localize 'WASTELANDERS.Item.Name'}}"
         />
       </h1>
+      <div class="brief-info flexrow">
+        <div class="prop">
+          <label class="prop-label" for="system.hpBonus">{{localize
+              "WASTELANDERS.Actor.Character.Settings.HPBonus"
+            }}:</label>
+          {{numberInput system.hpBonus name="system.hpBonus" step=1}}
+        </div>
+      </div>
     </div>
   </header>
 

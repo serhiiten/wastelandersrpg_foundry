@@ -20,7 +20,9 @@
       <div class="name-block flexrow">
         <h1><input class="character-name clear-input" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'WASTELANDERS.Actor.Name'}}"/></h1>
         <h3 class="prop">
-          <input class="clear-input archetype" name="system.archetype" type="text" value="{{system.archetype}}" placeholder="{{localize 'WASTELANDERS.Actor.Character.Archetype'}}"/>
+          <select name="system.archetype" class="clear-select">
+            {{selectOptions config.archetypes selected=system.archetype localize=true}}
+          </select>
           <span>|</span>
           <input class="clear-input race" name="system.race" type="text" value="{{system.race}}" placeholder="{{localize 'WASTELANDERS.Actor.Character.Race'}}"/>
         </h3>
@@ -64,7 +66,9 @@
           <div class="fate-points grid-2col">
             <h2>
               <label class="prop-label" for="system.fate.value">{{localize 'WASTELANDERS.Actor.Character.FatePoints.Value'}}:</label>
-              {{numberInput system.fate.value name="system.fate.value" class="clear-input" step=1 min=0 max=50}}
+              {{numberInput system.fate.value name="system.fate.value" class="clear-input" step=1 min=0 max=50 disabled=system.fate.countAutomatically}}
+              {{{log system.fate.countAutomatically}}}
+              {{#if system.fate.countAutomatically}}test{{/if}}
             </h2>
             <h2>
               <label class="prop-label" for="system.fate.recover">{{localize 'WASTELANDERS.Actor.Character.FatePoints.Recover'}}:</label>

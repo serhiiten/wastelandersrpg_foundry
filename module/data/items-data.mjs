@@ -3,6 +3,9 @@ export class FeatData extends foundry.abstract.TypeDataModel {
     const fields = foundry.data.fields;
 
     return {
+      hpBonus: new fields.NumberField({
+        integer: true,
+      }),
       description: new fields.HTMLField(),
     };
   }
@@ -68,6 +71,9 @@ export class PerkData extends foundry.abstract.TypeDataModel {
         intimidation: new fields.NumberField({
           integer: true,
         }),
+      }),
+      hpBonus: new fields.NumberField({
+        integer: true,
       }),
       notMetRequirements: new fields.BooleanField({ initial: false }),
     };

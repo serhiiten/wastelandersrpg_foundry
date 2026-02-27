@@ -71,7 +71,6 @@ export class WastelandersActor extends Actor {
 
     for (const dataItem of data) {
       if (dataItem.type != "perk") return;
-      console.log("trigger 1: create");
       this._perkRequirements(dataItem);
     }
   }
@@ -99,7 +98,6 @@ export class WastelandersActor extends Actor {
     for (const changeData of changes) {
       const item = this.items.get(changeData._id);
       if (item.type != "perk") return;
-      console.log("trigger 1: update");
       this._perkRequirements(item);
     }
   }
@@ -119,7 +117,6 @@ export class WastelandersActor extends Actor {
         changed?.system?.skills !== undefined
       ) {
         for (let i of this.items) {
-          console.log("trigger 1: perk update");
           if (i.type === "perk") this._perkRequirements(i);
         }
       }
@@ -157,7 +154,6 @@ export class WastelandersActor extends Actor {
 
   // Check if perk meets requirements
   async _perkRequirements(item) {
-    console.log("trigger 2");
     const actorData = this.system;
     const itemData = item.system;
 

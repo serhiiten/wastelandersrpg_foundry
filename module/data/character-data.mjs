@@ -20,6 +20,14 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
           requiredPositiveInteger,
           initial: 15,
         }),
+        bonus: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 0,
+        }),
+        perkBonus: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 0,
+        }),
       }),
 
       fate: new fields.SchemaField({
@@ -28,8 +36,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
           initial: 2,
         }),
         recover: new fields.NumberField({
-          requiredPositiveInteger,
-          initial: 2,
+          requiredPositiveInteger
         }),
         countAutomatically: new fields.BooleanField({ initial: true })
       }),
@@ -158,5 +165,21 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
       description: new fields.HTMLField(),
       notes: new fields.HTMLField(),
     };
+  }
+
+  /* -------------------------------------------- */
+
+  /** @inheritdoc */
+  prepareDerivedData() {
+    // Automatically count fate point recovery if enabled
+    if (this.fate.countAutomatically) {
+      this.fate.recover = 2+this.attributes.luck;
+    }
+
+    // Count HP
+    this.hp.base = 15 + (this.attributes.endurance*3) + this.hp.bonus;
+    this.hp.max = this.hp.base + this.hp.perkBonus;
+
+    console.log(this)
   }
 }

@@ -21,6 +21,18 @@
         {{checked system.fate.countAutomatically}}
       />
     </div>
+
+    <div class="hp-bonus">
+      <label for="system.hp.bonus">{{localize
+          "WASTELANDERS.Actor.Character.Settings.HPBonus"
+        }}:</label>
+      <input
+        class="clear-input"
+        type="number"
+        name="system.hp.bonus"
+        value="{{system.hp.bonus}}"
+      />
+    </div>
   </div>
 
   <button type="submit"><i class="fa-solid fa-check"></i><label>{{localize
