@@ -66,13 +66,11 @@
           <div class="fate-points grid-2col">
             <h2>
               <label class="prop-label" for="system.fate.value">{{localize 'WASTELANDERS.Actor.Character.FatePoints.Value'}}:</label>
-              {{numberInput system.fate.value name="system.fate.value" class="clear-input" step=1 min=0 max=50 disabled=system.fate.countAutomatically}}
-              {{{log system.fate.countAutomatically}}}
-              {{#if system.fate.countAutomatically}}test{{/if}}
+              {{numberInput system.fate.value name="system.fate.value" class="clear-input" step=1 min=0 max=50}}
             </h2>
             <h2>
               <label class="prop-label" for="system.fate.recover">{{localize 'WASTELANDERS.Actor.Character.FatePoints.Recover'}}:</label>
-              {{numberInput system.fate.recover name="system.fate.recover" class="clear-input" step=1 min=0 max=50}}
+              {{numberInput system.fate.recover name="system.fate.recover" class="clear-input" step=1 min=0 max=50 disabled=system.fate.countAutomatically}}
             </h2>
           </div>
           <div class="prop">
