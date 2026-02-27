@@ -1,0 +1,29 @@
+<form class="settings">
+  <div class="general-settings">
+    <div class="double-moderate-consequences flex-centration">
+      <label for="system.consequences.doubleModerate">{{localize
+          "WASTELANDERS.Actor.Character.Settings.DoubleModerate"
+        }}:</label>
+      <input
+        type="checkbox"
+        name="system.consequences.doubleModerate"
+        {{checked system.consequences.doubleModerate}}
+      />
+    </div>
+
+    <div class="count-fate-automatically flex-centration">
+      <label for="system.fate.countAutomatically">{{localize
+          "WASTELANDERS.Actor.Character.Settings.CountFateAutomatically"
+        }}:</label>
+      <input
+        type="checkbox"
+        name="system.fate.countAutomatically"
+        {{checked system.fate.countAutomatically}}
+      />
+    </div>
+  </div>
+
+  <button type="submit"><i class="fa-solid fa-check"></i><label>{{localize
+        "WASTELANDERS.Settings.Submit"
+      }}</label></button>
+</form>

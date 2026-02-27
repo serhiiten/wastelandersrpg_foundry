@@ -34,6 +34,7 @@ export const WASTELANDERS = {
     2: "WASTELANDERS.Roll.DoubleAdvantage",
     "-2": "WASTELANDERS.Roll.DoubleDisadvantage",
   },
+  settingsSupported: ["character", "caravan"],
   expOptions: [
     {
       name: "WASTELANDERS.Actor.Character.Experience.NewPerk",

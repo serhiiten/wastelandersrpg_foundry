@@ -31,12 +31,15 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
           requiredPositiveInteger,
           initial: 2,
         }),
+        countAutomatically: new fields.BooleanField({ initial: true })
       }),
 
       consequences: new fields.SchemaField({
         light: new fields.StringField(),
         moderate: new fields.StringField(),
+        secondModerate: new fields.StringField(),
         heavy: new fields.StringField(),
+        doubleModerate: new fields.BooleanField({ initial: false })
       }),
 
       attributes: new fields.SchemaField({

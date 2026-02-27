@@ -1,4 +1,5 @@
 import WastelandersRollerApp from "../applications/roll.mjs";
+import WastelandersSheetSettings from "../applications/sheet-settings.mjs";
 
 /**
  * Extend the basic ActorSheet
@@ -47,6 +48,30 @@ export class WastelandersActorSheet extends foundry.appv1.sheets.ActorSheet {
     context.config = CONFIG.WASTELANDERS;
 
     return context;
+  }
+
+  _getHeaderButtons() {
+    // Get the default buttons from the parent class
+    const buttons = super._getHeaderButtons();
+
+    if (!this.actor.testUserPermission(game.user, "OBSERVER")) return buttons;
+    if (!CONFIG.WASTELANDERS.settingsSupported.includes(this.actor.type))
+      return buttons;
+
+    // Add a custom button for settings
+    buttons.unshift({
+      label: game.i18n.localize("WASTELANDERS.Settings.HeaderButton"),
+      class: "wastelanders-sheet-settings",
+      icon: "fa-solid fa-screwdriver-wrench",
+      onclick: () => {
+        const settingsForm = new WastelandersSheetSettings(this.actor, {
+          system: this.actor.system,
+        });
+        return settingsForm.render(true);
+      },
+    });
+
+    return buttons;
   }
 
   /** @override */
