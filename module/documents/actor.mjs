@@ -112,16 +112,32 @@ export class WastelandersActor extends Actor {
     }
   }
 
+  /** @inheritdoc */
+  _preUpdate(changed, options, user) {
+    super._preUpdate(changed, options, user);
+
+    if (game.user.id != user.id) return;
+
+    if (this.type === "character") {
+      // Save automatically counted fate points recover before disabling
+      if (changed.system.fate?.countAutomatically === false) {
+        changed.system.fate = changed.system.fate || {};
+        changed.system.fate.recover = this.system.fate.recover;
+      }
+    }
+  }
+
+  /** @inheritdoc */
   _onUpdate(changed, options, userId) {
     super._onUpdate(changed, options, userId);
 
     if (game.user.id != userId) return;
 
-    if (this.type == "counter") {
+    if (this.type === "counter") {
       if (changed?.system?.progress?.max !== undefined) {
         this._counterDescriptions();
       }
-    } else if (this.type == "character") {
+    } else if (this.type === "character") {
       if (
         changed?.system?.attributes !== undefined ||
         changed?.system?.skills !== undefined
