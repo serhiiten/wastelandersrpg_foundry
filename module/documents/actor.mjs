@@ -70,8 +70,14 @@ export class WastelandersActor extends Actor {
     if (game.user.id != userId) return;
 
     for (const dataItem of data) {
-      if (dataItem.type != "perk") return;
-      this._perkRequirements(dataItem);
+      const item = this.items.get(dataItem._id);
+
+      if (item.type === "perk") {
+        this._perkRequirements(item);
+        this._updateActorHP();
+      } else if (item.type === "feat") {
+        this._updateActorHP();
+      }
     }
   }
 
@@ -97,8 +103,12 @@ export class WastelandersActor extends Actor {
 
     for (const changeData of changes) {
       const item = this.items.get(changeData._id);
-      if (item.type != "perk") return;
-      this._perkRequirements(item);
+      if (item.type === "perk") {
+        this._perkRequirements(item);
+        this._updateActorHP();
+      } else if (item.type === "feat") {
+        this._updateActorHP();
+      }
     }
   }
 
@@ -213,5 +223,22 @@ export class WastelandersActor extends Actor {
     } else {
       await item.update({ "system.notMetRequirements": false });
     }
+  }
+
+  async _updateActorHP() {
+    const toCount = [];
+
+    for (let i of this.items) {
+      if (i.type === "feat" || i.type === "perk") {
+        toCount.push(i);
+      }
+    }
+
+    const totalHpBonus = toCount.reduce((sum, item) => {
+      const bonus = item?.system?.hpBonus || 0;
+      return sum + bonus;
+    }, 0);
+
+    await this.update({ "system.hp.perkBonus": totalHpBonus })
   }
 }

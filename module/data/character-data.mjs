@@ -177,9 +177,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
     }
 
     // Count HP
-    this.hp.base = 15 + (this.attributes.endurance*3) + this.hp.bonus;
-    this.hp.max = this.hp.base + this.hp.perkBonus;
-
-    console.log(this)
+    this.hp.base = 15 + (this.attributes.endurance*3);
+    this.hp.max = this.hp.base + this.hp.bonus + this.hp.perkBonus;
   }
 }
