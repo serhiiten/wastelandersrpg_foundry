@@ -31,18 +31,6 @@
         "Concept": "Концепція",
         "Problem": "Проблема",
         "Goal": "Ціль",
-        "Archetypes": {
-          "None": "Архетип",
-          "Brute": "Здоровило",
-          "Marksman": "Стрілець",
-          "Trader": "Торгаш",
-          "Charmer": "Спокусник",
-          "Thief": "Злодюга",
-          "Technician": "Технік",
-          "MadScientist": "(Боже)вільний вчений ",
-          "Ranger": "Рейнджер",
-          "Psionic": "Псионік"
-        },
         "FatePoints": {
           "Value": "Поточні ЖД",
           "Recover": "Відновлення ЖД"
@@ -200,7 +188,11 @@
     },
     "Settings": {
       "HeaderButton": "Налаштування",
-      "Submit": "Підтвердити"
+      "Submit": "Підтвердити",
+      "CustomArchetypes": {
+        "Name": "Список архетипів",
+        "Hint": "Введіть свій список архетипів"
+      }
     },
     "Description": "Опис",
     "Notes": "Нотатки"

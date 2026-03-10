@@ -19,6 +19,20 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
         },
       );
 
+    // Build the archetypes list dynamically from settings
+    const archetypesStr = game.settings.get("wastelanders", "archetypesList");
+    const archetypesObj = {};
+    if (archetypesStr) {
+      const archetypesArray = archetypesStr.split(",").map(s => s.trim()).filter(s => s.length > 0);
+      for (let arch of archetypesArray) {
+        // Create a machine-readable key (e.g., "божевільний_вчений")
+        const key = arch.toLowerCase().replace(/\s+/g, '_');
+        archetypesObj[key] = arch; // Store the raw text as the display value
+      }
+    }
+    // Pass it to the template
+    context.archetypes = archetypesObj;
+
     // Add the actor's data to context.data for easier access, as well as flags.
     this._prepareItems(context);
 

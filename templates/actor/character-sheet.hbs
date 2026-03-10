@@ -21,7 +21,7 @@
         <h1><input class="character-name clear-input" name="name" type="text" value="{{actor.name}}" placeholder="{{localize 'WASTELANDERS.Actor.Name'}}"/></h1>
         <h3 class="prop">
           <select name="system.archetype" class="clear-select">
-            {{selectOptions config.archetypes selected=system.archetype localize=true}}
+            {{selectOptions archetypes selected=system.archetype}}
           </select>
           <span>|</span>
           <input class="clear-input race" name="system.race" type="text" value="{{system.race}}" placeholder="{{localize 'WASTELANDERS.Actor.Character.Race'}}"/>

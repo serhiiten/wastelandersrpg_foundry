@@ -27,7 +27,6 @@
       "Items": "Предмети",
       "Notes": "Нотатки",
       "Character": {
-        "Archetype": "Архетип",
         "Race": "Вид",
         "Concept": "Концепція",
         "Problem": "Проблема",
@@ -39,6 +38,7 @@
         "Consequence": {
           "Light": "Легкий наслідок",
           "Moderate": "Середній наслідок",
+          "SecondModerate": "Другий середній наслідок",
           "Heavy": "Тяжкий наслідок"
         },
         "Attributes": "Атрибути",
@@ -113,7 +113,8 @@
         "Settings": {
           "Title": "Налаштування персонажа",
           "DoubleModerate": "Друга комірка середніх наслідків",
-          "CountFateAutomatically": "Рахувати відновлення ЖД автоматично"
+          "CountFateAutomatically": "Рахувати відновлення ЖД автоматично",
+          "HPBonus": "Бонус ОЗ"
         }
       },
       "Caravan": {
@@ -187,7 +188,11 @@
     },
     "Settings": {
       "HeaderButton": "Налаштування",
-      "Submit": "Підтвердити"
+      "Submit": "Підтвердити",
+      "CustomArchetypes": {
+        "Name": "Список архетипів",
+        "Hint": "Введіть свій список архетипів"
+      }
     },
     "Description": "Опис",
     "Notes": "Нотатки"

@@ -7,6 +7,7 @@ import { WastelandersCaravanSheet } from "./sheets/caravan-sheet.mjs";
 import { WastelandersEnemySheet } from "./sheets/enemy-sheet.mjs";
 import { WastelandersCounterSheet } from "./sheets/counter-sheet.mjs";
 import { WastelandersItemSheet } from "./sheets/item-sheet.mjs";
+import { registerSystemSettings } from "./helpers/settings.mjs";
 
 // Import modules
 import {
@@ -24,6 +25,9 @@ Hooks.once("init", async function () {
   };
 
   CONFIG.WASTELANDERS = WASTELANDERS;
+
+  // Settings
+  registerSystemSettings();
 
   // Define custom Entity classes and Data Models
   CONFIG.Actor.documentClass = WastelandersActor;
