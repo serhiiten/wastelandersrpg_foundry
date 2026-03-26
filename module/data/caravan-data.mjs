@@ -22,17 +22,17 @@ export default class CaravanData extends foundry.abstract.TypeDataModel {
       }),
       armor: new fields.NumberField({
         requiredPositiveInteger,
-        initial: 0,
+        initial: 1,
       }),
 
       hp: new fields.SchemaField({
         value: new fields.NumberField({
           requiredPositiveInteger,
-          initial: 0,
+          initial: 25,
         }),
         max: new fields.NumberField({
           requiredPositiveInteger,
-          initial: 0,
+          initial: 25,
         }),
       }),
 
