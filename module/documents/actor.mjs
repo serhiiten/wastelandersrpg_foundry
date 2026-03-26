@@ -117,8 +117,22 @@ export class WastelandersActor extends Actor {
   }
 
   /** @inheritdoc */
-  _onDeleteDescendantDocuments(parent, collection, documents, ids,  options, userId) {
-    super._onDeleteDescendantDocuments(parent, collection, documents, ids,  options, userId);
+  _onDeleteDescendantDocuments(
+    parent,
+    collection,
+    documents,
+    ids,
+    options,
+    userId,
+  ) {
+    super._onDeleteDescendantDocuments(
+      parent,
+      collection,
+      documents,
+      ids,
+      options,
+      userId,
+    );
 
     this._updateActorHP();
     this._updateActorArmor();

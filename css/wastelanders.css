@@ -484,8 +484,8 @@ select.clear-select {
   text-align: center;
 }
 .wastelanders .items-block .items-list .item .item-controls .item-control.item-equip {
-  color: grey;
   transition: color 0.2s ease-in-out;
+  color: grey;
 }
 .wastelanders .items-block .items-list .item .item-controls .item-control.item-equip.active {
   color: black;
