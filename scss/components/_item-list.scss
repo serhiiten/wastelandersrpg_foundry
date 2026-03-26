@@ -83,6 +83,13 @@
             font-size: 12px;
             text-align: center;
           }
+          .item-control.item-equip {
+            color: grey;
+            transition: color 0.2s ease-in-out;
+          }
+          .item-control.item-equip.active {
+            color: black;
+          }
         }
       }
 

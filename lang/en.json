@@ -170,7 +170,9 @@
       "Protection": "Броня",
       "Heavy": "Важкий",
       "Quantity": "Кількість",
-      "Addiction": "Шанс залежності"
+      "Addiction": "Шанс залежності",
+      "Equip": "Одягнути",
+      "Equipped": "Одягнено"
     },
     "Roll": {
       "Title": "Кидок",

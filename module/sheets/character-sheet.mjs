@@ -91,17 +91,8 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
       .find(".multiple-activation > .value-step")
       .click(this._onDotChange.bind(this));
 
-    // Perk activation
-    // html.find(".perk-activation").change(event => {
-    //   const element = event.currentTarget;
-    //   const isActivated = element.checked;
-    //   if (!isActivated) return
-    //
-    //   const itemId = element.closest(".item").dataset.itemId;
-    //   const item = this.actor.items.get(itemId);
-    //
-    //   this.actor.perkRequirements(item);
-    // });
+    // Equip armor
+    html.find(".item-equip").click(this._onEquipArmor.bind(this));
   }
 
   /* -------------------------------------------- */
@@ -148,5 +139,17 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     const array = this.actor.system.exp.options;
     array[arrayIndex].active = value;
     await this.actor.update({ "system.exp.options": array });
+  }
+
+  async _onEquipArmor(event) {
+    event.preventDefault();
+    const button = event.currentTarget;
+    const itemId = button.closest(".item").dataset.itemId;
+    const item = this.actor.items.get(itemId);
+
+    if (!item) return;
+
+    const isEquipped = item.system.equipped;
+    await item.update({ "system.equipped": !isEquipped });
   }
 }

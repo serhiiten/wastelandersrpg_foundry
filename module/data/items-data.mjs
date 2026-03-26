@@ -115,6 +115,7 @@ export class ArmorData extends foundry.abstract.TypeDataModel {
         requiredPositiveInteger,
         initial: 0,
       }),
+      equipped: new fields.BooleanField({ initial: false }),
     };
   }
 }

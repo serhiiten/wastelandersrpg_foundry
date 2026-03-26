@@ -77,6 +77,8 @@ export class WastelandersActor extends Actor {
         this._updateActorHP();
       } else if (item.type === "feat") {
         this._updateActorHP();
+      } else if (item.type === "armor") {
+        this._updateActorArmor();
       }
     }
   }
@@ -108,6 +110,8 @@ export class WastelandersActor extends Actor {
         this._updateActorHP();
       } else if (item.type === "feat") {
         this._updateActorHP();
+      } else if (item.type === "armor") {
+        this._updateActorArmor();
       }
     }
   }
@@ -117,6 +121,7 @@ export class WastelandersActor extends Actor {
     super._onDeleteDescendantDocuments(parent, collection, documents, ids,  options, userId);
 
     this._updateActorHP();
+    this._updateActorArmor();
   }
 
   /** @inheritdoc */
@@ -249,7 +254,6 @@ export class WastelandersActor extends Actor {
   }
 
   async _updateActorHP() {
-    console.log("trigger")
     const toCount = [];
 
     for (let i of this.items) {
@@ -264,5 +268,22 @@ export class WastelandersActor extends Actor {
     }, 0);
 
     await this.update({ "system.hp.perkBonus": totalHpBonus });
+  }
+
+  async _updateActorArmor() {
+    const toCount = [];
+
+    for (let i of this.items) {
+      if (i.type === "armor" && i.system.equipped) {
+        toCount.push(i);
+      }
+    }
+
+    const totalArmorBonus = toCount.reduce((sum, item) => {
+      const bonus = item?.system?.protection || 0;
+      return sum + bonus;
+    }, 0);
+
+    await this.update({ "system.armor.itemBonus": totalArmorBonus });
   }
 }

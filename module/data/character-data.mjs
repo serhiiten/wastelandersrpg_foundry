@@ -46,6 +46,10 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
           requiredPositiveInteger,
           initial: 0,
         }),
+        itemBonus: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 0,
+        }),
       }),
 
       consequences: new fields.SchemaField({
@@ -188,6 +192,6 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
     this.hp.max = this.hp.base + this.hp.bonus + this.hp.perkBonus;
 
     // Count Armor
-    this.armor.value = this.armor.bonus;
+    this.armor.value = this.armor.bonus + this.armor.itemBonus;
   }
 }
