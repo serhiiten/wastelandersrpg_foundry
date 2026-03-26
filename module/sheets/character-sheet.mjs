@@ -23,10 +23,13 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     const archetypesStr = game.settings.get("wastelanders", "archetypesList");
     const archetypesObj = {};
     if (archetypesStr) {
-      const archetypesArray = archetypesStr.split(",").map(s => s.trim()).filter(s => s.length > 0);
+      const archetypesArray = archetypesStr
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       for (let arch of archetypesArray) {
         // Create a machine-readable key (e.g., "божевільний_вчений")
-        const key = arch.toLowerCase().replace(/\s+/g, '_');
+        const key = arch.toLowerCase().replace(/\s+/g, "_");
         archetypesObj[key] = arch; // Store the raw text as the display value
       }
     }

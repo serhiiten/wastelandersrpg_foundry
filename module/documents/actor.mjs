@@ -113,6 +113,13 @@ export class WastelandersActor extends Actor {
   }
 
   /** @inheritdoc */
+  _onDeleteDescendantDocuments(parent, collection, documents, ids,  options, userId) {
+    super._onDeleteDescendantDocuments(parent, collection, documents, ids,  options, userId);
+
+    this._updateActorHP();
+  }
+
+  /** @inheritdoc */
   _preUpdate(changed, options, user) {
     super._preUpdate(changed, options, user);
 
@@ -191,7 +198,7 @@ export class WastelandersActor extends Actor {
       const requirement = itemData.attributes[key];
       const actorValue = actorData.attributes[key];
 
-      if (!requirement || requirement === 0) continue;
+      if (requirement == null) continue;
 
       if (!actorValue || actorValue < requirement) {
         failed.result = true;
@@ -207,7 +214,7 @@ export class WastelandersActor extends Actor {
         const requirement = itemData.skills[key];
         const actorValue = actorData.skills[key];
 
-        if (!requirement || requirement === 0) continue;
+        if (!requirement) continue;
 
         if (!actorValue || actorValue < requirement) {
           failed.result = true;
@@ -242,6 +249,7 @@ export class WastelandersActor extends Actor {
   }
 
   async _updateActorHP() {
+    console.log("trigger")
     const toCount = [];
 
     for (let i of this.items) {
@@ -255,6 +263,6 @@ export class WastelandersActor extends Actor {
       return sum + bonus;
     }, 0);
 
-    await this.update({ "system.hp.perkBonus": totalHpBonus })
+    await this.update({ "system.hp.perkBonus": totalHpBonus });
   }
 }

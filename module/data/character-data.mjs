@@ -36,9 +36,9 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
           initial: 2,
         }),
         recover: new fields.NumberField({
-          requiredPositiveInteger
+          requiredPositiveInteger,
         }),
-        countAutomatically: new fields.BooleanField({ initial: true })
+        countAutomatically: new fields.BooleanField({ initial: true }),
       }),
 
       armor: new fields.SchemaField({
@@ -53,7 +53,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         moderate: new fields.StringField(),
         secondModerate: new fields.StringField(),
         heavy: new fields.StringField(),
-        doubleModerate: new fields.BooleanField({ initial: false })
+        doubleModerate: new fields.BooleanField({ initial: false }),
       }),
 
       attributes: new fields.SchemaField({
@@ -180,11 +180,11 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
   prepareDerivedData() {
     // Automatically count fate point recovery if enabled
     if (this.fate.countAutomatically) {
-      this.fate.recover = 2+this.attributes.luck;
+      this.fate.recover = 2 + this.attributes.luck;
     }
 
     // Count HP
-    this.hp.base = 15 + (this.attributes.endurance*3);
+    this.hp.base = 15 + this.attributes.endurance * 3;
     this.hp.max = this.hp.base + this.hp.bonus + this.hp.perkBonus;
 
     // Count Armor

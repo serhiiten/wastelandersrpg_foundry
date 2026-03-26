@@ -35,7 +35,9 @@ export default class WastelandersSheetSettings extends FormApplication {
   get title() {
     const key = this.object.type;
     const localizeKey = key.charAt(0).toUpperCase() + key.slice(1);
-    const title = game.i18n.localize("WASTELANDERS.Actor." + localizeKey + ".Settings.Title");
+    const title = game.i18n.localize(
+      "WASTELANDERS.Actor." + localizeKey + ".Settings.Title",
+    );
     return title;
   }
 
@@ -49,6 +51,6 @@ export default class WastelandersSheetSettings extends FormApplication {
     const updateData = foundry.utils.expandObject(formData);
     await this.object.update(updateData);
 
-    console.log(this.object)
+    console.log(this.object);
   }
 }
