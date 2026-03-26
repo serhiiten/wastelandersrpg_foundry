@@ -41,6 +41,13 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
         countAutomatically: new fields.BooleanField({ initial: true })
       }),
 
+      armor: new fields.SchemaField({
+        bonus: new fields.NumberField({
+          requiredPositiveInteger,
+          initial: 0,
+        }),
+      }),
+
       consequences: new fields.SchemaField({
         light: new fields.StringField(),
         moderate: new fields.StringField(),
@@ -179,5 +186,8 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
     // Count HP
     this.hp.base = 15 + (this.attributes.endurance*3);
     this.hp.max = this.hp.base + this.hp.bonus + this.hp.perkBonus;
+
+    // Count Armor
+    this.armor.value = this.armor.bonus;
   }
 }

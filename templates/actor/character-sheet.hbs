@@ -73,6 +73,14 @@
               {{numberInput system.fate.recover name="system.fate.recover" class="clear-input" step=1 min=0 max=50 disabled=system.fate.countAutomatically}}
             </h2>
           </div>
+
+          <div class="armor prop">
+            <h2>
+              <label class="prop-label" for="system.armor.value">{{localize 'WASTELANDERS.Actor.Character.Armor'}}:</label>
+              <span name="system.armor.value">{{system.armor.value}}</span>
+            </h2>
+          </div>
+
           <div class="prop">
             <label class="prop-label" for="system.consequences.light">{{localize 'WASTELANDERS.Actor.Character.Consequence.Light'}}:</label>
             <input class="clear-input all-width" name="system.consequences.light" type="text" value="{{system.consequences.light}}"/>
