@@ -39,7 +39,7 @@
     }}:</label>
   <span>{{heavyItems}}</span>
   {{#if heavyTip}}
-    <p class="heavy-tip">({{heavyTip}})</p>
+    <p class="heavy-tip {{#iff heavyItems ">" 2}}heavy-red{{/iff}}">({{heavyTip}})</p>
   {{/if}}
 </h2>
 

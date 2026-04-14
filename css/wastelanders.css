@@ -635,6 +635,9 @@ select.clear-select {
   font-size: small;
   font-family: "Scada", sans-serif;
 }
+.wastelanders.actor .character .inventory .heavy-tip.heavy-red {
+  color: red;
+}
 .wastelanders.actor .character .notes .experience {
   font-size: large;
   font-family: "Overseer", sans-serif;
