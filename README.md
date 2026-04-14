@@ -12,12 +12,12 @@
 
 1. Усередині екрану "Configuration and Setup" лаучера натисніть "Systems".
 2. Натисніть "Install System".
-3. В полі "Manifest URL" вставте наступне посилання: https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/master/system.json або знайдіть цю систему в пошуку за назвою ???
+3. В полі "Manifest URL" вставте наступне посилання: https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/main/system.json або знайдіть цю систему в пошуку за назвою ???
 4. Натисніть 'Install' і дочекайтеся завершення встановлення.
 
 Тепер ви можете створити світ з цією системою і використовувати аркуші персонажів та компендіуми для неї у Foundry VTT!
 
-[Foundry Shield]: https://img.shields.io/badge/Foundry-13-orange?style=flat-square
+[Foundry Shield]: https://img.shields.io/badge/Foundry-14-orange?style=flat-square
 [Foundry URL]: https://foundryvtt.com
 
 [Version]: https://img.shields.io/badge/Version-0.4.1-informational?style=flat-square

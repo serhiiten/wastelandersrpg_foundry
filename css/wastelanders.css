@@ -498,7 +498,6 @@ select.clear-select {
 }
 .wastelanders .items-block .items-list .item.heavy .item-name {
   font-weight: bold;
-  text-shadow: 1px 0 0 currentColor;
 }
 .wastelanders .items-block .items-list .item.not-met-requirements {
   color: red;
