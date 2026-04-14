@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Handjet:wght@100..900&family=Scada:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&family=Scada:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 @font-face {
   font-style: normal;
   font-weight: 400;
@@ -498,6 +498,7 @@ select.clear-select {
 }
 .wastelanders .items-block .items-list .item.heavy .item-name {
   font-weight: bold;
+  text-shadow: 1px 0 0 currentColor;
 }
 .wastelanders .items-block .items-list .item.not-met-requirements {
   color: red;
@@ -628,6 +629,11 @@ select.clear-select {
 .wastelanders.actor .character .general-container .prop .clear-input {
   flex: 1;
   border-bottom: 1px solid #b5b3a4;
+}
+.wastelanders.actor .character .inventory .heavy-tip {
+  font-weight: normal;
+  font-size: small;
+  font-family: "Scada", sans-serif;
 }
 .wastelanders.actor .character .notes .experience {
   font-size: large;

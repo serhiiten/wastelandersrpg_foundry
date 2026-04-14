@@ -38,6 +38,7 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
 
     // Add the actor's data to context.data for easier access, as well as flags.
     this._prepareItems(context);
+    this._countHeavyItems(context);
 
     return context;
   }
@@ -77,6 +78,30 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     context.armors = armors;
     context.tools = tools;
     context.drugs = drugs;
+  }
+
+  _countHeavyItems(context) {
+    context.heavyItems = 0;
+
+    for (let i of context.items) {
+      if (i.system.heavy) {
+        context.heavyItems++;
+      }
+    }
+
+    if (context.heavyItems > 2) {
+      context.heavyTip = game.i18n.localize(
+        "WASTELANDERS.Actor.Character.HeavyItemsTips.TooMuch",
+      );
+    } else if (context.heavyItems === 2) {
+      context.heavyTip = game.i18n.localize(
+        "WASTELANDERS.Actor.Character.HeavyItemsTips.Moderate",
+      );
+    } else if (context.heavyItems === 1) {
+      context.heavyTip = game.i18n.localize(
+        "WASTELANDERS.Actor.Character.HeavyItemsTips.Light",
+      );
+    }
   }
 
   /** @override */

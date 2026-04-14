@@ -57,6 +57,14 @@
       }
     }
 
+    .inventory {
+      .heavy-tip {
+        font-weight: normal;
+        font-size: small;
+        font-family: $font-primary;
+      }
+    }
+
     .notes {
       .experience {
         font-size: large;

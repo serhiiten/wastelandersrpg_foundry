@@ -33,6 +33,15 @@
     max=50
   }}
 </h2>
+<h2 class="grid-span-2">
+  <label class="prop-label" for="heavyItems">{{localize
+      "WASTELANDERS.Actor.Character.HeavyItems"
+    }}:</label>
+  <span>{{heavyItems}}</span>
+  {{#if heavyTip}}
+    <p class="heavy-tip">({{heavyTip}})</p>
+  {{/if}}
+</h2>
 
 <div>
   <div class="items-block">
