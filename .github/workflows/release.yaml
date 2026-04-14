@@ -1,0 +1,58 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "system.json"
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Build Version
+        run: echo "VERSION=$(jq -r '.version' system.json)" >> $GITHUB_ENV
+
+      - name: Update Download Link
+        run: |
+          jq '.download = "https://github.com/serhiiten/wastelandersrpg_foundry/releases/download/v${{ env.VERSION }}/foundry.zip"' system.json > tmp.json && mv tmp.json system.json
+
+      - name: Update Readme
+        run: |
+          PACKAGE="https://img.shields.io/badge/Version-${{ env.VERSION }}-informational?style=flat-square"
+          PACKAGE_LINK="https://github.com/serhiiten/wastelandersrpg_foundry/releases/tag/v${{ env.VERSION }}"
+
+      - name: Commit AutoBuild
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add README.md system.json
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto update files ${{ env.RELEASE_VERSION }}"
+            git push
+          fi
+
+      - name: Create Zip Archive
+        run: |
+          zip -r foundry.zip system.json template.json LICENSE.md README.md assets css fonts lang module packs templates
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          files: ./foundry.zip
