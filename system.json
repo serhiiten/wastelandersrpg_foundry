@@ -20,8 +20,12 @@
       "discord": "vlad_dracula"
     }
   ],
-  "esmodules": ["module/wastelanders.mjs"],
-  "styles": ["css/wastelanders.css"],
+  "esmodules": [
+    "module/wastelanders.mjs"
+  ],
+  "styles": [
+    "css/wastelanders.css"
+  ],
   "languages": [
     {
       "lang": "en",
