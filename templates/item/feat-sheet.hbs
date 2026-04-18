@@ -16,6 +16,17 @@
         />
       </h1>
       <div class="brief-info flexrow">
+        <div class="prop flex-centration">
+          <label class="prop-label" for="system.isSpecies">{{localize
+              "WASTELANDERS.Item.SpeciesFeat"
+            }}:</label>
+          <input
+            class="prop-input"
+            type="checkbox"
+            name="system.isSpecies"
+            {{checked system.isSpecies}}
+          />
+        </div>
         <div class="prop">
           <label class="prop-label" for="system.hpBonus">{{localize
               "WASTELANDERS.Actor.Character.Settings.HPBonus"

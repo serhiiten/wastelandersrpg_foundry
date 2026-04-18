@@ -14,7 +14,8 @@
       "upgrade",
       "cargo",
       "passenger",
-      "attack"
+      "attack",
+      "species"
     ]
   }
 }

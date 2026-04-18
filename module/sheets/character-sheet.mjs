@@ -45,7 +45,8 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
 
   _prepareItems(context) {
     // Initialize containers.
-    const feats = [];
+    const commonFeats = [];
+    const speciesFeats = [];
     const perks = [];
     const weapons = [];
     const armors = [];
@@ -57,7 +58,11 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
       i.img = i.img || DEFAULT_TOKEN;
       // Append to item.
       if (i.type === "feat") {
-        feats.push(i);
+        if (i.system.isSpecies) {
+          speciesFeats.push(i);
+        } else {
+          commonFeats.push(i);
+        }
       } else if (i.type === "perk") {
         perks.push(i);
       } else if (i.type === "weapon") {
@@ -72,7 +77,8 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     }
 
     // Assign and return
-    context.feats = feats;
+    context.commonFeats = commonFeats;
+    context.speciesFeats = speciesFeats;
     context.perks = perks;
     context.weapons = weapons;
     context.armors = armors;

@@ -82,6 +82,7 @@
           "Master": "Майстер (d10)"
         },
         "Feats": "Особливості",
+        "SpeciesFeats": "Видові особливості",
         "Perks": "Перки",
         "FailedPerkCheck": "Ви не відопвідаєте вимогам перку {perk} ({requirement}) його використання",
         "Supplies": "Припаси",
@@ -178,7 +179,8 @@
       "Quantity": "Кількість",
       "Addiction": "Шанс залежності",
       "Equip": "Одягнути",
-      "Equipped": "Одягнено"
+      "Equipped": "Одягнено",
+      "SpeciesFeat": "Видова особливість"
     },
     "Roll": {
       "Title": "Кидок",

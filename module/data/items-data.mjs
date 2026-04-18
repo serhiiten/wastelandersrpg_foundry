@@ -3,6 +3,7 @@ export class FeatData extends foundry.abstract.TypeDataModel {
     const fields = foundry.data.fields;
 
     return {
+      isSpecies: new fields.BooleanField({ initial: false }),
       hpBonus: new fields.NumberField({
         integer: true,
       }),
