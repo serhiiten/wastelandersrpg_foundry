@@ -31,6 +31,7 @@ export class WastelandersItemSheet extends foundry.appv1.sheets.ItemSheet {
   async getData() {
     // Retrieve base data structure.
     const context = await super.getData();
+    this.item._loadLinkedData();
 
     // Use a safe clone of the item data for further operations.
     const itemData = context.item;

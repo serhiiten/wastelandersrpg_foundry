@@ -70,6 +70,7 @@ export class WastelandersActor extends Actor {
     if (game.user.id != userId) return;
 
     for (const dataItem of data) {
+      // Handling HP bonuses
       const item = this.items.get(dataItem._id);
 
       if (item.type === "perk") {
@@ -80,7 +81,25 @@ export class WastelandersActor extends Actor {
       } else if (item.type === "armor") {
         this._updateActorArmor();
       }
+
+      // Handling species subitems
+      if (!CONFIG.WASTELANDERS.forLoad[this.type]) return;
+
+      const targetItem = CONFIG.WASTELANDERS.forLoad[this.type].container;
+        if (dataItem.type != targetItem) return;
+        const forLoad = CONFIG.WASTELANDERS.forLoad[this.type].types;
+
+        for (const i of this.items) {
+          if (i.type === targetItem && i._id != dataItem._id) {
+            const itemToDelete = this.items.get(i._id);
+            itemToDelete.delete();
+          }
+        }
+        this.update({ "system.species": dataItem._id });
+
+        this._preCreateContainer(dataItem, forLoad);
     }
+
   }
 
   // Hook for updating perks
@@ -265,6 +284,29 @@ export class WastelandersActor extends Actor {
     } else {
       await item.update({ "system.notMetRequirements": false });
     }
+  }
+
+  async _preCreateContainer(container, forLoad) {
+    const systemData = this.system;
+    const toCreate = [];
+
+    for (const array of forLoad) {
+      const idArr = container.system[array];
+      for (const itemData of idArr) {
+        const item = await fromUuid(itemData.uuid);
+        if (
+          !this.items.find((i) => i.name === item.name && i.type === item.type)
+        ) {
+          toCreate.push(item);
+        } else {
+          ui.notifications.warn(
+            game.i18n.localize("WASTELANDERS.Errors.Item.ExistsName"),
+          );
+        }
+      }
+    }
+
+    this.createEmbeddedDocuments("Item", toCreate);
   }
 
   async _updateActorHP() {

@@ -53,11 +53,17 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     const tools = [];
     const drugs = [];
 
+    const scpeciesId = this.actor.system.species;
+
     // Iterate through items, allocating to containers
     for (let i of context.items) {
       i.img = i.img || DEFAULT_TOKEN;
       // Append to item.
-      if (i.type === "feat") {
+      if (i.type === "species") {
+        if (i._id === scpeciesId) {
+          context.species = i;
+        }
+      } else if (i.type === "feat") {
         if (i.system.isSpecies) {
           speciesFeats.push(i);
         } else {

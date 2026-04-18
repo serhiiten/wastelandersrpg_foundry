@@ -4,6 +4,15 @@ export const WASTELANDERS = {
       feat: "feats"
     }
   },
+  linkedForeign: {
+    species: ["feats"],
+  },
+  forLoad: {
+    character: {
+      container: "species",
+      types: ["feats"],
+    },
+  },
   attributes: {
     strength: "WASTELANDERS.Actor.Character.Attribute.Strength",
     perception: "WASTELANDERS.Actor.Character.Attribute.Perception",

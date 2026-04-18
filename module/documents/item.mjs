@@ -87,4 +87,38 @@ export class WastelandersItem extends Item {
     container.push(link);
     await this.update({ [path]: container });
   }
+
+
+  // Handling check of linked items
+  async _loadLinkedData() {
+    if (!this.sheet.isEditable) return;
+    if (!CONFIG.WASTELANDERS.linkedForeign[this.type]) return;
+
+    for (const key of CONFIG.WASTELANDERS.linkedForeign[this.type]) {
+      const container = this.system[key];
+      const path = "system." + key;
+
+      for (const index in container) {
+        if (container[index].uuid) {
+          const data = await fromUuid(container[index].uuid);
+          if (data) {
+            container[index].name = data.name;
+          } else {
+            const localizeType = game.i18n.localize(
+              "TYPES.Item." + container[index].type,
+            );
+            ui.notifications.error(
+              game.i18n.format("WASTELANDERS.Errors.Item.NotExist", {
+                type: localizeType,
+                item: container[index].name,
+              }),
+            );
+            container.splice(index, 1);
+          }
+        }
+
+        await this.update({ [path]: container });
+      }
+    }
+  }
 }

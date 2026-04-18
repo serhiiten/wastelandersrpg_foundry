@@ -1,3 +1,5 @@
+import { WastelandersItem } from "../documents/item.mjs";
+
 export default class CharacterData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -6,7 +8,7 @@ export default class CharacterData extends foundry.abstract.TypeDataModel {
 
     return {
       archetype: new fields.StringField(),
-      race: new fields.StringField(),
+      species: new fields.ForeignDocumentField(WastelandersItem, { idOnly: true }),
       concept: new fields.StringField(),
       problem: new fields.StringField(),
       goal: new fields.StringField(),
