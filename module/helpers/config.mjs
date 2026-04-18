@@ -1,4 +1,9 @@
 export const WASTELANDERS = {
+  supportedLinks: {
+    species: {
+      feat: "feats"
+    }
+  },
   attributes: {
     strength: "WASTELANDERS.Actor.Character.Attribute.Strength",
     perception: "WASTELANDERS.Actor.Character.Attribute.Perception",

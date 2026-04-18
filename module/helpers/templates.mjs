@@ -12,5 +12,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/wastelanders/templates/actor/parts/upgrades.hbs",
     "systems/wastelanders/templates/actor/parts/cargo.hbs",
     "systems/wastelanders/templates/actor/parts/caravan-notes.hbs",
+
+    "systems/wastelanders/templates/item/parts/linked-item.hbs",
   ]);
 };

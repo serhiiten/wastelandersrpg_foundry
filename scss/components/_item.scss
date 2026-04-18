@@ -47,5 +47,13 @@
     .editor-block {
       flex: auto;
     }
+
+    .linked-items {
+      margin-bottom: 10px;
+
+      .link-block {
+        line-height: 1.5;
+      }
+    }
   }
 }

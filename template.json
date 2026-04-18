@@ -5,17 +5,17 @@
   },
   "Item": {
     "types": [
+      "species",
+      "feat",
+      "perk",
       "weapon",
       "armor",
       "tool",
       "drug",
-      "perk",
-      "feat",
       "upgrade",
       "cargo",
       "passenger",
-      "attack",
-      "species"
+      "attack"
     ]
   }
 }

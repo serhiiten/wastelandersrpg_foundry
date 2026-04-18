@@ -1,0 +1,58 @@
+<form class="{{cssClass}} {{item.type}}" autocomplete="off">
+  <header class="items-header">
+    <img
+      class="item-img"
+      src="{{item.img}}"
+      data-edit="img"
+      title="{{item.name}}"
+    />
+    <div class="header-fields">
+      <h1 class="item-name">
+        <input
+          name="name"
+          type="text"
+          value="{{item.name}}"
+          placeholder="{{localize 'WASTELANDERS.Item.Name'}}"
+        />
+      </h1>
+      <div class="brief-info flexrow">
+        <div class="prop">
+          <label class="prop-label" for="system.skills">{{localize
+              "WASTELANDERS.Item.Skills"
+            }}:</label>
+          {{numberInput system.skills name="system.skills" step=1}}
+        </div>
+        <div class="prop">
+          <label class="prop-label" for="system.perks">{{localize
+              "WASTELANDERS.Item.Perks"
+            }}:</label>
+          {{numberInput system.perks name="system.perks" step=1}}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {{! Sheet Body }}
+  <section class="sheet-body">
+    <hr />
+    {{editor
+      enrichedDescription
+      target="system.description"
+      rollData=rollData
+      button=true
+      engine="prosemirror"
+      editable=editable
+      collaborate=true
+    }}
+
+    <div class="linked-items">
+      <h3>{{localize 'WASTELANDERS.Actor.Character.SpeciesFeats'}}</h3>
+      <div class="link-block">
+        {{#each system.feats}}
+          {{> "systems/bitd/templates/item/parts/linked-item.hbs"}}
+        {{/each}}
+      </div>
+    </div>
+  </section>
+
+</form>

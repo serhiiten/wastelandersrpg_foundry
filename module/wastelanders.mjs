@@ -7,6 +7,7 @@ import { WastelandersCaravanSheet } from "./sheets/caravan-sheet.mjs";
 import { WastelandersEnemySheet } from "./sheets/enemy-sheet.mjs";
 import { WastelandersCounterSheet } from "./sheets/counter-sheet.mjs";
 import { WastelandersItemSheet } from "./sheets/item-sheet.mjs";
+import { WastelandersSpeciesSheet } from "./sheets/species-sheet.mjs";
 import { registerSystemSettings } from "./helpers/settings.mjs";
 
 // Import modules
@@ -40,6 +41,7 @@ Hooks.once("init", async function () {
 
   CONFIG.Item.documentClass = WastelandersItem;
   CONFIG.Item.dataModels = {
+    species: models.SpeciesData,
     feat: models.FeatData,
     perk: models.PerkData,
     weapon: models.WeaponData,
@@ -102,6 +104,14 @@ Hooks.once("init", async function () {
     "wastelanders",
     WastelandersItemSheet,
     { makeDefault: true },
+  );
+  foundry.documents.collections.Items.registerSheet(
+    "wastelanders",
+    WastelandersSpeciesSheet,
+    {
+      types: ["species"],
+      makeDefault: true
+    },
   );
 
   registerHandlebarsHelpers();
