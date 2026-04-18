@@ -37,6 +37,7 @@ export class WastelandersSpeciesSheet extends WastelandersItemSheet {
     const block = button.closest(".linked-items");
     const key = block.dataset.array;
     const path = "system." + key;
+    console.log(this.item.system[key])
     const newArray = this.item.system[key].filter(
       (link) => link.id !== targetId,
     );

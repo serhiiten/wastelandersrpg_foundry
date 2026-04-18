@@ -52,8 +52,6 @@ export class WastelandersItem extends Item {
     }
 
     const container = this.system[key];
-    console.log(this)
-    console.log(container)
     const idExist = container.some(
       (existingItem) => existingItem.id === item.id,
     );
@@ -63,10 +61,18 @@ export class WastelandersItem extends Item {
 
     if (idExist) {
       return ui.notifications.error(
-        game.i18n.localize("BITD.Errors.Item.ExistsId"),
+        game.i18n.localize("WASTELANDERS.Errors.Item.ExistsId"),
       );
     } else if (nameExist) {
-      ui.notifications.warn(game.i18n.localize("BITD.Errors.Item.ExistsName"));
+      ui.notifications.warn(game.i18n.localize("WASTELANDERS.Errors.Item.ExistsName"));
+    }
+
+    // Additional check for species feats
+    console.log(this.type, item.type, item.system.isSpecies)
+    if (this.type === "species" && item.type === "feat" && !item.system.isSpecies) {
+      return ui.notifications.error(
+        game.i18n.localize("WASTELANDERS.Errors.Item.NotSpeciesFeat"),
+      );
     }
 
     const path = "system." + key;
@@ -80,6 +86,5 @@ export class WastelandersItem extends Item {
     };
     container.push(link);
     await this.update({ [path]: container });
-    console.log(this)
   }
 }
