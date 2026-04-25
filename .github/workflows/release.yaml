@@ -28,6 +28,8 @@ jobs:
         run: |
           PACKAGE="https://img.shields.io/badge/Version-${{ env.VERSION }}-informational?style=flat-square"
           PACKAGE_LINK="https://github.com/serhiiten/wastelandersrpg_foundry/releases/tag/v${{ env.VERSION }}"
+          sed -i "s|^\[Version\]:.*|[Version]: ${PACKAGE}|" README.md
+          sed -i "s|^\[Version URL\]:.*|[Version URL]: ${PACKAGE_LINK}|" README.md
 
       - name: Commit AutoBuild
         run: |
