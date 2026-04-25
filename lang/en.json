@@ -86,6 +86,7 @@
         "Feats": "Особливості",
         "SpeciesFeats": "Видові особливості",
         "Perks": "Перки",
+        "PerksNumber": "На старті гри обери {number} перки.",
         "FailedPerkCheck": "Ви не відопвідаєте вимогам перку {perk} ({requirement}) його використання",
         "Supplies": "Припаси",
         "Caps": "Кришки",
