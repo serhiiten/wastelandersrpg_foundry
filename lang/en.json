@@ -28,7 +28,7 @@
       "Items": "Предмети",
       "Notes": "Нотатки",
       "Character": {
-        "Race": "Вид",
+        "ChooseSpecies": "Обери вид",
         "Concept": "Концепція",
         "Problem": "Проблема",
         "Goal": "Ціль",
