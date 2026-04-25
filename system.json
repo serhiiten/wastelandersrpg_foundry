@@ -40,6 +40,39 @@
   ],
   "packs": [
     {
+      "label": "Види",
+      "type": "Item",
+      "name": "species",
+      "path": "packs/species",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "label": "Особливості",
+      "type": "Item",
+      "name": "feats",
+      "path": "packs/feats",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "label": "Перки",
+      "type": "Item",
+      "name": "perks",
+      "path": "packs/perks",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
       "label": "Зброя",
       "type": "Item",
       "name": "weapons",
@@ -66,28 +99,6 @@
       "type": "Item",
       "name": "tools",
       "path": "packs/tools",
-      "system": "wastelanders",
-      "ownership": {
-        "PLAYER": "OBSERVER",
-        "ASSISTANT": "OWNER"
-      }
-    },
-    {
-      "label": "Перки",
-      "type": "Item",
-      "name": "perks",
-      "path": "packs/perks",
-      "system": "wastelanders",
-      "ownership": {
-        "PLAYER": "OBSERVER",
-        "ASSISTANT": "OWNER"
-      }
-    },
-    {
-      "label": "Особливості",
-      "type": "Item",
-      "name": "feats",
-      "path": "packs/feats",
       "system": "wastelanders",
       "ownership": {
         "PLAYER": "OBSERVER",

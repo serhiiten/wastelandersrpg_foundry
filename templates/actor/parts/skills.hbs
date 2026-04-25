@@ -1,5 +1,6 @@
 <div class="skills-block">
   <h2>{{localize "WASTELANDERS.Actor.Character.Skills"}}</h2>
+  <p>{{localize "WASTELANDERS.Actor.Character.SkillsNumber" number=species.system.skills}}</p>
   {{#each system.skills as |skill key|}}
     <div class="skill">
       <label

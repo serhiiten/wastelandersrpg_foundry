@@ -24,7 +24,9 @@
             {{selectOptions archetypes selected=system.archetype}}
           </select>
           <span>|</span>
-          <span class="species">{{species.name}}</span>
+          <select name="speciesList" class="clear-select">
+            {{selectOptions @root.speciesList blank="Обери вид"}}--}}
+          </select>
         </h3>
       </div>
 

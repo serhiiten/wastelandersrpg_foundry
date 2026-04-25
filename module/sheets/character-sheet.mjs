@@ -36,10 +36,14 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     // Pass it to the template
     context.archetypes = archetypesObj;
 
+    // Build the species list dynamically from compendiums
+    context.speciesList = await this._prepareSpecies(context);
+
     // Add the actor's data to context.data for easier access, as well as flags.
     this._prepareItems(context);
     this._countHeavyItems(context);
 
+    console.log(context)
     return context;
   }
 
@@ -90,6 +94,21 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     context.armors = armors;
     context.tools = tools;
     context.drugs = drugs;
+  }
+
+  async _prepareSpecies(context) {
+    const speciesList = {};
+
+    for (const pack of game.packs) {
+      const index = await pack.getIndex({ fields: ["type"] });
+      const speciesInPack = index.filter(item => item.type === "species");
+
+      for (const item of speciesInPack) {
+        speciesList[item.uuid] = item.name;
+      }
+    }
+
+    return speciesList;
   }
 
   _countHeavyItems(context) {
