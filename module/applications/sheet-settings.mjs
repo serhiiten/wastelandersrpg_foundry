@@ -50,7 +50,5 @@ export default class WastelandersSheetSettings extends FormApplication {
   async _updateObject(event, formData) {
     const updateData = foundry.utils.expandObject(formData);
     await this.object.update(updateData);
-
-    console.log(this.object);
   }
 }

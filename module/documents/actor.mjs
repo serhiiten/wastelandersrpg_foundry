@@ -86,18 +86,18 @@ export class WastelandersActor extends Actor {
       if (!CONFIG.WASTELANDERS.forLoad[this.type]) return;
 
       const targetItem = CONFIG.WASTELANDERS.forLoad[this.type].container;
-        if (dataItem.type != targetItem) return;
-        const forLoad = CONFIG.WASTELANDERS.forLoad[this.type].types;
+      if (dataItem.type != targetItem) return;
+      const forLoad = CONFIG.WASTELANDERS.forLoad[this.type].types;
 
-        for (const i of this.items) {
-          if (i.type === targetItem && i._id != dataItem._id) {
-            const itemToDelete = this.items.get(i._id);
-            itemToDelete.delete();
-          }
+      for (const i of this.items) {
+        if (i.type === targetItem && i._id != dataItem._id) {
+          const itemToDelete = this.items.get(i._id);
+          itemToDelete.delete();
         }
-        this.update({ "system.species": dataItem._id });
+      }
+      this.update({ "system.species": dataItem._id });
 
-        this._preCreateContainer(dataItem, forLoad);
+      this._preCreateContainer(dataItem, forLoad);
     }
 
   }

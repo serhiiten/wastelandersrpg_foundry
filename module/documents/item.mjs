@@ -68,7 +68,6 @@ export class WastelandersItem extends Item {
     }
 
     // Additional check for species feats
-    console.log(this.type, item.type, item.system.isSpecies)
     if (this.type === "species" && item.type === "feat" && !item.system.isSpecies) {
       return ui.notifications.error(
         game.i18n.localize("WASTELANDERS.Errors.Item.NotSpeciesFeat"),

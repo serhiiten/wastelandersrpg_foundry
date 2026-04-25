@@ -43,7 +43,6 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
     // Build the species list dynamically from compendiums
     context.speciesList = await this._prepareSpecies(context);
 
-    console.log(context)
     return context;
   }
 
@@ -153,6 +152,9 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
 
     // Equip armor
     html.find(".item-equip").click(this._onEquipArmor.bind(this));
+
+    // Select species
+    html.find(".select-species").change(this._onSpeciesChange.bind(this));
   }
 
   /* -------------------------------------------- */
@@ -211,5 +213,23 @@ export class WastelandersCharacterSheet extends WastelandersActorSheet {
 
     const isEquipped = item.system.equipped;
     await item.update({ "system.equipped": !isEquipped });
+  }
+
+  /**
+   * Handle changing the species from the dropdown
+   * @param {Event} event
+   * @private
+   */
+  async _onSpeciesChange(event) {
+    event.preventDefault();
+    const select = event.currentTarget;
+    const speciesUuid = select.value;
+
+    if (!speciesUuid) return;
+
+    const newSpeciesItem = await fromUuid(speciesUuid);
+    if (newSpeciesItem) {
+      await this.actor.createEmbeddedDocuments("Item", [newSpeciesItem.toObject()]);
+    }
   }
 }
