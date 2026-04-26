@@ -20,8 +20,8 @@
 [Foundry Shield]: https://img.shields.io/badge/Foundry-14-orange?style=flat-square
 [Foundry URL]: https://foundryvtt.com
 
-[Version]: https://img.shields.io/badge/Version-0.4.2-informational?style=flat-square
-[Version URL]: https://github.com/serhiiten/wastelandersrpg_foundry/releases/tag/v0.4.2
+[Version]: https://img.shields.io/badge/Version-0.4.3-informational?style=flat-square
+[Version URL]: https://github.com/serhiiten/wastelandersrpg_foundry/releases/tag/v0.4.3
 
 [GNU License]: https://img.shields.io/badge/License-GNU-green?style=flat-square
 [GNU URL]: https://github.com/serhiiten/wastelandersrpg_foundry/blob/main/LICENSE.md
