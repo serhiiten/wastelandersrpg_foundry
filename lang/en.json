@@ -185,7 +185,8 @@
       "Equipped": "Одягнено",
       "SpeciesFeat": "Видова особливість",
       "Skills": "Навички",
-      "Perks": "Перки"
+      "Perks": "Перки",
+      "SpeciesFeats": "Видові властивості"
     },
     "Roll": {
       "Title": "Кидок",
