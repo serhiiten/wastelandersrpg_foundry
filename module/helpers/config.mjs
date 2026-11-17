@@ -1,17 +1,6 @@
 export const WASTELANDERS = {
-  supportedLinks: {
-    species: {
-      feat: "feats"
-    }
-  },
   linkedForeign: {
     species: ["feats"],
-  },
-  forLoad: {
-    character: {
-      container: "species",
-      types: ["feats"],
-    },
   },
   attributes: {
     strength: "WASTELANDERS.Actor.Character.Attribute.Strength",
@@ -40,49 +29,5 @@ export const WASTELANDERS = {
     6: "WASTELANDERS.Actor.Character.SkillLevels.Student",
     8: "WASTELANDERS.Actor.Character.SkillLevels.Assistant",
     10: "WASTELANDERS.Actor.Character.SkillLevels.Master",
-  },
-  rollAdvantage: {
-    0: "",
-    1: "WASTELANDERS.Roll.Advantage",
-    "-1": "WASTELANDERS.Roll.Disadvantage",
-    2: "WASTELANDERS.Roll.DoubleAdvantage",
-    "-2": "WASTELANDERS.Roll.DoubleDisadvantage",
-  },
-  settingsSupported: ["character", "caravan"],
-  expOptions: [
-    {
-      name: "WASTELANDERS.Actor.Character.Experience.NewPerk",
-    },
-    {
-      name: "WASTELANDERS.Actor.Character.Experience.LearnSkill",
-    },
-    {
-      name: "WASTELANDERS.Actor.Character.Experience.SkillToJourneyman",
-      max: 2,
-    },
-    {
-      name: "WASTELANDERS.Actor.Character.Experience.SkillToMaster",
-      price: 15,
-      max: 1,
-    },
-    {
-      name: "WASTELANDERS.Actor.Character.Experience.AttributeToPlus2",
-    },
-    {
-      name: "WASTELANDERS.Actor.Character.Experience.AttributeToPlus3",
-      price: 15,
-      max: 2,
-    },
-    {
-      name: "WASTELANDERS.Actor.Character.Experience.AttributeToPlus4",
-      price: 20,
-      max: 1,
-    },
-  ],
-  enemyType: {
-    statistician: "WASTELANDERS.Actor.Enemy.Types.Statistician",
-    ordinary: "WASTELANDERS.Actor.Enemy.Types.Ordinary",
-    elite: "WASTELANDERS.Actor.Enemy.Types.Elite",
-    boss: "WASTELANDERS.Actor.Enemy.Types.Boss",
   },
 };

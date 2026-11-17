@@ -1,0 +1,31 @@
+{
+  "folder": "FLfxVg0BtCTRbfwu",
+  "name": "Стимпак",
+  "type": "drug",
+  "_id": "hlItYLvY7ZhjKeiF",
+  "img": "systems/wastelanders/assets/chem-stimpak.webp",
+  "system": {
+    "price": 2,
+    "addiction": 0,
+    "description": "<p>Коктейль зі стимуляторів і лікувальних препаратів у зручному ін'єкторі. Негайно відновлює 5 ОЗ. Кожне наступне застосування стимпака того ж дня відновлює на 1 ОЗ менше. Після п'ятого стимпака колотися ними того ж дня вже не має сенсу.</p>"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768648876343,
+    "modifiedTime": 1769781830080,
+    "lastModifiedBy": "CXn23KOmyfe6wBkg"
+  },
+  "_key": "!items!hlItYLvY7ZhjKeiF"
+}

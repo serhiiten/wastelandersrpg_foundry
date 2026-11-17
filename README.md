@@ -12,7 +12,7 @@
 
 1. Усередині екрану "Configuration and Setup" лаучера натисніть "Systems".
 2. Натисніть "Install System".
-3. В полі "Manifest URL" вставте наступне посилання: https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/main/system.json або знайдіть цю систему в пошуку за назвою Пустельники
+3. В полі "Manifest URL" вставте наступне посилання: https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/main/system.json
 4. Натисніть 'Install' і дочекайтеся завершення встановлення.
 
 Тепер ви можете створити світ з цією системою і використовувати аркуші персонажів та компендіуми для неї у Foundry VTT!
@@ -20,8 +20,19 @@
 [Foundry Shield]: https://img.shields.io/badge/Foundry-14-orange?style=flat-square
 [Foundry URL]: https://foundryvtt.com
 
-[Version]: https://img.shields.io/badge/Version-1.0.1-informational?style=flat-square
-[Version URL]: https://github.com/serhiiten/wastelandersrpg_foundry/releases/tag/v1.0.1
+[Version]: https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square
+[Version URL]: https://github.com/serhiiten/wastelandersrpg_foundry/releases/tag/v2.0.0
 
 [GNU License]: https://img.shields.io/badge/License-GNU-green?style=flat-square
 [GNU URL]: https://github.com/serhiiten/wastelandersrpg_foundry/blob/main/LICENSE.md
+
+## Розробка: компендіуми
+
+Компендіуми зберігаються у двох видах: `packs/` (база даних Foundry, йде в реліз) і `src/packs/` (JSON-вихідники для перегляду змін у git).
+
+- Змінили компендіум у Foundry → закрийте Foundry і виконайте `npm run packs:unpack`, потім закомітьте обидві теки.
+- Змінили JSON вручну → виконайте `npm run packs:pack`.
+
+Перед першим запуском: `npm install`.
+
+Тестова збірка з окремим ID `wastelanders-dev` живе в репозиторії [wastelandersrpg_foundry_dev](https://github.com/serhiiten/wastelandersrpg_foundry_dev); перемикання ID: `node tools/set-system-id.mjs wastelanders` або `wastelanders-dev`.

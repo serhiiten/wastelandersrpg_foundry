@@ -2,10 +2,10 @@
   "id": "wastelanders",
   "title": "Пустельники",
   "description": "Система для Пустельники (автор: Сергій Тен) від GMonline",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "compatibility": {
-    "minimum": "13",
-    "verified": "14.367",
+    "minimum": "14",
+    "verified": "14.370",
     "maximum": "14"
   },
   "authors": [
@@ -24,7 +24,13 @@
     "module/wastelanders.mjs"
   ],
   "styles": [
-    "css/wastelanders.css"
+    "css/wastelanders.css",
+    "css/pust-ui.css",
+    "css/pust-sheet.css",
+    "css/pust-check.css",
+    "css/pust-terminal.css",
+    "css/pust-enemy-create.css",
+    "css/pust-builder.css"
   ],
   "languages": [
     {
@@ -38,6 +44,80 @@
       "path": "lang/uk.json"
     }
   ],
+  "documentTypes": {
+    "Actor": {
+      "character": {
+        "htmlFields": [
+          "description",
+          "notes"
+        ]
+      },
+      "caravan": {
+        "htmlFields": [
+          "description",
+          "notes"
+        ]
+      },
+      "enemy": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "place": {}
+    },
+    "Item": {
+      "species": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "feat": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "perk": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "weapon": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "armor": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "tool": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "drug": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "upgrade": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "cargo": {
+        "htmlFields": [
+          "description"
+        ]
+      },
+      "passenger": {
+        "htmlFields": [
+          "description"
+        ]
+      }
+    }
+  },
   "packs": [
     {
       "label": "Види",
@@ -128,6 +208,17 @@
       }
     },
     {
+      "label": "Швидкий старт",
+      "type": "Adventure",
+      "name": "quickstart",
+      "path": "packs/quickstart",
+      "system": "wastelanders",
+      "ownership": {
+        "PLAYER": "NONE",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
       "name": "guns-lots-of-guns",
       "label": "Guns. Lots of Guns (доповнення)",
       "path": "packs/guns-lots-of-guns",
@@ -155,6 +246,6 @@
   "primaryTokenAttribute": "hp",
   "url": "https://github.com/serhiiten/wastelandersrpg_foundry",
   "manifest": "https://raw.githubusercontent.com/serhiiten/wastelandersrpg_foundry/main/system.json",
-  "download": "https://github.com/serhiiten/wastelandersrpg_foundry/releases/download/v1.0.1/foundry.zip",
+  "download": "https://github.com/serhiiten/wastelandersrpg_foundry/releases/download/v2.0.0/foundry.zip",
   "license": "https://github.com/serhiiten/wastelandersrpg_foundry/blob/main/LICENSE.md"
 }

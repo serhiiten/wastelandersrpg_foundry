@@ -1,0 +1,50 @@
+{
+  "folder": "nct1ME7yyYIMNaL3",
+  "name": "Загадковий незнайомець (або незнайомка)",
+  "type": "perk",
+  "_id": "E4O8SwXLEoLF5vou",
+  "img": "systems/wastelanders/assets/dice-fire.svg",
+  "system": {
+    "description": "<p>Ти не знаєш, звідки він (або вона — на твій розсуд) береться і куди зникає, але іноді тобі на допомогу приходить посланець самої пані Удачі. Раз за сесію на початку будь-якої бойової сцени ти можеш оголосити, що тобі допомагає Загадковий незнайомець. Спершу обери супротивника, якого він атакує, а потім кинь кістку Долі (1d10 + <strong>УДЧ</strong>).</p>\n<p>●   На 1–5 незнайомець завдає цілі 1d10 фізичної шкоди, що ігнорує броню.</p>\n<p>●   На 6–9 незнайомець убиває ціль, якщо це стандартний супротивник чи статист. Інакше він завдає їй 2d6 фізичної шкоди, що ігнорує броню.</p>\n<p>●   На 10+ незнайомець убиває ціль, якщо це елітний чи стандартний супротивник або статист. Босу він завдає 3d6 фізичної шкоди, що ігнорує броню.</p>\n<p>Після атаки незнайомець зникає так само швидко й таємничо, як і з'явився.</p><p><strong>Вимоги:</strong> УДЧ +1 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": null,
+      "luck": 1
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768671581391,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!E4O8SwXLEoLF5vou"
+}

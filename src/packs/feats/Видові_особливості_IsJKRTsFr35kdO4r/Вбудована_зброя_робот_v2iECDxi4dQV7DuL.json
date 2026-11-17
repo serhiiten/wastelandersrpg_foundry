@@ -1,0 +1,32 @@
+{
+  "name": "Вбудована зброя (робот)",
+  "type": "feat",
+  "_id": "v2iECDxi4dQV7DuL",
+  "img": "systems/wastelanders/assets/dna1.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Тебе неможливо обеззброїти, бо зброя буквально вбудована в твій корпус. Одна з твоїх кінцівок вважається середньою зброєю для бою на відстані чи ближнього бою (на твій вибір), і ти отримуєш її на старті гри безкоштовно. Ти не можеш користуватися звичайною важкою зброєю, а перевірки дій, які потребують координації обох кінцівок (наприклад, швидко вилізти мотузкою чи драбиною), отримують −1. Ти можеш модифікувати або замінювати вбудовану зброю, як будь-яку іншу середню зброю. Досить умілий технік може замінити її на важку чи рідкісну, але це коштуватиме в півтора рази більше за звичайну ціну такої зброї (з округленням угору).</p><blockquote class=\"aside\"><p>Ти не можеш взяти особливість «Однорукий».</p></blockquote>",
+    "isSpecies": true,
+    "hpBonus": null
+  },
+  "effects": [],
+  "folder": "IsJKRTsFr35kdO4r",
+  "sort": 1200000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1768569751918,
+    "modifiedTime": 1777149810198,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC"
+  },
+  "_key": "!items!v2iECDxi4dQV7DuL"
+}

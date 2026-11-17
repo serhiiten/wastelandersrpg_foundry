@@ -4,7 +4,7 @@
       "character": "Персонаж",
       "caravan": "Караван",
       "enemy": "Супротивник",
-      "counter": "Лічильник"
+      "place": "Місце"
     },
     "Item": {
       "species": "Вид",
@@ -16,36 +16,14 @@
       "drug": "Наркотик",
       "upgrade": "Покращення",
       "cargo": "Вантаж",
-      "passenger": "Пасажири",
-      "attack": "Атака"
+      "passenger": "Пасажири"
     }
   },
   "WASTELANDERS": {
     "Actor": {
-      "Name": "Ім'я",
-      "General": "Основне",
-      "Inventory": "Інвентар",
-      "Items": "Предмети",
-      "Notes": "Нотатки",
       "Character": {
-        "ChooseSpecies": "Обери вид",
-        "Concept": "Концепція",
-        "Problem": "Проблема",
-        "Goal": "Ціль",
-        "Armor": "Броня",
-        "FatePoints": {
-          "Value": "Поточні ЖД",
-          "Recover": "Відновлення ЖД"
-        },
-        "Consequence": {
-          "Light": "Легкий наслідок",
-          "Moderate": "Середній наслідок",
-          "SecondModerate": "Другий середній наслідок",
-          "Heavy": "Тяжкий наслідок"
-        },
         "Attributes": "Атрибути",
         "Attribute": {
-          "Single": "Атрибут",
           "Strength": "Сила",
           "Perception": "Сприйняття",
           "Endurance": "Витривалість",
@@ -54,19 +32,9 @@
           "Dexterity": "Вправність",
           "Luck": "Удача"
         },
-        "AttributeShort": {
-          "Strength": "СЛ",
-          "Perception": "СПР",
-          "Endurance": "ВТР",
-          "Attractiveness": "ПВ",
-          "Intelligence": "ІН",
-          "Dexterity": "ВП",
-          "Luck": "УДЧ"
-        },
         "Skills": "Навички",
         "SkillsNumber": "На старті гри обери {number} навички на рівні учня.",
         "Skill": {
-          "Single": "Навичка",
           "Athletics": "Атлетика",
           "Thievery": "Крадіж",
           "Marksmanship": "Стрільба",
@@ -83,95 +51,15 @@
           "Assistant": "Підмайстер (d8)",
           "Master": "Майстер (d10)"
         },
-        "Feats": "Особливості",
-        "SpeciesFeats": "Видові особливості",
-        "Perks": "Перки",
-        "PerksNumber": "На старті гри обери {number} перки.",
-        "FailedPerkCheck": "Ви не відопвідаєте вимогам перку {perk} ({requirement}) його використання",
-        "Supplies": "Припаси",
-        "Caps": "Кришки",
-        "HeavyItems": "Важкі речі",
-        "Weapons": "Зброя",
-        "Armors": "Захист",
-        "Drugs": "Медикаменти і наркотики",
-        "Tools": "Все інше",
-        "HeavyItemsTips": {
-          "Light": "Отримай штраф -1 на всі перевірки, пов'язані з швидким і акуратним пересуванням, та при спробах бути непомітним",
-          "Moderate": "Отримай Послаблення на всі перевірки, пов'язані з швидким і акуратним пересуванням, та при спробах бути непомітним",
-          "TooMuch": "Твій персонаж не може нести стільки важких речей!"
-        },
-        "Experience": {
-          "Long": "Досвід",
-          "Short": "ОД",
-          "Tips": "Підказки щодо досвіду",
-          "Gains": "Отримання досвіду",
-          "GainFailure": "Невдачі на перевірках",
-          "GainGroupQuestions": "Групові запитання наприкінці сесії",
-          "GainPersonalQuestions": "Особисті запитання наприкінці сесії",
-          "GainRest": "Привал під час подорожі",
-          "Consumption": "Витрата досвіду",
-          "Upgrade": "Покращення",
-          "Price": "Ціна",
-          "Checked": "Взято",
-          "NewPerk": "Отримати новий перк",
-          "LearnSkill": "Вивчити нову навичку на рівні учня",
-          "SkillToJourneyman": "Покращити навичку з рівня учня до підмайстра",
-          "SkillToMaster": "Покращити навичку з рівня підмайстра до майстра",
-          "AttributeToPlus2": "Покращити атрибут на 1 (максимум до +2)",
-          "AttributeToPlus3": "Покращити атрибут на 1 (з +2 до +3)",
-          "AttributeToPlus4": "Покращити атрибут на 1 (з +3 до +4)"
-        },
         "Settings": {
-          "Title": "Налаштування персонажа",
-          "DoubleModerate": "Друга комірка середніх наслідків",
-          "CountFateAutomatically": "Рахувати відновлення ЖД автоматично",
-          "HPBonus": "Бонус ОЗ",
-          "ArmorBonus": "Додаткова броня"
+          "HPBonus": "Бонус ОЗ"
         }
-      },
-      "Caravan": {
-        "Name": "Назва компанії",
-        "KarmicAspect": "Кармічний аспект",
-        "Reputation": "Репутаційний аспект",
-        "Caps": "Бюджет кришок",
-        "Karma": "Карма",
-        "Luck": "Удача партії",
-        "Armor": "Броня",
-        "Range": "Запас ходу",
-        "RangeTips": "Поповнюється у будь-якому поселенні. Коштує 1 кришку за 3 одиниці",
-        "Upgrades": "Покращення",
-        "UpgradeOnCreation": "На старті гри оберіть 2 покращення",
-        "UpgradesTips": "Покращення можна встановити у будь-якому поселенні, де є технік. Вони коштуватимуть по 25 кришок",
-        "CargoNav": "Вантажі та пасажири",
-        "Cargo": "Вантаж",
-        "Passengers": "Пасажири"
-      },
-      "Enemy": {
-        "Name": "Ім'я",
-        "Type": "Тип",
-        "Types": {
-          "Statistician": "Статист",
-          "Ordinary": "Рядовий",
-          "Elite": "Елітний",
-          "Boss": "Бос"
-        },
-        "Armor": "Броня",
-        "Attacks": "Атаки"
-      },
-      "Counter": {
-        "Filled": "Заповнено",
-        "Size": "Розмір",
-        "Time": "Позначка",
-        "Description": "Опис"
       }
     },
     "Item": {
       "Name": "Назва",
-      "Show": "Показати",
       "Add": "Додати",
       "Delete": "Видалити",
-      "Edit": "Відредагувати",
-      "New": "Нове",
       "IsActive": "Активний",
       "CanBeActivated": "Можна активувати",
       "Requirements": "Вимоги",
@@ -188,40 +76,36 @@
       "Perks": "Перки",
       "SpeciesFeats": "Видові властивості"
     },
-    "Roll": {
-      "Title": "Кидок",
-      "Modifier": "Модифікатор",
-      "Submit": "Кинути",
-      "AdvantageTitle": "Посилення/Послаблення",
-      "DoubleAdvantage": "Посилення (2)",
-      "Advantage": "Посилення",
-      "Disadvantage": "Послаблення",
-      "DoubleDisadvantage": "Послаблення (2)",
-      "Results": {
-        "Failure": "Невдача",
-        "Partial": "Частковий успіх",
-        "Success": "Успіх",
-        "Crit": "Критичний успіх"
-      }
-    },
-    "Settings": {
-      "HeaderButton": "Налаштування",
-      "Submit": "Підтвердити",
-      "CustomArchetypes": {
-        "Name": "Список архетипів",
-        "Hint": "Введіть свій список архетипів"
-      }
-    },
     "Errors": {
       "Item": {
-        "ExistsId": "Предмет із таким самим id вже існує.",
-        "ExistsName": "Предмет із такою ж назвою вже існує.",
-        "NotSupported": "<b>{type} {item}</b> не може бути доданий до цього контейнера",
-        "NotExist": "Елемент <b>{type} {item}</b> не існує, тому він видалений зі списку",
-        "NotSpeciesFeat": "Особливість повинна бути видовою, щоб ви змогли її сюди додати"
+        "NotExist": "Елемент «{type} {item}» не існує, тому він видалений зі списку"
       }
     },
     "Description": "Опис",
-    "Notes": "Нотатки"
+    "Json": {
+      "Open": "Відкрити .json Пустельників",
+      "OpenHint": "Створити персонажів і каравани з файлів електронних аркушів",
+      "Unnamed": "Unnamed",
+      "NotJson": "This is not a .json file.",
+      "Damaged": "The file is damaged or was not saved by a «Пустельники» electronic sheet. It was not opened; nothing changed.",
+      "WriteFailed": "The file's data could not be written. Details are in the console (F12).",
+      "NotCharacter": "The file has no character from the electronic sheet.",
+      "NotCaravan": "This file doesn't look like a caravan sheet. Pick a .json saved by the electronic caravan sheet.",
+      "NotSheet": "The file has no character or caravan from the electronic sheets.",
+      "IsCaravan": "This is a caravan sheet. Open it on a caravan sheet or in the Actors directory.",
+      "IsCharacter": "This is a character sheet. Open it on a character sheet or in the Actors directory.",
+      "ReplaceCaravanText": "Everything on «{actor}» will be replaced by the caravan from «{file}»: upgrades, cargo, counters and story. Sure?",
+      "OneCharacterOnly": "The file has several characters. Open it in the Actors list to create all of them.",
+      "Imported": "Created: {names}.",
+      "ReplaceTitle": "Open .json in this sheet",
+      "ReplaceText": "Everything in «{actor}» will be replaced by the character from «{file}»: attributes, skills, perks, feats, gear and notes. Are you sure?",
+      "Replaced": "«{name}» was replaced with the file's data."
+    },
+    "Roll": {
+      "Results": {
+        "Failure": "Невдача",
+        "Success": "Успіх"
+      }
+    }
   }
 }

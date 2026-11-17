@@ -1,0 +1,50 @@
+{
+  "folder": "GV0LDBK7RFVXTWMn",
+  "name": "Найкращий друг",
+  "type": "perk",
+  "_id": "KWZSrBcL1Yqn68Rm",
+  "img": "systems/wastelanders/assets/binoculars.svg",
+  "system": {
+    "description": "<p>У тебе є невеликий вірний супутник-тварина, якого можна використовувати для розвідки місцевості чи дрібних крадіжок. Дай йому ім'я та опиши його одним аспектом. Щоб дізнатися, чи вдалося твоєму супутникові щось зробити, пройди перевірку подолання труднощів <strong>ПВ + Виживання</strong>. У бою ти можеш витратити свою дію, щоб супутник завдав комусь шкоди. Для цього пройди перевірку атаки <strong>ПВ + Виживання</strong>. Якщо супутник загине, за кілька днів ти можеш приручити іншого.</p>\n<p><strong>Параметри супутника:</strong></p>\n<p>●   <strong>Категорія:</strong> статист</p>\n<p>●   <strong>ОЗ:</strong> 5</p>\n<p>●   <strong>Броня:</strong> 1</p>\n<p>●   <strong>Шкода:</strong> <u>Ікла та пазурі</u> (1d6 фізичної шкоди, ближній бій)</p><p><strong>Вимоги:</strong> Навичка Виживання на рівні учня або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 6,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768667827252,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!KWZSrBcL1Yqn68Rm"
+}

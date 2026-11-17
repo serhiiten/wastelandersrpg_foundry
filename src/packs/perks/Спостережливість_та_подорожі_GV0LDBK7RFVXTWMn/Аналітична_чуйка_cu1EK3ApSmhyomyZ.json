@@ -1,0 +1,50 @@
+{
+  "folder": "GV0LDBK7RFVXTWMn",
+  "name": "Аналітична чуйка",
+  "type": "perk",
+  "_id": "cu1EK3ApSmhyomyZ",
+  "img": "systems/wastelanders/assets/binoculars.svg",
+  "system": {
+    "description": "<p>Ти маєш неймовірну увагу до деталей і талант викривати приховане. Раз за сесію, коли ти потрапляєш у нову місцину чи спілкуєшся з новим персонажем, ти можеш поставити Доглядачеві стільки запитань з цього списку, скільки становить значення твого ІН:</p>\n<p>●   Хто чи що становить тут для мене найбільшу загрозу?</p>\n<p>●   Чи приховують від мене щось? (Відповідь «так» чи «ні».)</p>\n<p>●   Чи є в цій ситуації слабкі місця, які я можу використати? (Відповідь «так» чи «ні».)</p>\n<p>●   Якщо тут є щось приховане чи слабке місце, що мені зробити далі, щоб отримати найбільшу вигоду?</p>\n<p>Доглядач має відповісти чесно. За потреби він може додати в сцену відповідні аспекти, так ніби ти успішно пройшов перевірку, щоб дізнатися нове.</p><p><strong>Вимоги:</strong> ІН +2 або вище, СПР +2 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": 2,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": 2,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768668040656,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!cu1EK3ApSmhyomyZ"
+}

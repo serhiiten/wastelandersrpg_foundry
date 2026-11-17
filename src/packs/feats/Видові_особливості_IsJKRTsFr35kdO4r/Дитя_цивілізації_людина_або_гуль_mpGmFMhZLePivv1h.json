@@ -1,0 +1,32 @@
+{
+  "name": "Дитя цивілізації (людина або гуль)",
+  "type": "feat",
+  "_id": "mpGmFMhZLePivv1h",
+  "img": "systems/wastelanders/assets/dna1.svg",
+  "system": {
+    "active": false,
+    "description": "<p>У місті ти почуваєшся як риба у воді, але мешканців Пустки ніколи не зможеш зрозуміти до кінця. Ти отримуєш +1 до всіх соціальних перевірок із представниками досить великих цивілізованих поселень і фракцій (НКР, Братство Сталі, Легіон Цезаря тощо). Але під час спілкування з дикунами та іншими волоцюгами, які не шанують здобутків цивілізації, ти отримуєш −1 до всіх соціальних перевірок. Крім того, ти ніколи не зможеш підняти навичку Виживання вище рівня учня.</p><blockquote class=\"aside\"><p>Цю особливість, крім людей, можуть узяти й довоєнні гулі, які пам'ятають Старий світ.</p></blockquote>",
+    "hpBonus": null,
+    "isSpecies": true
+  },
+  "effects": [],
+  "folder": "IsJKRTsFr35kdO4r",
+  "sort": 400000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1768569465132,
+    "modifiedTime": 1777149775640,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC"
+  },
+  "_key": "!items!mpGmFMhZLePivv1h"
+}

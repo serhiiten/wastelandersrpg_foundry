@@ -1,0 +1,32 @@
+{
+  "name": "Переконаний дикун (людина)",
+  "type": "feat",
+  "_id": "swUsTZUgcoHFd5UP",
+  "img": "systems/wastelanders/assets/dna1.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Ти виріс у племені дикунів і шануєш їхні заповіти. Тебе можна вивезти з племені, але плем'я з тебе не витравити ніколи. Обери одну навичку з-поміж Виживання, Крадежу, Примусу, Атлетики та Герцю й отримай її на рівні учня або покращи її з рівня учня до рівня підмайстра (якщо тебе в цьому не обмежує інша особливість, як-от «Добра душа»). Навички Стрільба, Техніка та Знання ти ніколи не зможеш підняти вище рівня учня. Зате з тобою розмовляють духи предків і, можливо, у тебе є Грампі-кістка. Можливо, навіть у носі.</p>",
+    "isSpecies": true,
+    "hpBonus": null
+  },
+  "effects": [],
+  "folder": "IsJKRTsFr35kdO4r",
+  "sort": 100000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1768569415733,
+    "modifiedTime": 1777149765573,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC"
+  },
+  "_key": "!items!swUsTZUgcoHFd5UP"
+}

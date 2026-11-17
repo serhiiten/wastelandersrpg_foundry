@@ -1,0 +1,50 @@
+{
+  "folder": "u3oLQEnmlpqTwwgK",
+  "name": "Слизький тип",
+  "type": "perk",
+  "_id": "v2n2ZCRoOexY5ElE",
+  "img": "systems/wastelanders/assets/robber.svg",
+  "system": {
+    "description": "<p>Чи то це мутація твоєї шкіри, чи то ти навчився цього в мандрівного факіра, але тебе неможливо <strong><em>схопити</em></strong>, <strong><em>зв'язати</em></strong> чи <strong><em>обплутати</em></strong>. Витративши кілька хвилин, ти можеш вислизнути навіть із наручників, кайданів чи нашийника з вибухівкою, хоч би як щільно їх на тобі затягнули. Гудіні бісів.</p><p><strong>Вимоги:</strong> Навичка Крадіж на рівні учня або вище, ВП +1 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": 1,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 6,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768668710203,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!v2n2ZCRoOexY5ElE"
+}

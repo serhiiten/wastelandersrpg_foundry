@@ -1,0 +1,50 @@
+{
+  "folder": "fMqR3mJERz43qDSI",
+  "name": "Лють ботана",
+  "type": "perk",
+  "_id": "HJ0mWlynfrt4HbbB",
+  "img": "systems/wastelanders/assets/crossed-axes.svg",
+  "system": {
+    "description": "<p>Раз за сесію ти можеш застосувати лють ботана. Негайно віднови 1d6 ОЗ. До кінця сцени ти отримуєш +1 до СЛ і ВП (не вище видового максимуму), а також +1 до всіх перевірок атаки. Наприкінці сцени ти отримуєш 1d10 фізичної шкоди, яку неможливо зменшити жодним способом. Якщо ти вибуваєш з бою під час люті, то не отримуєш шкоди наприкінці сцени, але одразу автоматично отримуєш додатковий легкий наслідок.</p><p><strong>Вимоги:</strong> Навичка Знання на рівні учня або вище, ІН +2 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": 2,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 6,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768663875051,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!HJ0mWlynfrt4HbbB"
+}

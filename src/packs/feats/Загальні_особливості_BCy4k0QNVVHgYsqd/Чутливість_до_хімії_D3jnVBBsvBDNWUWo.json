@@ -1,0 +1,30 @@
+{
+  "name": "Чутливість до хімії",
+  "type": "feat",
+  "_id": "D3jnVBBsvBDNWUWo",
+  "img": "systems/wastelanders/assets/body-swapping.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Наркотики діють на тебе на одну сцену довше, але під час їх вживання шанс залежності для тебе зростає на 2 (але не вище 9). Ти не можеш узяти перки «Покращений метаболізм» та «Електрохімічний жокей».</p><blockquote class=\"aside\"><p>Роботи не можуть взяти цю особливість.</p></blockquote>"
+  },
+  "effects": [],
+  "folder": "BCy4k0QNVVHgYsqd",
+  "sort": 200000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.1",
+    "createdTime": 1768569095036,
+    "modifiedTime": 1768827073324,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!D3jnVBBsvBDNWUWo"
+}

@@ -1,0 +1,50 @@
+{
+  "folder": "h8dtJ70LrehwRRXD",
+  "name": "Нагляд",
+  "type": "perk",
+  "_id": "FjwkoGe5x1v7obfD",
+  "img": "systems/wastelanders/assets/human-target.svg",
+  "system": {
+    "description": "<p>Раз за сцену ти можеш витратити дію, щоб узяти під нагляд одного супротивника. Поки нагляд триває (ти не атакуєш нікого іншого й стежиш за цим супротивником), ти можеш будь-коли витратити збережену дію і влучним пострілом зробити одне з наступного:</p>\n<p>●   скасувати шкоду, яку супротивник завдає своєю зброєю;</p>\n<p>●   перервати його хід (його хід не має ефекту);</p>\n<p>●   не дати йому пересунутися.</p>\n<p>Нагляд припиняється, якщо ти атакуєш когось іншого або втрачаєш супротивника з поля зору більше ніж на одне коло дій.</p><p><strong>Вимоги:</strong> Навичка Стрільба на рівні підмайстра або вище, СПР +1 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": 1,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 8,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768659980091,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!FjwkoGe5x1v7obfD"
+}

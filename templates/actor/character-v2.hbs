@@ -1,0 +1,750 @@
+{{!-- Електронний аркуш персонажа (Foundry). Fields: data-k = path in the HTML sheet's state; buttons: data-action. --}}
+<div class="pust-sheet-inner {{#unless editable}}readonly{{/unless}} {{#if v.free}}free-mode{{/if}} {{#if compact}}pust-compact{{/if}}">
+
+  {{#if compact}}
+  {{!-- ===== Компактний аркуш (author, 2026-11-17; feedback p19): what the table needs — the name, the main aspects as chips,
+       «Швидкий доступ», the chems; the full sheet for making and growing the character ===== --}}
+  <header class="pust-cmp-head">
+    <img class="pust-cmp-portrait" src="{{actor.img}}" alt="">
+    <div class="pust-cmp-who"><b class="pust-cmp-name">{{v.name}}</b><small>{{cmp.arch}}{{#if cmp.species}} · {{cmp.species}}{{/if}}</small></div>
+    <span class="pust-seg pust-cmp-seg" role="group" aria-label="Вигляд аркуша"><button type="button" class="{{#unless compact}}on{{/unless}}" data-action="compactToggle" data-v="0" title="Повний аркуш: створення й розвиток персонажа">Повний</button><button type="button" class="{{#if compact}}on{{/if}}" data-action="compactToggle" data-v="1" title="Компактний аркуш: лише потрібне за столом">Компактний</button></span>
+  </header>
+  {{#if cmp.aspects.length}}<div class="pust-cmp-asps">{{#each cmp.aspects}}<span class="pust-cmp-asp asp-{{f}}"><b>{{label}}</b><span>{{v}}</span></span>{{/each}}</div>{{/if}}
+  {{else}}
+
+  {{!-- ===== Аркуш: file, random, clear, quick start (folds; above the name) ===== --}}
+  <details class="pust-sheetbar pust-fold" data-fold="sheetBarOpen" {{#if ui.sheetBarOpen}}open{{/if}}>
+    <summary title="Розгорнути чи згорнути"><i class="fa-solid fa-chevron-right pust-fold-ico"></i> <i class="fa-solid fa-file-lines"></i> Аркуш</summary>
+    <div class="pust-sheetbar-btns">
+      <button type="button" data-action="jsonOpen" {{#if qsLock}}data-locked="1" aria-disabled="true"{{/if}} title="{{#if qsLock}}{{qsLock}}{{else}}Відкрити .json{{/if}}"><i class="fa-solid fa-folder-open"></i><span class="pust-sbl"> Відкрити .json</span></button>
+      <button type="button" data-action="jsonSave" title="Зберегти .json"><i class="fa-solid fa-floppy-disk"></i><span class="pust-sbl"> Зберегти .json</span></button>
+      <button type="button" data-action="act" class="pust-random" data-act="random" data-confirm="1" {{#if qsLock}}data-locked="1" aria-disabled="true"{{/if}} title="{{#if qsLock}}{{qsLock}}{{else}}Випадковий персонаж: заповнене вручну (ім'я, аспекти, записи) лишиться{{/if}}"><i class="fa-solid fa-dice"></i><span class="pust-sbl"> Випадковий персонаж</span></button>
+      <button type="button" class="pust-danger" data-action="act" data-act="new" data-confirm="1" {{#if qsLock}}data-locked="1" aria-disabled="true"{{/if}} title="{{#if qsLock}}{{qsLock}}{{else}}Очистити аркуш{{/if}}"><i class="fa-solid fa-eraser"></i><span class="pust-sbl"> Очистити аркуш</span></button>
+      <button type="button" class="{{#if v.guide}}on{{/if}}" data-action="uiToggle" data-key="guide" title="{{#if v.guide}}Сховати покрокову інструкцію{{else}}Покрокова інструкція: як створити персонажа{{/if}}"><i class="fa-solid fa-circle-question"></i><span class="pust-sbl"> Як створити персонажа</span></button>
+    </div>
+  </details>
+
+  {{#if v.guide}}
+  <section class="pust-block pust-guide">
+    <h3>Як створити персонажа</h3>
+    <ol>{{#each v.guide}}<li>{{t}} <a data-action="pustTab" {{#if tab}}data-tab="{{tab}}"{{/if}} data-go="{{go}}" title="Показати">→ {{label}}</a></li>{{/each}}</ol>
+  </section>
+  {{/if}}
+
+  {{!-- ===== Пустельник ===== --}}
+  <header class="pust-head">
+    <div class="pust-pcol">
+      <img class="pust-portrait" src="{{actor.img}}" data-edit="img" data-action="editImage" alt="{{v.name}}">
+      {{!-- decorative HP bar (the numbers are edited in «Швидкий доступ») --}}
+      <div class="pust-hpbar hp-{{v.hpBar.level}}" title="Очки здоров'я: {{v.hp}} з {{v.hpMax}}" aria-hidden="true">
+        <div class="pust-hpbar-fill" style="width: {{v.hpBar.pct}}%"></div>
+        <span class="pust-hpbar-t"><b>ОЗ</b> {{v.hp}}/{{v.hpMax}}</span>
+      </div>
+    </div>
+    <div class="pust-who">
+      <div class="pust-who-id">
+      <div class="pust-row">
+        <input class="pust-name" type="text" data-k="name" value="{{v.name}}" placeholder="Ім'я пустельника" aria-label="Ім'я">
+        {{#if v.free}}<span class="pust-freechip" title="Вільний режим: правила не перевіряються, ручні надбавки й захисти діють. Вимкнути — у «Налаштуваннях»"><i class="fa-solid fa-unlock"></i> Вільний режим</span>{{/if}}
+        <span class="pust-seg pust-cmp-seg" role="group" aria-label="Вигляд аркуша"><button type="button" class="{{#unless compact}}on{{/unless}}" data-action="compactToggle" data-v="0" title="Повний аркуш: створення й розвиток персонажа">Повний</button><button type="button" class="{{#if compact}}on{{/if}}" data-action="compactToggle" data-v="1" title="Компактний аркуш: лише потрібне за столом">Компактний</button></span>
+        <button type="button" class="pust-die {{#if v.locks.name}}locked{{/if}}" data-action="act" data-act="roll-name" title="{{#if v.locks.name}}Заповнено вручну. Очисти поле, щоб знову кидати{{else}}Кинути ім'я{{/if}}"><i class="fa-solid {{#if v.locks.name}}fa-lock{{else}}fa-dice{{/if}}"></i></button>
+      </div>
+      <div class="pust-row">
+        <select data-k="arch" aria-label="Архетип">
+          {{#each v.archetypes}}<option value="{{v}}" {{#if sel}}selected{{/if}} {{#if disabled}}disabled{{/if}}>{{n}}</option>{{/each}}
+        </select>
+        <select data-k="species" aria-label="Вид">
+          {{#each v.species}}<option value="{{v}}" {{#if sel}}selected{{/if}} {{#if disabled}}disabled{{/if}}>{{n}}</option>{{/each}}
+          {{#if v.speciesX.length}}<optgroup label="Власні види">{{#each v.speciesX}}<option value="{{v}}" {{#if sel}}selected{{/if}} {{#if disabled}}disabled{{/if}}>{{n}}</option>{{/each}}</optgroup>{{/if}}
+        </select>
+        <button type="button" class="pust-die" data-action="act" data-act="roll-species" title="Кинути вид"><i class="fa-solid fa-dice"></i></button>
+        <span class="pust-seg">
+          {{#each v.genders}}<button type="button" class="{{#if sel}}on{{/if}}" data-action="act" data-act="gender" data-v="{{v}}">{{n}}</button>{{/each}}
+        </span>
+      </div>
+      </div>
+      <div class="pust-who-asp">
+      {{#each v.aspects}}
+      <div class="pust-row pust-aspect asp-{{f}}">
+        <label>{{label}}</label>
+        <textarea class="pust-asp-ta" rows="1" data-k="{{f}}" aria-label="{{label}}">{{v}}</textarea>
+        <button type="button" class="pust-die {{#if locked}}locked{{/if}}" data-action="act" data-act="roll-asp" data-i="{{i}}" title="{{#if locked}}Заповнено вручну. Очисти поле, щоб знову кидати{{else}}Кинути аспект{{/if}}"><i class="fa-solid {{#if locked}}fa-lock{{else}}fa-dice{{/if}}"></i></button>
+      </div>
+      {{/each}}
+      </div>
+      <div class="pust-row pust-aspect asp-detail">
+        <label>Деталь</label>
+        <textarea class="pust-asp-ta" rows="1" data-k="detail" aria-label="Деталь">{{v.detail}}</textarea>
+        <button type="button" class="pust-die {{#if v.locks.detail}}locked{{/if}}" data-action="act" data-act="roll-detail" title="{{#if v.locks.detail}}Заповнено вручну. Очисти поле, щоб знову кидати{{else}}Кинути деталь{{/if}}"><i class="fa-solid {{#if v.locks.detail}}fa-lock{{else}}fa-dice{{/if}}"></i></button>
+      </div>
+    </div>
+  </header>
+
+  {{/if}}
+
+  {{!-- ===== Швидкий доступ (the HTML sheet's quick panel) ===== --}}
+  <section class="pust-quickbar {{#if quickFold}}folded{{/if}}">
+    {{#unless compact}}<button type="button" class="pust-qfold" data-action="uiToggle" data-key="quickFold" title="{{#if quickFold}}Розгорнути швидкий доступ{{else}}Згорнути швидкий доступ{{/if}}"><i class="fa-solid {{#if quickFold}}fa-chevron-down{{else}}fa-chevron-up{{/if}}"></i></button>{{/unless}}
+    <div class="pust-qgrid">
+      <div class="pust-qgrp q-life">
+        <div class="pust-qi {{#if (lt v.hp 1)}}bad{{/if}}"><span title="Очки здоров'я. Шкода віднімається від них. На 0 ОЗ персонаж вибуває зі сцени й отримує жетон Долі."><i class="fa-solid fa-heart-pulse pust-qic" aria-hidden="true"></i>Очки здоров'я</span><div>
+          <button type="button" data-action="act" data-act="step" data-k="hpCur" data-d="-1" title="Мінус 1 ОЗ">−</button>
+          <input class="pust-screen" type="text" data-k="hpCur" value="{{v.hp}}" aria-label="Поточні ОЗ"><b>/ {{v.hpMax}}</b>{{#if compact}}<span class="pust-cmp-hpbar hp-{{v.hpBar.level}}" title="Очки здоров'я: {{v.hp}} з {{v.hpMax}}"><i style="width: {{v.hpBar.pct}}%"></i><b>{{v.hp}}/{{v.hpMax}}</b></span>{{/if}}
+          <button type="button" data-action="act" data-act="step" data-k="hpCur" data-d="1" title="Плюс 1 ОЗ">+</button></div><button type="button" class="pust-buy-btn" data-action="act" data-act="buy-heal" title="{{v.buy.heal.title}}" {{#if v.buy.heal.off}}disabled{{/if}}><i class="fa-solid fa-kit-medical"></i> {{v.buy.heal.label}}</button></div>
+        <div class="pust-qi"><span title="Броня зменшує шкоду: фізична броня від фізичної, психічна від психічної. Від шкоди кожного влучання віднімається її число."><i class="fa-solid fa-shield-halved pust-qic" aria-hidden="true"></i>Броня</span><div class="pust-qarm"><span class="pust-qarm-v"><b class="big arm-phys">{{v.armor}}</b><small class="arm-phys">фіз.</small></span>{{#if v.psi}}<span class="pust-qarm-v"><b class="big arm-psi">{{v.psi}}</b><small class="arm-psi">псих.</small></span>{{/if}}</div></div>
+      </div>
+      <div class="pust-qgrp q-fate">
+        <div class="pust-qi"><span title="Жетони Долі. Жетон витрачають, щоб викликати аспект собі на користь (Посилення), створити ігровий факт, нав'язати аспект або відмовитися від нав'язаного. На початку сесії запас відновлюється до 2 + УДЧ."><i class="fa-solid fa-clover pust-qic" aria-hidden="true"></i>Жетони Долі</span><div>
+          <button type="button" data-action="act" data-act="step" data-k="fdCur" data-d="-1" title="Мінус 1 жетон Долі">−</button>
+          <input class="pust-screen" type="text" data-k="fdCur" value="{{v.fd}}" aria-label="Жетони Долі"><b>/ {{v.fdMax}}</b>
+          <button type="button" data-action="act" data-act="step" data-k="fdCur" data-d="1" title="Плюс 1 жетон Долі">+</button></div></div>
+      </div>
+      <div class="pust-qi pust-qroll">
+        <button type="button" class="pust-check-btn" data-action="checkPanel"><i class="fa-solid fa-dice-d20"></i> Зробити перевірку</button>
+      </div>
+      {{#if v.chem.ko}}<div class="pust-qko">{{> pustKo v=v short=true}}</div>{{/if}}
+      <div class="pust-qgrp q-goods">
+        {{#if v.supLamps}}
+        <div class="pust-qi"><span title="Припаси: абстрактне «усе, що лежить у кишенях і рюкзаку». Одиницю витрачають, щоб дістати звичайну річ (мотузку, їжу й воду на день, відмички, аптечку, боєприпаси тощо) або для відпочинку. У поселенні 3 одиниці коштують 1 кришку."><i class="fa-solid fa-backpack pust-qic" aria-hidden="true"></i>Припаси</span><div class="pust-qlamps">
+          {{#each v.supDots}}<button type="button" class="pust-qlamp dot {{#if on}}on{{/if}}" data-action="act" data-act="sup-set" data-n="{{n}}" title="Припасів: {{n}}" aria-label="Припасів: {{n}}"></button>{{/each}}</div><button type="button" class="pust-buy-btn" data-action="act" data-act="buy-sup" title="{{v.buy.sup.title}}" {{#if v.buy.sup.off}}disabled{{/if}}><i class="fa-solid fa-cart-shopping"></i> {{v.buy.sup.label}}</button></div>
+        {{else}}
+        <div class="pust-qi"><span title="Припаси: абстрактне «усе, що лежить у кишенях і рюкзаку». Одиницю витрачають, щоб дістати звичайну річ (мотузку, їжу й воду на день, відмички, аптечку, боєприпаси тощо) або для відпочинку. У поселенні 3 одиниці коштують 1 кришку."><i class="fa-solid fa-backpack pust-qic" aria-hidden="true"></i>Припаси</span><div>
+          <button type="button" data-action="act" data-act="step" data-k="supplies" data-d="-1" title="Мінус 1 Припас">−</button>
+          <input class="pust-screen" type="text" data-k="supplies" data-num="1" value="{{v.supplies}}" aria-label="Припаси"><b>/ {{v.supMax}}</b>
+          <button type="button" data-action="act" data-act="step" data-k="supplies" data-d="1" title="Плюс 1 Припас">+</button></div><button type="button" class="pust-buy-btn" data-action="act" data-act="buy-sup" title="{{v.buy.sup.title}}" {{#if v.buy.sup.off}}disabled{{/if}}><i class="fa-solid fa-cart-shopping"></i> {{v.buy.sup.label}}</button></div>
+        {{/if}}
+        <div class="pust-qi"><span><i class="fa-solid fa-coins pust-qic" aria-hidden="true"></i>Кришки</span><div>
+          <button type="button" data-action="act" data-act="step" data-k="caps" data-d="-1" title="Мінус 1 кришка">−</button>
+          <input class="pust-screen" type="text" data-k="caps" data-num="1" value="{{v.caps}}" aria-label="Кришки">
+          <button type="button" data-action="act" data-act="step" data-k="caps" data-d="1" title="Плюс 1 кришка">+</button></div></div>
+      </div>
+      <div class="pust-qgrp q-xp">
+        <div class="pust-qi"><span title="Очки досвіду. Їх дає кожна провалена перевірка та запитання наприкінці сесії. Наприкінці сесії ОД витрачають на нові перки, навички й атрибути (вкладка «Покращення»)."><i class="fa-solid fa-medal pust-qic" aria-hidden="true"></i>Зароблено ОД</span><div>
+          <button type="button" data-action="act" data-act="step" data-k="xp" data-d="-1" title="Мінус 1 ОД">−</button>
+          <input class="pust-screen" type="text" data-k="xp" data-num="1" value="{{v.xp}}" aria-label="Зароблено ОД">
+          <button type="button" data-action="act" data-act="step" data-k="xp" data-d="1" title="Плюс 1 ОД">+</button>
+          <small class="pust-xpleft {{#if (lt v.xpLeft 0)}}bad{{/if}}" title="Ще не витрачені ОД: {{v.xpLeft}}. Від зароблених віднімається ціна взятих покращень.">лишилося <b>{{v.xpLeft}}</b></small></div></div>
+      </div>
+    </div>
+
+    <div class="pust-qsit">
+      <span class="pust-qlbl"><i class="fa-solid fa-tags pust-qic" aria-hidden="true"></i>Ситуативні аспекти</span>
+      <div class="pust-sitrow">
+        {{#each v.sit}}<span class="pust-sitchip"><span>{{t}}</span>
+          <span class="pust-sinv" title="Безкоштовні Посилення"><button type="button" data-action="act" data-act="sit-inv" data-i="{{i}}" data-d="-1" {{#unless inv}}disabled{{/unless}} aria-label="Мінус 1 безкоштовне Посилення">−</button><b>+{{inv}}</b><button type="button" data-action="act" data-act="sit-inv" data-i="{{i}}" data-d="1" aria-label="Плюс 1 безкоштовне Посилення">+</button></span>
+          <button type="button" class="pust-x" data-action="act" data-act="sit-del" data-i="{{i}}" title="Прибрати аспект «{{t}}»"><i class="fa-solid fa-xmark"></i></button></span>{{/each}}
+        <span class="pust-sitadd"><input type="text" class="pust-sit-new" maxlength="100" placeholder="Новий аспект…" data-ui="sitNew" aria-label="Новий ситуативний аспект"><button type="button" data-action="sitAdd" title="Додати ситуативний аспект: тимчасову обставину, яку можна викликати або нав'язати, як і будь-який інший аспект."><i class="fa-solid fa-plus"></i></button></span>
+      </div>
+      {{#if v.quickAspects.length}}<div class="pust-sitq"><span class="pust-qlbl">Швидкі аспекти:</span>{{#each v.quickAspects}}<button type="button" data-action="act" data-act="sit-quick" data-t="{{t}}" {{#if off}}disabled title="{{why}}"{{/if}}>+ {{t}}</button>{{/each}}</div>{{/if}}
+    </div>
+
+    <div class="pust-qstat {{#if statusFold}}folded{{/if}}">
+    <button type="button" class="pust-qstat-hd" data-action="uiToggle" data-key="statusFold" title="{{#if statusFold}}Розгорнути статуси й відпочинок{{else}}Згорнути статуси й відпочинок{{/if}}">
+      <i class="fa-solid {{#if statusFold}}fa-chevron-right{{else}}fa-chevron-down{{/if}}"></i>
+      <span><i class="fa-solid fa-campground pust-qic" aria-hidden="true"></i>Статуси й відпочинок</span>
+      <span class="pust-qstat-n good" title="Позитивних статусів">+{{v.chipsGood.length}}</span>
+      <span class="pust-qstat-n bad" title="Негативних статусів">−{{v.chipsBad.length}}</span>
+    </button>
+    {{#if v.chips.length}}
+    <div class="pust-status">
+    <div class="pust-status-col good">
+      <div class="pust-status-hd"><i class="fa-solid fa-circle-plus"></i> Позитивні статуси</div>
+      <div class="pust-chips">{{#each v.chipsGood}}<span class="pust-chip good" {{#if tip}}title="{{tip}}"{{/if}}>{{t}}</span>{{else}}<span class="pust-sub">немає</span>{{/each}}</div>
+    </div>
+    <div class="pust-status-col bad">
+      <div class="pust-status-hd"><i class="fa-solid fa-circle-minus"></i> Негативні статуси</div>
+      <div class="pust-chips">{{#each v.chipsBad}}<span class="pust-chip bad" {{#if tip}}title="{{tip}}"{{/if}}>{{t}}</span>{{else}}<span class="pust-sub">немає</span>{{/each}}</div>
+    </div>
+    </div>
+    {{/if}}
+
+    <div class="pust-qbtns">
+      {{#if v.rest.canHeal}}<button type="button" class="pust-rest-btn" data-action="act" data-act="rest" {{#if v.restBlock}}disabled title="{{v.restBlock}}"{{else}}title="Відпочинок довжиною в нічний сон: за 1 Припас відновлює половину максимуму ОЗ. Опції у вкладці «Здоров'я»."{{/if}}>Відпочити · −1 Припас</button>{{/if}}
+      {{!-- the compact sheet shows only the icons (author, 2026-11-17); their names in the tooltips --}}
+      <button type="button" class="pust-qtime" data-action="act" data-act="chem-scene" title="Кінець сцени: спливають ефекти «до кінця сцени» (наприклад, хімія). Зазвичай Доглядач робить це сам для всієї групи."><i class="fa-solid fa-flag-checkered"></i><span>Кінець сцени</span></button>
+      <button type="button" class="pust-qtime" data-action="act" data-act="chem-day" title="Новий день: спершу закінчується сцена, потім скидаються денні ліміти хімії (Стимпак, Хотфікс, Цілющий порошок). Зазвичай Доглядач робить це сам для всієї групи."><i class="fa-solid fa-sun"></i><span>Новий день</span></button>
+      <button type="button" class="pust-qtime" data-action="act" data-act="chem-session" title="Кінець сесії: спершу закінчується сцена, потім Жетони Долі відновлюються до 2 + УДЧ, а модифікації знову дають безкоштовне Посилення. Зазвичай Доглядач робить це сам для всієї групи."><i class="fa-solid fa-moon"></i><span>Кінець сесії</span></button>
+    </div>
+    </div>
+  </section>
+
+  {{#if compact}}
+  {{!-- the chems of «Інший мотлох» with their description: «Вжити», «На ціль» and the rest, as on its cards --}}
+  {{#if cmp.chems.length}}
+  <section class="pust-block pust-cmp-chems">
+    <h3><i class="fa-solid fa-syringe pust-qic" aria-hidden="true"></i>Хімія</h3>
+    {{#each cmp.chems}}
+    <div class="pust-cmp-chem kind-{{kind}}">
+      <div class="pust-cmp-chem-hd">
+        <span class="pust-cmp-cn">{{n}}{{#if q}} <small>×{{q}}</small>{{/if}}</span>
+        {{#if usable}}<button type="button" class="pust-use-btn" data-action="act" data-act="chem-use" data-i="{{i}}" title="Вжити одну дозу"><i class="fa-solid fa-syringe"></i> Вжити</button>
+        <button type="button" class="pust-use-btn pust-use-tgt" data-action="act" data-act="chem-target" data-i="{{i}}" title="Вжити одну дозу на ціль: познач її клавішею T (рівно одну)"><i class="fa-solid fa-crosshairs"></i> На ціль</button>{{/if}}
+        {{#if power}}<button type="button" class="pust-use-btn" data-action="act" data-act="power-use" data-i="{{i}}" title="Спожити один елемент живлення"><i class="fa-solid fa-battery-half"></i> Вжити</button>{{/if}}
+        {{#if booster}}<select data-k="other.{{i}}.attr" title="Атрибут бустера" aria-label="Атрибут бустера">{{#each booster}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>{{/if}}
+        <button type="button" class="pust-x" data-action="act" data-act="row-del" data-l="other" data-i="{{i}}" data-confirm="1" title="Прибрати (натисни двічі)" aria-label="Прибрати"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      {{#if desc}}<p class="pust-cmp-desc">{{desc}}</p>{{/if}}
+      {{#if more}}<div class="pust-cmp-chem-more">
+        {{#if treat}}<button type="button" data-action="act" data-act="chem-treat" data-i="{{i}}" title="Замість ОЗ — пролікувати легкий наслідок">Лікувати легкий наслідок</button>{{/if}}
+      </div>{{/if}}
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
+  {{!-- the rest of «Мотлох» as chips «назва · шкода / броня · кількість · вартість ×», and «+ Річ» for the catalogue --}}
+  <section class="pust-block pust-cmp-gear">
+    <h3><i class="fa-solid fa-box-open pust-qic" aria-hidden="true"></i>Мотлох
+      <button type="button" class="pust-go pust-cmp-add" data-action="uiToggle" data-key="cat" title="Додати зброю, броню чи іншу річ із довідника спорядження">{{#if v.cat}}<i class="fa-solid fa-xmark"></i> Сховати довідник{{else}}<i class="fa-solid fa-plus"></i> Річ{{/if}}</button></h3>
+    <div class="pust-cmp-chips">
+      {{#each cmp.gear}}<span class="pust-cmp-gc kind-{{kind}}"><b>{{n}}</b>{{#if stat}}<span class="pust-cmp-gs {{statCls}}">{{stat}}</span>{{/if}}{{#if q}}<span class="pust-cmp-gq">×{{q}}</span>{{/if}}{{#if price}}<span class="pust-cmp-gp">{{price}}</span>{{/if}}{{#unless locked}}<button type="button" class="pust-cmp-gx" data-action="act" data-act="row-del" data-l="{{l}}" data-i="{{i}}" data-confirm="1" title="Прибрати «{{n}}» (натисни двічі)" aria-label="Прибрати «{{n}}»"><i class="fa-solid fa-xmark"></i></button>{{/unless}}</span>
+      {{else}}<span class="pust-sub">Порожньо.</span>{{/each}}
+    </div>
+    {{#if v.cat}}
+      <div class="pust-addcat pust-catalog-big">
+        <div class="pust-addcat-bar"><i class="fa-solid fa-book-open"></i>
+          <input type="text" placeholder="Пошук у довіднику" data-ui="catQ" value="{{v.catQ}}">
+          <label class="pust-cmp-ico {{#unless cmp.catSecAll}}on{{/unless}}" title="Розділ: {{cmp.catSecName}}"><i class="fa-solid fa-filter"></i><select data-ui="catSec" title="Розділ">{{#each v.catSecs}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>
+          <label class="pust-cmp-ico" title="Сортування: {{cmp.catSortName}}"><i class="fa-solid fa-arrow-down-wide-short"></i><select data-ui="catSort" title="Сортування">{{#each v.catSorts}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>
+          <button type="button" class="pust-x" data-action="uiToggle" data-key="cat" title="Сховати довідник"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="pust-addcat-list">
+          <p class="pust-sub pust-cat-count">Знайдено {{v.catalog.total}} з {{v.catalog.all}}</p>
+          {{#if v.designerBig.length}}<h4>Дизайнерські</h4>
+          {{#each v.designerBig}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b> <small class="pust-cat-d">дизайнерський</small> <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span><small class="pust-cat-price">{{price}} к</small>
+            <button type="button" class="pust-pick-add" data-action="drugAdd" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}{{/if}}
+          {{#each v.catalog.groups}}<h4>{{g}}</h4>
+          {{#each items}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b>{{#if d}} <small class="pust-cat-d">{{d}}</small>{{/if}}{{#if addict}} <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{/if}}{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span>{{#if price}}<small class="pust-cat-price">{{price}} к</small>{{/if}}
+            <button type="button" class="pust-pick-add" data-action="act" data-act="cat-add" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}
+          {{else}}<p class="pust-sub">Нічого не знайдено.</p>{{/each}}
+        </div>
+      </div>
+    {{/if}}
+  </section>
+  {{else}}
+  {{#if v.issues.length}}
+  <section class="pust-issues">
+    <div class="pust-issues-hd"><i class="fa-solid fa-triangle-exclamation"></i> Сповіщення й попередження <small>{{v.issues.length}}</small></div>
+    {{#each v.issues}}<div class="pust-issue {{lvl}}">{{msg}}</div>{{/each}}
+  </section>
+  {{/if}}
+
+  <nav class="pust-tabs">
+    <a data-action="pustTab" data-tab="build" class="{{#if (eq tab 'build')}}active{{/if}}">Атрибути й навички</a>
+    <a data-action="pustTab" data-tab="perks" class="{{#if (eq tab 'perks')}}active{{/if}}">Перки й особливості</a>
+    <a data-action="pustTab" data-tab="gear" class="{{#if (eq tab 'gear')}}active{{/if}}">Мотлох</a>
+    <a data-action="pustTab" data-tab="health" class="{{#if (eq tab 'health')}}active{{/if}}">Здоров'я</a>
+    <a data-action="pustTab" data-tab="notes" class="{{#if (eq tab 'notes')}}active{{/if}}">Записи</a>
+    <a data-action="pustTab" data-tab="xp" class="{{#if (eq tab 'xp')}}active{{/if}}">Покращення</a>
+    <a data-action="pustTab" data-tab="settings" class="pust-tab-ico {{#if (eq tab 'settings')}}active{{/if}}" title="Налаштування" aria-label="Налаштування"><i class="fa-solid fa-gear"></i></a>
+  </nav>
+
+  <div class="pust-body">
+
+  {{!-- ===== Атрибути й навички ===== --}}
+  {{#if (eq tab 'build')}}
+    <div class="pust-tools pust-tools-top">
+      <button type="button" data-action="act" data-act="apply-arch" {{#unless v.arch}}disabled{{/unless}} title="{{#if v.arch}}Атрибути, навички й перки за архетипом «{{v.arch}}»{{else}}Спершу обери архетип{{/if}}"><i class="fa-solid fa-wand-magic-sparkles"></i> Заповнити за архетипом</button>
+    </div>
+    <div class="pust-cols pust-cols-eq">
+      <section class="pust-block pust-attrs">
+        <h3>Атрибути <small class="pust-h3-line {{#if (lt v.points.left 0)}}bad{{/if}}">вільних пунктів: {{v.points.left}} з {{v.points.total}}</small></h3>
+        <div class="pust-attr pust-attr-hd" title="Межі атрибутів залежать від виду"><span></span><span></span><span></span><span></span>
+          <span>мін.</span><span>старт</span><span>макс.</span></div>
+        {{#each v.attrs}}
+        <div class="pust-attr">
+          <span class="pust-attr-head">
+            <a class="pust-roll pust-attr-name" data-action="checkPanel" data-attr="{{k}}" data-pust-tip="{{tip}}"><span class="pust-abbr">{{s}}</span> <span class="pust-attr-full">{{n}}</span></a>
+            {{#if changed}}<span class="pust-now" title="Зараз, з хімією: {{chemNote}}">зараз {{nowS}}</span>{{/if}}
+          </span>
+          <button type="button" data-action="act" data-act="attr" data-k="{{k}}" data-d="-1" {{#unless canDown}}disabled{{/unless}}>−</button>
+          <span class="pust-val" title="Вкладено пунктів: {{baseS}}">{{effS}}</span>
+          <button type="button" data-action="act" data-act="attr" data-k="{{k}}" data-d="1" {{#unless canUp}}disabled{{/unless}}>+</button>
+          <span class="pust-lim">{{lim.min}}</span><span class="pust-lim">{{lim.start}}</span><span class="pust-lim max">{{lim.max}}</span>
+        </div>
+        {{/each}}
+      </section>
+
+      <section class="pust-block" data-go="skills">
+        <h3>Навички <small class="pust-h3-line {{#unless v.skillBudget.ok}}bad{{/unless}}">{{v.skillBudget.text}}</small></h3>
+        {{#each v.skills}}
+        <div class="pust-skill lv{{lv}}">
+          <a class="pust-roll" data-action="checkPanel" data-skill="{{s}}" data-pust-tip="{{tip}}">{{s}}</a>
+          <span class="pust-dots">
+            {{#each dots}}<button type="button" class="dot {{#if on}}on{{/if}} {{#if over}}over{{/if}} {{#if locked}}locked{{/if}}" data-action="act" data-act="skill" data-s="{{../s}}" data-l="{{j}}" title="{{why}}" {{#if locked}}aria-disabled="true"{{/if}}></button>{{/each}}
+          </span>
+          <span class="pust-sklv">{{#if lv}}<span class="pust-sklvl">{{level}}</span><span class="pust-skdie">{{die}}</span>{{else}}<span class="pust-sub">—</span>{{/if}}</span>
+        </div>
+        {{/each}}
+      </section>
+    </div>
+  {{/if}}
+
+  {{!-- ===== Перки й особливості (дві колонки) ===== --}}
+  {{#if (eq tab 'perks')}}
+    <div class="pust-cols">
+    <section class="pust-block" data-go="perks">
+      <h3>Перки <small class="{{#if (gt v.perksCounted v.perkSlots)}}bad{{/if}}">{{v.perksCounted}} з {{v.perkSlots}}</small></h3>
+      <div class="pust-tools pust-tools-row">
+        <button type="button" class="pust-go" data-action="pick" data-pick="perk" title="{{#if (eq v.pick 'perk')}}Сховати список перків{{else}}Додати перк зі списку{{/if}}">{{#if (eq v.pick 'perk')}}Сховати{{else}}+ Додати{{/if}}</button>
+        <button type="button" data-action="act" data-act="roll-perks" data-confirm="1" {{#unless v.arch}}disabled{{/unless}} title="Кинути перки за архетипом"><i class="fa-solid fa-dice"></i> Кинути</button>
+        <button type="button" data-action="customForm" data-kind="perk" title="Свій перк (не з книги)">+ Свій</button>
+      </div>
+      {{#each v.perks}}
+      <div class="pust-item pust-card perk {{#unless ok}}bad{{/unless}}">
+        <div class="pust-item-head">
+          <b>{{n}}</b>{{#if custom}} <small>(свій)</small>{{/if}}
+          {{#if req}}<small class="pust-sub pust-req" title="Вимоги для створення персонажа">вимоги: {{req}}</small>{{/if}}
+          {{#if erudite}}
+            <select data-change="erudit" data-i="{{i}}">{{#each eruditeOptions}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>
+          {{else if (eq n "Улюблена зброя")}}
+            {{#if @root.v.favWeapon}}<select data-change="fav" class="pust-note" title="Яка зброя улюблена">{{#each @root.v.favWeapon}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>{{/if}}
+          {{else if needNote}}
+            <input type="text" class="pust-note" data-k="perks.{{i}}.note" value="{{note}}" placeholder="{{notePh}}">
+          {{/if}}
+          <button type="button" class="pust-x" data-action="act" data-act="perk-del" data-i="{{i}}" data-confirm="1" title="Прибрати"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        {{#unless ok}}<div class="pust-why">{{why}}</div>{{/unless}}
+        {{#if rage}}<div class="pust-tools"><button type="button" data-action="act" data-act="rage" {{#if rage.used}}disabled{{/if}}>{{#if rage.active}}Лють триває{{else if rage.used}}Вже було в цій сесії{{else}}Активувати лють{{/if}}</button></div>{{/if}}
+        {{#if custom}}
+        <textarea data-k="{{path}}.d" rows="2" placeholder="Опис: що дає й коли діє">{{d}}</textarea>
+        <label class="pust-tog"><input type="checkbox" data-k="{{path}}.extra" {{#if extra}}checked{{/if}}> поза лімітом (нагорода чи рішення Доглядача)</label>
+        {{else}}<div class="pust-text pust-desc">{{text}}</div>{{/if}}
+      </div>
+      {{/each}}
+      {{#if v.freePerks.length}}<div class="pust-sub">Безкоштовно від особливостей: {{#each v.freePerks}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</div>{{/if}}
+      {{#if (eq v.pick "perk")}}{{> pustPicker list=v.perkPicker kind="perk" q=v.q showAll=v.showAll}}{{/if}}
+    </section>
+
+    <div class="pust-col">
+    <section class="pust-block" data-go="feats">
+      <h3>Особливості <small class="{{#if (gt v.featsCounted 2)}}bad{{/if}}">{{v.featsCounted}} з 2</small></h3>
+      <div class="pust-tools pust-tools-row">
+        <button type="button" class="pust-go" data-action="pick" data-pick="feat" title="{{#if (eq v.pick 'feat')}}Сховати список особливостей{{else}}Додати особливість зі списку{{/if}}">{{#if (eq v.pick 'feat')}}Сховати{{else}}+ Додати{{/if}}</button>
+        <button type="button" data-action="act" data-act="roll-feats" data-confirm="1" {{#unless v.arch}}disabled{{/unless}} title="Кинути особливості за архетипом"><i class="fa-solid fa-dice"></i> Кинути</button>
+        <button type="button" data-action="customForm" data-kind="feat" title="Своя особливість (не з книги)">+ Своя</button>
+      </div>
+      {{#if v.hasModel}}
+      <div class="pust-row"><label>Експериментальна модель дає</label>
+        <select data-k="exp"><option value="perk" {{#if (eq v.modelBonus 'perk')}}selected{{/if}}>перк</option><option value="skill" {{#if (eq v.modelBonus 'skill')}}selected{{/if}}>навичку</option><option value="point" {{#if (eq v.modelBonus 'point')}}selected{{/if}}>пункт атрибута</option></select>
+      </div>
+      {{/if}}
+      {{#each v.feats}}
+      <div class="pust-item pust-card feat {{#unless ok}}bad{{/unless}}">
+        <div class="pust-item-head">
+          <b>{{n}}</b>{{#if custom}} <small>(своя)</small>{{/if}}
+          {{#if grant}}<select class="pust-note" data-change="grant" data-n="{{n}}" title="Навичка, яку дає «{{n}}»: нова на рівні учня або з учня до підмайстра">{{#each grant}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>
+          {{else if needNote}}<input type="text" class="pust-note" data-k="featNotes.{{n}}" value="{{note}}" placeholder="{{notePh}}">{{/if}}
+          <button type="button" class="pust-x" data-action="act" data-act="feat-del" data-i="{{i}}" data-confirm="1" title="Прибрати"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        {{#unless ok}}<div class="pust-why">{{why}}</div>{{/unless}}
+        {{#if custom}}
+        <textarea data-k="{{path}}.d" rows="2" placeholder="Опис: що дає й коли діє">{{d}}</textarea>
+        <label class="pust-tog"><input type="checkbox" data-k="{{path}}.extra" {{#if extra}}checked{{/if}}> поза лімітом (нагорода чи рішення Доглядача)</label>
+        {{else}}<div class="pust-text pust-desc">{{text}}</div>{{/if}}
+      </div>
+      {{/each}}
+      {{#if (eq v.pick "feat")}}{{> pustPicker list=v.featPicker kind="feat" q=v.q showAll=v.showAll}}{{/if}}
+    </section>
+    {{#if v.speciesProps.length}}
+    <details class="pust-block pust-props" {{#if v.propsOpen}}open{{/if}}>
+      <summary title="Розгорнути чи згорнути"><h3><i class="fa-solid fa-chevron-right pust-fold-ico"></i> Видові властивості <small>{{v.speciesProps.length}}</small></h3></summary>
+      {{#each v.speciesProps}}
+      <div class="pust-item">
+        {{#if n}}<div class="pust-item-head"><b>{{n}}</b></div>{{/if}}
+        <div class="pust-text pust-desc">{{text}}</div>
+      </div>
+      {{/each}}
+    </details>
+    {{/if}}
+    </div>
+    </div>
+  {{/if}}
+
+  {{!-- ===== Покращення ===== --}}
+  {{#if (eq tab 'xp')}}
+    <section class="pust-block pust-imps">
+      <h3>Покращення</h3>
+      <div class="pust-xpbar">
+        <div class="pust-qi"><span>Зароблено ОД</span><div>
+          <button type="button" data-action="act" data-act="step" data-k="xp" data-d="-1" title="Мінус 1 ОД">−</button>
+          <input class="pust-screen" type="text" data-k="xp" data-num="1" value="{{v.xp}}" aria-label="Зароблено ОД">
+          <button type="button" data-action="act" data-act="step" data-k="xp" data-d="1" title="Плюс 1 ОД">+</button></div></div>
+        <div class="pust-xps"><span>витрачено</span><b>{{v.xpSpent}}</b></div>
+        <div class="pust-xps {{#if (lt v.xpLeft 0)}}bad{{/if}}"><span>лишилося</span><b>{{v.xpLeft}}</b></div>
+      </div>
+      <p class="pust-imp-hint">Натисни на квадрат, щоб узяти покращення. Атрибут і навичку обери одразу: від цього залежать межі й ціна.</p>
+      <div class="pust-imp-cols">
+      <div class="pust-imp-list">
+        {{#each v.imps}}
+        <div class="pust-imp2 {{#if taken}}taken{{/if}}">
+          <span class="pust-imp-ico">{{ico}}</span>
+          <span class="pust-imp-name"><b>{{t}}</b>{{#if sub}} <small>{{sub}}</small>{{/if}}</span>
+          <span class="pust-imp-cost">{{costLabel}} <small>ОД</small></span>
+          <span class="pust-imp-slots">
+            {{#each slots}}
+            <span class="pust-slot {{#if on}}on{{/if}} {{#if bad}}bad{{/if}}">
+              <input type="checkbox" class="pust-lamp" data-action="act" data-act="imp" data-k="{{../k}}" data-i="{{i}}" {{#if on}}checked{{/if}} title="{{../t}}{{#if ../sub}} ({{../sub}}){{/if}}: {{cost}} ОД">
+              {{#if (and on targets)}}<select data-k="imp.{{../k}}.{{i}}.t" aria-label="Ціль покращення">{{#each targets}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>{{/if}}
+            </span>
+            {{/each}}
+          </span>
+        </div>
+        {{/each}}
+      </div>
+        <details class="pust-xphelp pust-fold" data-fold="xpHelpOpen" {{#if ui.xpHelpOpen}}open{{/if}}>
+        <summary><i class="fa-solid fa-chevron-right pust-fold-ico"></i> <i class="fa-solid fa-circle-question"></i> Як заробляти ОД</summary>
+        <div class="pust-xphelp-body">
+          <p>Є чотири основні способи отримати ОД:</p>
+          <ul>
+            <li><b>Невдачі в перевірках.</b> Кожна провалена перевірка дає персонажеві, який її робив, 1 ОД. З перком «Старанний учень» за перші три невдачі в сесії — по 2 ОД.</li>
+            <li><b>Групові запитання наприкінці сесії.</b> За кожне «так» кожен персонаж у групі отримує 1 ОД, якщо Доглядач погоджується.
+              <ul><li>Чи заробили ми пристойну суму кришок (зазвичай 25 або більше)?</li><li>Чи дізналися ми щось нове й цікаве про ігровий світ?</li><li>Чи побували ми в поселенні, де наш караван ще ніколи не був?</li><li>Чи подолали ми тяжке випробування й чи впоралися з небезпечними супротивниками?</li></ul></li>
+            <li><b>Особисті запитання наприкінці сесії.</b> За кожне «так» персонаж отримує 1 ОД, якщо Доглядач погоджується.
+              <ul><li>Чи діяв я відповідно до Концепції персонажа, навіть якщо це було йому невигідно чи поставило його в ризиковане становище?</li><li>Чи відчутно заважала моєму персонажеві його Проблема і чи поставила вона його чи караван у ризиковане становище?</li><li>Чи зробив я щось, що суттєво наблизило мого персонажа до його Цілі?</li></ul></li>
+            <li><b>Привал під час подорожі.</b> Раз за сесію, коли персонажі мають кілька днів спільного часу в дорозі, можна влаштувати сцену біля багаття. Кожен гравець від імені свого персонажа ставить запитання іншому персонажеві: про минуле, цілі, особистість, ставлення до когось або просто просить розповісти байку. Якщо персонаж відповідає чесно, він отримує 1 ОД. Доглядач у цій сцені запитань не ставить.</li>
+          </ul>
+          <p>Витрачати ОД на покращення можна наприкінці сесії. Вартість будь-якого покращення ніколи не може бути меншою за 5 ОД.</p>
+        </div>
+      </details>
+      </div>
+    </section>
+  {{/if}}
+
+  {{!-- ===== Здоров'я ===== --}}
+  {{#if (eq tab 'health')}}
+    {{!-- a robot rests only with «Кіборг» or «Ремонтні протоколи»; otherwise no Відпочинок block at all --}}
+    {{#if v.rest.canHeal}}
+    <section class="pust-block">
+        <h3>Відпочинок <small>Припасів: {{v.rest.sup}}{{#if v.rest.rested}}, сьогодні вже відпочивали{{/if}}</small></h3>
+        <div class="pust-tools pust-rest">
+          <label class="pust-tog"><input type="checkbox" data-ui-rest="restBed" {{#if restUi.restBed}}checked{{/if}}> ліжко для хворого</label>
+          <label class="pust-tog"><input type="checkbox" data-ui-rest="restMedic" {{#if restUi.restMedic}}checked{{/if}}> догляд медика</label>
+          {{#if v.rest.ghoul}}<label class="pust-tog"><input type="checkbox" data-ui-rest="restRad" {{#if restUi.restRad}}checked{{/if}}> джерело радіації</label>{{/if}}
+          {{#if v.rest.qr}}<select data-ui-rest="restQr"><option value="hp" {{#if (eq restUi.restQr 'hp')}}selected{{/if}}>Швидке відновлення: +1d6 ОЗ</option><option value="cons" {{#if (eq restUi.restQr 'cons')}}selected{{/if}}>Швидке відновлення: наслідок</option></select>{{/if}}
+          <button type="button" class="pust-rest-btn" data-action="act" data-act="rest" {{#unless v.rest.canHeal}}title="{{v.rest.why}}"{{/unless}}>Відпочити (−1 Припас)</button>
+        </div>
+        {{#if v.chem.restLast}}<p class="pust-log">{{v.chem.restLast}}</p>{{/if}}
+      </section>
+    {{/if}}
+    <div class="pust-cols">
+      <section class="pust-block">
+          <h3>Наслідки</h3>
+          {{#each v.cons}}
+          <div class="pust-row pust-cons cons-{{k}} {{#if v}}filled{{/if}} {{#if treated}}treated{{/if}}">
+            <label>{{label}}</label>
+            <input type="text" data-k="cons.{{k}}" value="{{v}}">
+            {{#if v}}{{#unless treated}}<button type="button" class="pust-buy-btn pust-buy-paper" data-action="act" data-act="buy-cons" data-k="{{k}}" title="{{buy.title}}" {{#if buy.off}}disabled{{/if}}><i class="fa-solid fa-kit-medical"></i> Вилікувати за {{buy.price}}(к)</button>{{/unless}}{{/if}}
+            <label class="pust-tog" title="Лікування почалося"><input type="checkbox" data-k="consT.{{k}}" {{#if treated}}checked{{/if}} {{#unless v}}disabled{{/unless}}> проліковано</label>
+          </div>
+          {{/each}}
+          <div class="pust-row pust-hpred">
+            <label>Мінус до макс. ОЗ (невдале лікування)</label>
+            <button type="button" data-action="act" data-act="step" data-k="hpRed" data-d="-1">−</button>
+            <input type="text" class="pust-num pust-screen" data-k="hpRed" data-num="1" value="{{v.hpRed}}" aria-label="Мінус до максимуму ОЗ">
+            <button type="button" data-action="act" data-act="step" data-k="hpRed" data-d="1">+</button>
+          </div>
+        </section>
+      <section class="pust-block">
+          <h3>Хімія та залежності</h3>
+          <div class="pust-tools pust-tools-row">
+            <button type="button" data-action="act" data-act="chem-scene" title="Кінець сцени: спливають ефекти «до кінця сцени» (наприклад, хімія). Зазвичай Доглядач робить це сам для всієї групи.">Кінець сцени</button>
+            <button type="button" data-action="act" data-act="chem-day" title="Новий день: спершу закінчується сцена, потім скидаються денні ліміти хімії (Стимпак, Хотфікс, Цілющий порошок). Зазвичай Доглядач робить це сам для всієї групи.">Новий день</button>
+            <button type="button" data-action="act" data-act="chem-session" title="Кінець сесії: спершу закінчується сцена, потім Жетони Долі відновлюються до 2 + УДЧ, а модифікації знову дають безкоштовне Посилення. Зазвичай Доглядач робить це сам для всієї групи.">Кінець сесії</button>
+          </div>
+          {{#if v.chem.last}}<p class="pust-log">{{v.chem.last}}</p>{{/if}}
+          {{#each v.chem.effects}}
+          <div class="pust-row pust-eff"><b>{{drug}}</b> <span>{{t}}</span> <small class="pust-sub">до кінця: {{when}}</small>
+            <button type="button" class="pust-x" data-action="act" data-act="chem-eff-del" data-id="{{id}}" title="Прибрати ефект"><i class="fa-solid fa-xmark"></i></button></div>
+          {{/each}}
+          {{#if v.chem.addictions.length}}<h4>Залежності</h4>{{/if}}
+          {{#each v.chem.addictions}}
+          <div class="pust-row pust-addict {{#if used}}used{{/if}}">
+            <label class="pust-tog"><input type="checkbox" data-change="chem-used" data-drug="{{drug}}" {{#if used}}checked{{/if}}> вжито в цій сесії</label>
+            <b>{{drug}}</b>{{#if src}} <small class="pust-sub">({{src}})</small>{{/if}}{{#if incurable}} <small class="pust-incurable">невиліковна</small>{{/if}}
+            {{#unless src}}<button type="button" class="pust-x" data-action="act" data-act="chem-add-del" data-i="{{i}}" title="Прибрати"><i class="fa-solid fa-xmark"></i></button>{{/unless}}
+          </div>
+          {{/each}}
+          <div class="pust-row">
+            <input type="text" placeholder="Нова залежність (речовина)" data-ui="chemNew">
+            <button type="button" data-action="addictionAdd">Додати залежність</button>
+          </div>
+          {{#if v.chem.ko}}
+          {{> pustKo v=v}}
+          {{/if}}
+        </section>
+    </div>
+  {{/if}}
+
+  {{!-- ===== Мотлох ===== --}}
+  {{#if (eq tab 'gear')}}
+    <div class="pust-cols pust-cols-eq pust-supcaps" data-go="gear">
+      <section class="pust-block pust-supplies">
+        <h3>Припаси</h3>
+        <div class="pust-row">
+          {{#if v.supLamps}}<span class="pust-dots pust-sup-dots">{{#each v.supDots}}<button type="button" class="dot {{#if on}}on{{/if}}" data-action="act" data-act="sup-set" data-n="{{n}}" title="Припасів: {{n}}"></button>{{/each}}</span>
+          {{else}}<span class="pust-sup-step">
+            <button type="button" data-action="act" data-act="step" data-k="supplies" data-d="-1" title="Мінус 1 Припас">−</button>
+            <input type="text" class="pust-screen" data-k="supplies" data-num="1" value="{{v.supplies}}" aria-label="Припаси"><b>/ {{v.supMax}}</b>
+            <button type="button" data-action="act" data-act="step" data-k="supplies" data-d="1" title="Плюс 1 Припас">+</button></span>{{/if}}
+        </div>
+      </section>
+      <section class="pust-block pust-caps">
+        <h3>Кришки</h3>
+        <div class="pust-row">
+          <button type="button" data-action="act" data-act="step" data-k="caps" data-d="-1">−</button>
+          <input type="text" class="pust-screen pust-num pust-caps-num" data-k="caps" data-num="1" value="{{v.caps}}" aria-label="Кришки">
+          <button type="button" data-action="act" data-act="step" data-k="caps" data-d="1">+</button>
+          <span class="pust-sub">(к)</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="pust-tools pust-tools-top">
+      <button type="button" class="pust-go" data-action="uiToggle" data-key="cat" title="Додати зброю, броню чи іншу річ із довідника спорядження">{{#if v.cat}}<i class="fa-solid fa-xmark"></i> Сховати довідник{{else}}<i class="fa-solid fa-book-open"></i> + Річ з довідника{{/if}}</button>
+      <button type="button" data-action="act" data-act="roll-gear" data-confirm="1" {{#unless v.arch}}disabled{{/unless}} title="{{#if v.arch}}Кинути стартове спорядження за архетипом «{{v.arch}}»{{else}}Спершу обери архетип{{/if}}"><i class="fa-solid fa-dice"></i> Кинути стартове спорядження</button>
+    </div>
+    {{#if v.cat}}
+      <div class="pust-addcat pust-catalog-big">
+        <div class="pust-addcat-bar"><i class="fa-solid fa-book-open"></i>
+          <input type="text" placeholder="Пошук у довіднику" data-ui="catQ" value="{{v.catQ}}">
+          <select data-ui="catSec" title="Розділ">{{#each v.catSecs}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>
+          <select data-ui="catSort" title="Сортування">{{#each v.catSorts}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>
+          <button type="button" class="pust-x" data-action="uiToggle" data-key="cat" title="Сховати довідник"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="pust-addcat-list">
+          <p class="pust-sub pust-cat-count">Знайдено {{v.catalog.total}} з {{v.catalog.all}}</p>
+          {{#if v.designerBig.length}}<h4>Дизайнерські</h4>
+          {{#each v.designerBig}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b> <small class="pust-cat-d">дизайнерський</small> <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span><small class="pust-cat-price">{{price}} к</small>
+            <button type="button" class="pust-pick-add" data-action="drugAdd" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}{{/if}}
+          {{#each v.catalog.groups}}<h4>{{g}}</h4>
+          {{#each items}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b>{{#if d}} <small class="pust-cat-d">{{d}}</small>{{/if}}{{#if addict}} <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{/if}}{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span>{{#if price}}<small class="pust-cat-price">{{price}} к</small>{{/if}}
+            <button type="button" class="pust-pick-add" data-action="act" data-act="cat-add" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}
+          {{else}}<p class="pust-sub">Нічого не знайдено.</p>{{/each}}
+        </div>
+      </div>
+    {{/if}}
+    {{!-- «Мотлох» (author, 2026-11-15): Зброя and Броня on the left, Інший мотлох on the right (one column on a narrower
+         sheet); every thing is a card read top to bottom, each field with a chip naming it --}}
+    <div class="pust-gear-cols">
+    <div class="pust-gear-col">
+    <section class="pust-block">
+      <h3>Зброя</h3>
+      {{#if v.weapons.length}}
+      <div class="pust-gcards pust-gcards-weapons">
+        {{#each v.weapons}}
+        <div class="pust-gcard pust-gc kind-{{kind}} {{#if hand}}on{{/if}}">
+          <div class="pust-gc-head">
+            <div class="pust-gf2"><label class="pust-fchip pust-fchip-tog pust-gc-on" title="Зброя в руках"><input type="checkbox" data-k="weapons.{{i}}.hand" {{#if hand}}checked{{/if}} aria-label="У руках"> У руках</label><input type="text" data-k="weapons.{{i}}.n" value="{{n}}" placeholder="Назва" class="pust-gname" aria-label="Назва" {{#if auto}}readonly{{/if}}></div>
+            <a class="pust-roll pust-gc-atk" data-action="checkPanel" data-weapon="{{i}}" title="Атака цією зброєю: «Зробити перевірку». Перетягни на панель макросів, щоб атакувати звідти" aria-label="Атака цією зброєю"><i class="fa-solid fa-dice-d20"></i></a>
+            <label class="pust-fchip pust-fchip-tog pust-heavy {{#if h}}on{{/if}}" title="Важка річ: рахується у важких речах"><input type="checkbox" data-k="weapons.{{i}}.h" {{#if h}}checked{{/if}} aria-label="Важка"> Важка</label>
+            {{#unless locked}}<button type="button" class="pust-x" data-action="act" data-act="row-del" data-l="weapons" data-i="{{i}}" data-confirm="1" title="Прибрати"><i class="fa-solid fa-xmark"></i></button>{{/unless}}
+          </div>
+          <label class="pust-gf2 pust-gc-full"><span class="pust-fchip">Примітка</span><textarea rows="1" data-k="weapons.{{i}}.note" placeholder="—" class="pust-gnote-ta" aria-label="Примітка">{{note}}</textarea></label>
+          <label class="pust-gf2"><span class="pust-fchip">Тип</span>
+            <select data-change="dtype" data-i="{{i}}" title="Тип шкоди: енергетична версія (лазерна, електрична, плазмова, кріо, гаус) змінює правила зброї; вогонь, пси, отрута й радіація — лише колір шкоди" class="pust-en">{{#each energyOptions}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>
+          <div class="pust-gf2"><span class="pust-fchip">Шкода</span>
+            <textarea rows="1" data-k="weapons.{{i}}.d" placeholder="—" aria-label="Шкода" class="pust-dmg pust-dmg-in pust-dtin dt-{{dt}} {{#if dEff}}pust-cryo{{/if}}" {{#if dEff}}data-base="{{d}}" data-eff="{{dEff}}" title="Кріо: шкода на ступінь нижча — {{dEff}} (базова {{d}}). Клацни, щоб змінити базову"{{else}}title="Шкода. Кілька типів — у квадратних дужках: 1d10[отрута]+2d6[пси]"{{/if}}>{{#if dEff}}{{dEff}}{{else}}{{d}}{{/if}}</textarea>
+            <a class="pust-roll" data-action="weaponDamage" data-weapon="{{i}}" title="Кинути шкоду цієї зброї (без перевірки) — результат у чат"><i class="fa-solid fa-crosshairs"></i></a></div>
+          <label class="pust-gf2"><span class="pust-fchip">Вартість</span><input type="text" data-k="weapons.{{i}}.price" value="{{price}}" placeholder="—" class="pust-price" aria-label="Вартість"></label>
+          {{#if builtin}}<label class="pust-gf2 pust-gc-full"><span class="pust-fchip">Вбудована</span><select data-k="weapons.{{i}}.cat" title="Вбудована зброя">{{#each builtin}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>{{/if}}
+          {{#if guns}}
+          {{!-- the Guns add-on (author, 2026-11-15): the same glued chip + field pairs as the rest of the card --}}
+          <label class="pust-gf2"><span class="pust-fchip">Дальність</span><select data-k="weapons.{{i}}.r" aria-label="Дальність">{{#each rangeOptions}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>
+          <label class="pust-gf2"><span class="pust-fchip">Режим вогню</span><select data-k="weapons.{{i}}.rof" aria-label="Режим вогню">{{#each rofOptions}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>
+          <label class="pust-gf2"><span class="pust-fchip">Клас</span><select data-k="weapons.{{i}}.cls" aria-label="Клас">{{#each clsOptions}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>
+          {{#each mods}}<div class="pust-gf2 pust-gc-full pust-modrow"><span class="pust-fchip">Мод {{add j 1}}</span>
+            <span class="pust-sitchip pust-modchip {{#unless set}}empty{{/unless}}"><textarea rows="1" data-k="weapons.{{../i}}.mods.{{j}}.n" placeholder="назва модифікації" class="pust-mod" aria-label="Модифікація {{add j 1}}">{{n}}</textarea>
+              {{#if set}}<span class="pust-sinv" title="Безкоштовні Посилення: на сесію {{#if crit}}2{{else}}1{{/if}}"><button type="button" data-action="act" data-act="mod-inv" data-l="weapons" data-i="{{../i}}" data-j="{{j}}" data-d="-1" {{#unless inv}}disabled{{/unless}} aria-label="Мінус 1 безкоштовне Посилення">−</button><b>+{{inv}}</b><button type="button" data-action="act" data-act="mod-inv" data-l="weapons" data-i="{{../i}}" data-j="{{j}}" data-d="1" aria-label="Плюс 1 безкоштовне Посилення">+</button></span>
+              <button type="button" class="pust-modcrit {{#if crit}}on{{/if}}" data-action="act" data-act="mod-crit" data-l="weapons" data-i="{{../i}}" data-j="{{j}}" aria-pressed="{{#if crit}}true{{else}}false{{/if}}" title="Модифікація вийшла дуже вдалою (19+): 2 безкоштовні Посилення на сесію">крит</button>{{/if}}</span></div>{{/each}}
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+      <div class="pust-tools"><button type="button" class="pust-go pust-addbtn {{#if (eq v.addPick "weapons")}}on{{/if}}" data-action="addPick" data-l="weapons" title="Додати з довідника або порожній рядок"><i class="fa-solid fa-plus"></i> Зброя</button>
+      </div>
+      {{#if (eq v.addPick "weapons")}}<div class="pust-addcat">
+        <div class="pust-addcat-bar"><i class="fa-solid fa-book-open"></i>
+          <input type="text" placeholder="Пошук у довіднику" data-ui="addQ" value="{{v.addQ}}">
+          <select data-ui="catSort" title="Сортування">{{#each v.catSorts}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>
+          <button type="button" class="pust-x" data-action="addPick" data-l="" title="Сховати довідник"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="pust-addcat-list">
+          <div class="pust-cat-row pust-cat-blank"><span><b>Інше</b> <small class="pust-sub">порожня річ — заповни сам</small></span>
+            <button type="button" class="pust-pick-add" data-action="act" data-act="row-add" data-l="weapons"><i class="fa-solid fa-plus"></i> Додати</button></div>
+          {{#each v.addCat.groups}}<h4>{{g}}</h4>
+          {{#each items}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b>{{#if d}} <small class="pust-cat-d">{{d}}</small>{{/if}}{{#if addict}} <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{/if}}{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span>{{#if price}}<small class="pust-cat-price">{{price}} к</small>{{/if}}
+            <button type="button" class="pust-pick-add" data-action="act" data-act="cat-add" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}
+          {{else}}<p class="pust-sub">Нічого не знайдено.</p>{{/each}}
+        </div>
+      </div>{{/if}}
+    </section>
+
+    <section class="pust-block">
+      <h3>Броня</h3>
+      {{#if v.armorList.length}}
+      <div class="pust-gcards pust-gcards-armor">
+        {{#each v.armorList}}
+        <div class="pust-gcard pust-gc kind-{{kind}} {{#if w}}on{{/if}}">
+          <div class="pust-gc-head">
+            <div class="pust-gf2"><label class="pust-fchip pust-fchip-tog pust-gc-on" title="Броня вдягнена"><input type="checkbox" data-k="armor.{{i}}.w" {{#if w}}checked{{/if}} aria-label="Вдягнена"> Вдягнена</label><input type="text" data-k="armor.{{i}}.n" value="{{n}}" placeholder="Назва" class="pust-gname" aria-label="Назва"></div>
+            <label class="pust-fchip pust-fchip-tog pust-heavy {{#if h}}on{{/if}}" title="Важка річ: рахується у важких речах"><input type="checkbox" data-k="armor.{{i}}.h" {{#if h}}checked{{/if}} aria-label="Важка"> Важка</label>
+            <button type="button" class="pust-x" data-action="act" data-act="row-del" data-l="armor" data-i="{{i}}" data-confirm="1" title="Прибрати"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <label class="pust-gf2 pust-gc-full"><span class="pust-fchip">Примітка</span><textarea rows="1" data-k="armor.{{i}}.note" placeholder="—" class="pust-gnote-ta" aria-label="Примітка">{{note}}</textarea></label>
+          <label class="pust-gf2"><span class="pust-fchip">Броня</span><input type="text" data-k="armor.{{i}}.v" value="{{v}}" placeholder="—" class="pust-dmg" aria-label="Броня"></label>
+          <label class="pust-gf2"><span class="pust-fchip">Вартість</span><input type="text" data-k="armor.{{i}}.price" value="{{price}}" placeholder="—" class="pust-price" aria-label="Вартість"></label>
+          {{#if guns}}{{#each mods}}<div class="pust-gf2 pust-gc-full pust-modrow"><span class="pust-fchip">Мод {{add j 1}}</span>
+            <span class="pust-sitchip pust-modchip {{#unless set}}empty{{/unless}}"><textarea rows="1" data-k="armor.{{../i}}.mods.{{j}}.n" placeholder="назва модифікації" class="pust-mod" aria-label="Модифікація {{add j 1}}">{{n}}</textarea>
+              {{#if set}}<span class="pust-sinv" title="Безкоштовні Посилення: на сесію {{#if crit}}2{{else}}1{{/if}}"><button type="button" data-action="act" data-act="mod-inv" data-l="armor" data-i="{{../i}}" data-j="{{j}}" data-d="-1" {{#unless inv}}disabled{{/unless}} aria-label="Мінус 1 безкоштовне Посилення">−</button><b>+{{inv}}</b><button type="button" data-action="act" data-act="mod-inv" data-l="armor" data-i="{{../i}}" data-j="{{j}}" data-d="1" aria-label="Плюс 1 безкоштовне Посилення">+</button></span>
+              <button type="button" class="pust-modcrit {{#if crit}}on{{/if}}" data-action="act" data-act="mod-crit" data-l="armor" data-i="{{../i}}" data-j="{{j}}" aria-pressed="{{#if crit}}true{{else}}false{{/if}}" title="Модифікація вийшла дуже вдалою (19+): 2 безкоштовні Посилення на сесію">крит</button>{{/if}}</span></div>{{/each}}{{/if}}
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+      <div class="pust-tools"><button type="button" class="pust-go pust-addbtn {{#if (eq v.addPick "armor")}}on{{/if}}" data-action="addPick" data-l="armor" title="Додати з довідника або порожній рядок"><i class="fa-solid fa-plus"></i> Броня</button></div>
+      {{#if (eq v.addPick "armor")}}<div class="pust-addcat">
+        <div class="pust-addcat-bar"><i class="fa-solid fa-book-open"></i>
+          <input type="text" placeholder="Пошук у довіднику" data-ui="addQ" value="{{v.addQ}}">
+          <select data-ui="catSort" title="Сортування">{{#each v.catSorts}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>
+          <button type="button" class="pust-x" data-action="addPick" data-l="" title="Сховати довідник"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="pust-addcat-list">
+          <div class="pust-cat-row pust-cat-blank"><span><b>Інше</b> <small class="pust-sub">порожня річ — заповни сам</small></span>
+            <button type="button" class="pust-pick-add" data-action="act" data-act="row-add" data-l="armor"><i class="fa-solid fa-plus"></i> Додати</button></div>
+          {{#each v.addCat.groups}}<h4>{{g}}</h4>
+          {{#each items}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b>{{#if d}} <small class="pust-cat-d">{{d}}</small>{{/if}}{{#if addict}} <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{/if}}{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span>{{#if price}}<small class="pust-cat-price">{{price}} к</small>{{/if}}
+            <button type="button" class="pust-pick-add" data-action="act" data-act="cat-add" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}
+          {{else}}<p class="pust-sub">Нічого не знайдено.</p>{{/each}}
+        </div>
+      </div>{{/if}}
+    </section>
+    </div>
+
+    <div class="pust-gear-col">
+    <section class="pust-block">
+      <h3>Інший мотлох</h3>
+      {{#if v.other.length}}
+      <div class="pust-gcards pust-gcards-other">
+        {{#each v.other}}
+        <div class="pust-gcard pust-gc kind-{{kind}}">
+          {{!-- «Вжити» and the like on top of the card, over the name (author, 2026-11-15) --}}
+          {{#if hasActs}}<div class="pust-gc-acts pust-gc-full">
+            {{#if usable}}<button type="button" class="pust-use-btn" data-action="act" data-act="chem-use" data-i="{{i}}" title="Вжити одну дозу"><i class="fa-solid fa-syringe"></i> Вжити</button>
+            <button type="button" class="pust-use-btn pust-use-tgt" data-action="act" data-act="chem-target" data-i="{{i}}" title="Вжити одну дозу на ціль: познач її клавішею T (рівно одну)"><i class="fa-solid fa-crosshairs"></i> На ціль</button>{{/if}}
+            {{#if power}}<button type="button" class="pust-use-btn" data-action="act" data-act="power-use" data-i="{{i}}" title="Спожити один елемент живлення"><i class="fa-solid fa-battery-half"></i> Вжити</button>{{/if}}
+            {{#if booster}}<label class="pust-gf2"><span class="pust-fchip">Атрибут</span><select data-k="other.{{i}}.attr" title="Атрибут бустера">{{#each booster}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>{{/if}}
+            {{#if treat}}<button type="button" data-action="act" data-act="chem-treat" data-i="{{i}}" title="Замість ОЗ — пролікувати легкий наслідок">Лікувати легкий наслідок</button>{{/if}}
+          </div>{{/if}}
+          <div class="pust-gc-head">
+            <div class="pust-gf2"><span class="pust-fchip">Назва</span><input type="text" data-k="other.{{i}}.n" value="{{n}}" placeholder="Назва" class="pust-gname" aria-label="Назва" {{#if auto}}readonly{{/if}}></div>
+            <label class="pust-fchip pust-fchip-tog pust-heavy {{#if h}}on{{/if}}" title="Важка річ: рахується у важких речах"><input type="checkbox" data-k="other.{{i}}.h" {{#if h}}checked{{/if}} aria-label="Важка"> Важка</label>
+            <button type="button" class="pust-x" data-action="act" data-act="row-del" data-l="other" data-i="{{i}}" data-confirm="1" title="Прибрати"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <label class="pust-gf2 pust-gc-full"><span class="pust-fchip">Примітка</span><textarea rows="1" data-k="other.{{i}}.note" placeholder="—" class="pust-gnote-ta" aria-label="Примітка">{{note}}</textarea></label>
+          <label class="pust-gf2"><span class="pust-fchip">К-сть</span><input type="text" data-k="other.{{i}}.q" value="{{q}}" class="pust-qty" aria-label="Кількість"></label>
+          <label class="pust-gf2"><span class="pust-fchip">Вартість</span><input type="text" data-k="other.{{i}}.price" value="{{price}}" placeholder="—" class="pust-price" aria-label="Вартість"></label>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+      <div class="pust-tools">
+        <button type="button" class="pust-go pust-addbtn {{#if (eq v.addPick "other")}}on{{/if}}" data-action="addPick" data-l="other" title="Додати з довідника або порожній рядок"><i class="fa-solid fa-plus"></i> Річ</button>
+      </div>
+      {{#if (eq v.addPick "other")}}<div class="pust-addcat">
+        <div class="pust-addcat-bar"><i class="fa-solid fa-book-open"></i>
+          <input type="text" placeholder="Пошук у довіднику" data-ui="addQ" value="{{v.addQ}}">
+          <select data-ui="catSort" title="Сортування">{{#each v.catSorts}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select>
+          <button type="button" class="pust-x" data-action="addPick" data-l="" title="Сховати довідник"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="pust-addcat-list">
+          <div class="pust-cat-row pust-cat-blank"><span><b>Інше</b> <small class="pust-sub">порожня річ — заповни сам</small></span>
+            <button type="button" class="pust-pick-add" data-action="act" data-act="row-add" data-l="other"><i class="fa-solid fa-plus"></i> Додати</button></div>
+          {{#if v.designerAdd.length}}<h4>Дизайнерські</h4>
+          {{#each v.designerAdd}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b> <small class="pust-cat-d">дизайнерський</small> <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span><small class="pust-cat-price">{{price}} к</small>
+            <button type="button" class="pust-pick-add" data-action="drugAdd" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}{{/if}}
+          {{#each v.addCat.groups}}<h4>{{g}}</h4>
+          {{#each items}}<div class="pust-cat-row"><span class="pust-cat-name"><b>{{n}}</b>{{#if d}} <small class="pust-cat-d">{{d}}</small>{{/if}}{{#if addict}} <small class="pust-cat-addict" title="Кидок d10: {{addict}} або менше — залежність">залежність {{addict}}/10</small>{{/if}}{{#if desc}} <small class="pust-cat-desc">— {{desc}}</small>{{/if}}</span>{{#if price}}<small class="pust-cat-price">{{price}} к</small>{{/if}}
+            <button type="button" class="pust-pick-add" data-action="act" data-act="cat-add" data-id="{{id}}"><i class="fa-solid fa-plus"></i> Додати</button></div>{{/each}}
+          {{else}}<p class="pust-sub">Нічого не знайдено.</p>{{/each}}
+        </div>
+      </div>{{/if}}
+    </section>
+    </div>
+    </div>
+  {{/if}}
+
+  {{!-- ===== Записи ===== --}}
+  {{#if (eq tab 'notes')}}
+    <section class="pust-block">
+      {{!-- Foundry's own editor with its formatting tools, on ruled paper (author, 2026-11-15); saved when the editor is left --}}
+      <h3>Біографія</h3>
+      <prose-mirror class="pust-notes-ed pust-notes-bio" data-note="bio" value="{{v.bio}}"></prose-mirror>
+      <h3>Інші</h3>
+      <prose-mirror class="pust-notes-ed" data-note="others" value="{{v.others}}"></prose-mirror>
+    </section>
+  {{/if}}
+
+  {{!-- ===== Налаштування ===== --}}
+  {{#if (eq tab 'settings')}}
+    <div class="pust-cols pust-settings">
+      <section class="pust-block">
+        <h3><i class="fa-solid fa-sliders"></i> Правила й доповнення</h3>
+        <label class="pust-opt"><input type="checkbox" data-k="set.claws" {{#if v.set.claws}}checked{{/if}}><span>Дозволити розумних Пазурів Смерті</span></label>
+        <label class="pust-opt"><input type="checkbox" data-k="set.psi" {{#if v.set.psi}}checked{{/if}}><span>Дозволити псионіків</span></label>
+        <label class="pust-opt"><input type="checkbox" data-k="set.pa" {{#if v.set.pa}}checked{{/if}}><span>Додати перк «Вміння носити силову броню» до списку</span></label>
+        <label class="pust-opt"><input type="checkbox" data-k="set.guns" {{#if v.set.guns}}checked{{/if}}><span>Доповнення «Guns. Lots of Guns»</span></label>
+        <label class="pust-opt pust-opt-warn"><input type="checkbox" data-k="set.free" {{#if v.set.free}}checked{{/if}}><span>Вільний режим<small>ручні надбавки й захисти, без перевірки правил</small></span></label>
+        <h4>Трофеї</h4>
+        <label class="pust-opt"><input type="checkbox" data-k="loot.yao" {{#if v.loot.yao}}checked{{/if}}><span>З'їдено м'ясо яо-ґая<small>+2 ОЗ</small></span></label>
+        <label class="pust-opt"><input type="checkbox" data-k="loot.egg" {{#if v.loot.egg}}checked{{/if}}><span>З'їдено яйце Пазура Смерті<small>+1 пункт атрибута</small></span></label>
+      </section>
+      <div class="pust-setstack">
+        <details class="pust-block pust-fold" data-fold="ovOpen" {{#if ui.ovOpen}}open{{/if}}>
+          <summary title="Розгорнути чи згорнути"><h3><i class="fa-solid fa-chevron-right pust-fold-ico"></i> <i class="fa-solid fa-screwdriver-wrench"></i> Ручні надбавки{{#unless v.free}} <i class="fa-solid fa-lock pust-fold-lock" title="Лише у вільному режимі"></i>{{/unless}}{{#if v.ovSet}} <small class="pust-fold-n">задано: {{v.ovSet}}</small>{{/if}}</h3></summary>
+          {{#unless v.free}}<p class="pust-freeonly"><i class="fa-solid fa-lock"></i> Лише у вільному режимі: увімкни «Вільний режим» у блоці «Правила й доповнення».</p>{{/unless}}
+          <div class="pust-ovgrid">
+            {{#each v.ovList}}
+            <div class="pust-ovrow">
+              <span>{{n}}</span>
+              <span class="pust-ovstep">
+                <button type="button" data-action="act" data-act="step" data-k="{{k}}" data-d="-1" title="Мінус 1" {{#unless @root.v.free}}disabled{{/unless}}>−</button>
+                <input type="text" class="pust-screen" data-k="{{k}}" value="{{val}}" placeholder="—" aria-label="{{n}}" {{#unless @root.v.free}}disabled{{/unless}}>
+                <button type="button" data-action="act" data-act="step" data-k="{{k}}" data-d="1" title="Плюс 1" {{#unless @root.v.free}}disabled{{/unless}}>+</button>
+              </span>
+              {{#if val}}<button type="button" class="pust-ovreset" data-action="act" data-act="ov-reset" data-k="{{k}}" title="Скинути до стандартного значення" {{#unless @root.v.free}}disabled{{/unless}}><i class="fa-solid fa-rotate-left"></i></button>{{else}}<span></span>{{/if}}
+            </div>
+            {{/each}}
+            <div class="pust-ovrow"><span>максимум Припасів</span>
+              <span class="pust-ovstep">
+                <button type="button" data-action="act" data-act="step" data-k="supMax" data-d="-1" title="Мінус 1" {{#unless @root.v.free}}disabled{{/unless}}>−</button>
+                <input type="text" class="pust-screen" data-k="supMax" value="{{v.overrides.supMax}}" placeholder="{{v.supMaxAuto}}" aria-label="максимум Припасів" title="Число від 1; порожньо — за правилами ({{v.supMaxAuto}})" {{#unless @root.v.free}}disabled{{/unless}}>
+                <button type="button" data-action="act" data-act="step" data-k="supMax" data-d="1" title="Плюс 1" {{#unless @root.v.free}}disabled{{/unless}}>+</button>
+              </span>
+              {{#if v.overrides.supMax}}<button type="button" class="pust-ovreset" data-action="act" data-act="ov-reset" data-k="supMax" title="Скинути до стандартного значення" {{#unless @root.v.free}}disabled{{/unless}}><i class="fa-solid fa-rotate-left"></i></button>{{else}}<span></span>{{/if}}
+            </div>
+          </div>
+          <p class="pust-sub pust-set-hint">Порожньо — за правилами. Надбавки додаються до порахованого аркушем; максимум Припасів — саме число (від 1). Понад 6 Припасів показуються лічильником замість ламп.</p>
+        </details>
+      <details class="pust-block pust-fold" data-fold="defOpen" {{#if ui.defOpen}}open{{/if}}>
+        <summary title="Розгорнути чи згорнути"><h3><i class="fa-solid fa-chevron-right pust-fold-ico"></i> <i class="fa-solid fa-shield-halved"></i> Захист вручну{{#unless v.free}} <i class="fa-solid fa-lock pust-fold-lock" title="Лише у вільному режимі"></i>{{/unless}}{{#if v.defSet}} <small class="pust-fold-n">змінено: {{v.defSet}}</small>{{/if}}</h3></summary>
+        {{#unless v.free}}<p class="pust-freeonly"><i class="fa-solid fa-lock"></i> Лише у вільному режимі: увімкни «Вільний режим» у блоці «Правила й доповнення».</p>{{/unless}}
+        <div class="pust-defhead"><button type="button" data-action="act" data-act="def-reset" data-confirm="1" {{#unless @root.v.free}}disabled{{/unless}}><i class="fa-solid fa-rotate-left"></i> Повернути за правилами</button></div>
+        <div class="pust-defgrid">
+          {{#each v.defTypes}}<label class="pust-defrow"><span>{{n}}</span><select data-k="defOv.{{k}}" {{#unless @root.v.free}}disabled{{/unless}}>{{#each options}}<option value="{{v}}" {{#if sel}}selected{{/if}}>{{n}}</option>{{/each}}</select></label>{{/each}}
+        </div>
+      </details>
+      </div>
+    </div>
+      </section>
+    </div>
+  {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- custom perk / feat form --}}
+  {{#if customKind}}
+  <section class="pust-block pust-custom">
+    <h3>{{#if (eq customKind 'perk')}}Свій перк{{else}}Своя особливість{{/if}}</h3>
+    <input type="text" data-ui="cName" placeholder="Назва">
+    <textarea data-ui="cDesc" rows="3" placeholder="Опис"></textarea>
+    <label class="pust-tog"><input type="checkbox" data-ui="cExtra"> поза лімітом</label>
+    <div class="pust-tools"><button type="button" data-action="customSave">Додати</button><button type="button" data-action="customForm" data-kind="">Скасувати</button></div>
+  </section>
+  {{/if}}
+</div>

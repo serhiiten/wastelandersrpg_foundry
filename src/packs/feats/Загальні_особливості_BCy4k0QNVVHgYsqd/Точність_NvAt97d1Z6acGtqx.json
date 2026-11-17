@@ -1,0 +1,30 @@
+{
+  "name": "Точність",
+  "type": "feat",
+  "_id": "NvAt97d1Z6acGtqx",
+  "img": "systems/wastelanders/assets/body-swapping.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Ти не можеш атакувати в бою на відстані два кола дій поспіль (в наступному колі після атаки ти маєш робити щось інше, крім атаки), зате під час перевірок атаки в бою на відстані критичним успіхом для тебе вважається результат 18+ (або 17+ з перком «Снайпер»).</p><blockquote class=\"aside\"><p>Цю особливість не можна поєднувати з особливістю «Проклятий».</p></blockquote>"
+  },
+  "effects": [],
+  "folder": "BCy4k0QNVVHgYsqd",
+  "sort": 1000000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.1",
+    "createdTime": 1768569269341,
+    "modifiedTime": 1768827073324,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!NvAt97d1Z6acGtqx"
+}

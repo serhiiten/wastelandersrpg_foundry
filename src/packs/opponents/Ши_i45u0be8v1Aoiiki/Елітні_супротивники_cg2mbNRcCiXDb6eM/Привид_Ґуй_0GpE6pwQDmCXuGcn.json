@@ -1,0 +1,262 @@
+{
+  "folder": "cg2mbNRcCiXDb6eM",
+  "name": "Привид (Ґуй)",
+  "type": "enemy",
+  "_id": "0GpE6pwQDmCXuGcn",
+  "img": "systems/wastelanders/assets/pryvyd-shy.png",
+  "system": {
+    "v": 1,
+    "cat": "elite",
+    "hp": {
+      "value": 12,
+      "max": 12
+    },
+    "armor": 3,
+    "psiArmor": 0,
+    "armorText": "3 (стелс-костюм “Хей Ґуй”)",
+    "def": {
+      "phys": "normal",
+      "energy": "normal",
+      "fire": "normal",
+      "rad": "normal",
+      "poison": "normal",
+      "psy": "normal"
+    },
+    "flags": {
+      "electricVuln": false,
+      "halfPartial": false,
+      "noKnockdown": false,
+      "noStun": false,
+      "noDisarm": false,
+      "kamikaze": false,
+      "psyVuln": false
+    },
+    "attacks": [
+      {
+        "name": "Важка снайперська гвинтівка з глушником",
+        "dice": "2d6",
+        "type": "phys",
+        "note": "фізичної шкоди, бій на відстані",
+        "ammoMax": 0,
+        "ammo": 0,
+        "ignoreN": 0,
+        "ignoreArmor": false
+      },
+      {
+        "name": "Плазмова граната",
+        "dice": "3d6",
+        "type": "phys",
+        "note": "фізичної шкоди всім істотам в одній зоні, 1 шт.",
+        "ammoMax": 1,
+        "ammo": 1,
+        "ignoreN": 0,
+        "ignoreArmor": false
+      }
+    ],
+    "baseAspects": [
+      {
+        "t": "майстер-диверсант",
+        "inv": 0
+      },
+      {
+        "t": "костюм для нього цінніший за життя",
+        "inv": 0
+      }
+    ],
+    "aspects": [],
+    "moves": [
+      {
+        "n": "Стелс-піхота",
+        "t": "раз за сцену стає невидимим і переміщується в сусідню зону, оминаючи будь-які перешкоди. Після цього може або атакувати ціль, від чого одразу знову стає видимим, або втекти з безнадійного бою.",
+        "used": false
+      },
+      {
+        "n": "Диверсія",
+        "t": "раз за сцену стає невидимим, переміщується в сусідню зону й приголомшує одну ціль, і та пропускає свою наступну дію. Після цього привид одразу знову стає видимим.",
+        "used": false
+      }
+    ],
+    "notes": "",
+    "reveal": false,
+    "orig": {
+      "hp": 12,
+      "armor": 3,
+      "psiArmor": 0,
+      "def": {
+        "phys": "normal",
+        "energy": "normal",
+        "fire": "normal",
+        "rad": "normal",
+        "poison": "normal",
+        "psy": "normal"
+      },
+      "flags": {
+        "electricVuln": false,
+        "halfPartial": false,
+        "noKnockdown": false,
+        "noStun": false,
+        "noDisarm": false,
+        "kamikaze": false,
+        "psyVuln": false
+      },
+      "attacks": [
+        {
+          "name": "Важка снайперська гвинтівка з глушником",
+          "dice": "2d6",
+          "type": "phys",
+          "note": "фізичної шкоди, бій на відстані",
+          "ammoMax": 0,
+          "ammo": 0,
+          "ignoreN": 0,
+          "ignoreArmor": false
+        },
+        {
+          "name": "Плазмова граната",
+          "dice": "3d6",
+          "type": "phys",
+          "note": "фізичної шкоди всім істотам в одній зоні, 1 шт.",
+          "ammoMax": 1,
+          "ammo": 1,
+          "ignoreN": 0,
+          "ignoreArmor": false
+        }
+      ],
+      "baseAspects": [
+        {
+          "t": "майстер-диверсант",
+          "inv": 0
+        },
+        {
+          "t": "костюм для нього цінніший за життя",
+          "inv": 0
+        }
+      ],
+      "moves": [
+        {
+          "n": "Стелс-піхота",
+          "t": "раз за сцену стає невидимим і переміщується в сусідню зону, оминаючи будь-які перешкоди. Після цього може або атакувати ціль, від чого одразу знову стає видимим, або втекти з безнадійного бою.",
+          "used": false
+        },
+        {
+          "n": "Диверсія",
+          "t": "раз за сцену стає невидимим, переміщується в сусідню зону й приголомшує одну ціль, і та пропускає свою наступну дію. Після цього привид одразу знову стає видимим.",
+          "used": false
+        }
+      ],
+      "notes": ""
+    },
+    "description": "<blockquote>\n<p>Майстри диверсій і саботажу, споряджені рідкісними довоєнними китайськими стелс-костюмами «Хей Ґуй». Трапляються поодинці, зрідка — як невидимий супровід загонів Ши, що виконують особливо важливі завдання.</p>\n</blockquote>\n<ul>\n<li><strong>Категорія:</strong> елітний супротивник.</li>\n<li><strong>ОЗ:</strong> 12</li>\n<li><strong>Броня:</strong> 3 (стелс-костюм “Хей Ґуй”)</li>\n<li><strong>Шкода:</strong> <u>Важка снайперська гвинтівка з <strong><em>глушником</em></strong></u> (2d6 фізичної шкоди, бій на відстані); <u>плазмова граната</u> (3d6 фізичної шкоди всім істотам в одній зоні, 1 шт.)</li>\n<li><strong>Аспекти: <em>майстер-диверсант; костюм для нього цінніший за життя.</em></strong></li>\n<li><strong>Ходи:</strong><ul>\n<li><strong>Стелс-піхота:</strong> раз за сцену стає <strong><em>невидимим</em></strong> і переміщується в сусідню зону, оминаючи будь-які перешкоди. Після цього може або атакувати ціль, від чого одразу знову стає видимим, або втекти з безнадійного бою.</li>\n<li><strong>Диверсія:</strong> раз за сцену стає <strong><em>невидимим</em></strong>, переміщується в сусідню зону й <strong><em>приголомшує</em></strong> одну ціль, і та пропускає свою наступну дію. Після цього привид одразу знову стає видимим.</li>\n</ul>\n</li>\n</ul>"
+  },
+  "prototypeToken": {
+    "name": "Привид (Ґуй)",
+    "displayName": 50,
+    "actorLink": true,
+    "width": 1,
+    "height": 1,
+    "texture": {
+      "src": "systems/wastelanders/assets/pryvyd-shy.png",
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "fit": "contain",
+      "scaleX": 1,
+      "scaleY": 1,
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": -1,
+    "displayBars": 40,
+    "bar1": {
+      "attribute": null
+    },
+    "bar2": {
+      "attribute": "hp"
+    },
+    "light": {
+      "negative": false,
+      "priority": 0,
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "color": null,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    "sight": {
+      "enabled": false,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "color": null,
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0
+    },
+    "detectionModes": {},
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 1,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null,
+    "flags": {},
+    "randomImg": false,
+    "appendNumber": false,
+    "prependAdjective": false,
+    "depth": 1
+  },
+  "items": [],
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.359",
+    "systemId": "wastelanders",
+    "systemVersion": "0.3",
+    "createdTime": 1768952486275,
+    "modifiedTime": 1769782005278,
+    "lastModifiedBy": "CXn23KOmyfe6wBkg"
+  },
+  "_key": "!actors!0GpE6pwQDmCXuGcn"
+}

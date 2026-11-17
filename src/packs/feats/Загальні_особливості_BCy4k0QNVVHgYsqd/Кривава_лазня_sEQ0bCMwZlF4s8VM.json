@@ -1,0 +1,30 @@
+{
+  "name": "Кривава лазня",
+  "type": "feat",
+  "_id": "sEQ0bCMwZlF4s8VM",
+  "img": "systems/wastelanders/assets/body-swapping.svg",
+  "system": {
+    "active": false,
+    "description": "<p>З якоїсь дивної причини істоти, яких ти вбиваєш, гинуть найжахливішим чином: кров і кишки розлітаються навсібіч. Щоразу, коли ти когось убиваєш, яскраво опиши, наскільки криваво це відбувається. Таке подобається не всім. Ти можеш отримувати Послаблення на соціальні перевірки з персонажами, які бачили, що трапляється з твоїми ворогами. Зате коли ти залякуєш супротивників, які стали свідками твого гніву, ти отримуєш Посилення.</p><blockquote class=\"aside\"><p><strong>Попередження:</strong> ця особливість може бути неприйнятною для деяких гравців. Обов'язково обговоріть усією ігровою групою, чи буде вона у вашій грі.</p></blockquote>"
+  },
+  "effects": [],
+  "folder": "BCy4k0QNVVHgYsqd",
+  "sort": 1600000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.1",
+    "createdTime": 1768569006324,
+    "modifiedTime": 1768827073324,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!sEQ0bCMwZlF4s8VM"
+}

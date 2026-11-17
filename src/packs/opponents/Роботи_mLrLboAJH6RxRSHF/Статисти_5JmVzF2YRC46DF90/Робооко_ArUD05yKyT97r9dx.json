@@ -1,0 +1,212 @@
+{
+  "folder": "5JmVzF2YRC46DF90",
+  "name": "Робооко",
+  "type": "enemy",
+  "_id": "ArUD05yKyT97r9dx",
+  "img": "systems/wastelanders/assets/robooko.png",
+  "system": {
+    "v": 1,
+    "cat": "statists",
+    "hp": {
+      "value": 5,
+      "max": 5
+    },
+    "armor": 1,
+    "psiArmor": 0,
+    "armorText": "1 (летючий: його не можна збити з ніг)",
+    "def": {
+      "phys": "normal",
+      "energy": "normal",
+      "fire": "normal",
+      "rad": "normal",
+      "poison": "normal",
+      "psy": "normal"
+    },
+    "flags": {
+      "electricVuln": true,
+      "halfPartial": false,
+      "noKnockdown": true,
+      "noStun": false,
+      "noDisarm": false,
+      "kamikaze": false,
+      "psyVuln": false
+    },
+    "attacks": [
+      {
+        "name": "Лазер",
+        "dice": "1d6",
+        "type": "laser",
+        "note": "фізичної шкоди, бій на відстані, ігнорує 1 броні",
+        "ammoMax": 0,
+        "ammo": 0,
+        "ignoreN": 1,
+        "ignoreArmor": false
+      }
+    ],
+    "baseAspects": [
+      {
+        "t": "маленька летюча пропагандистська машина",
+        "inv": 0
+      }
+    ],
+    "aspects": [],
+    "moves": [],
+    "notes": "",
+    "reveal": false,
+    "orig": {
+      "hp": 5,
+      "armor": 1,
+      "psiArmor": 0,
+      "def": {
+        "phys": "normal",
+        "energy": "normal",
+        "fire": "normal",
+        "rad": "normal",
+        "poison": "normal",
+        "psy": "normal"
+      },
+      "flags": {
+        "electricVuln": true,
+        "halfPartial": false,
+        "noKnockdown": true,
+        "noStun": false,
+        "noDisarm": false,
+        "kamikaze": false,
+        "psyVuln": false
+      },
+      "attacks": [
+        {
+          "name": "Лазер",
+          "dice": "1d6",
+          "type": "laser",
+          "note": "фізичної шкоди, бій на відстані, ігнорує 1 броні",
+          "ammoMax": 0,
+          "ammo": 0,
+          "ignoreN": 1,
+          "ignoreArmor": false
+        }
+      ],
+      "baseAspects": [
+        {
+          "t": "маленька летюча пропагандистська машина",
+          "inv": 0
+        }
+      ],
+      "moves": [],
+      "notes": ""
+    },
+    "description": "<blockquote>\n<p>Здебільшого нешкідливий летючий кулястий робот із динаміком усередині, що часом транслює пропаганду. Найчастіше трапляється поодинці, але іноді робоочі, які транслюють ту саму передачу, збиваються в зграї.</p>\n</blockquote>\n<ul>\n<li><strong>Категорія:</strong> статист</li>\n<li><strong>ОЗ:</strong> 5</li>\n<li><strong>Броня:</strong> 1 (летючий: його не можна збити з ніг)</li>\n<li><strong>Шкода:</strong> <u>Лазер</u> (1d6 фізичної шкоди, бій на відстані, ігнорує 1 броні)</li>\n<li><strong>Аспект:</strong> <strong><em>маленька летюча пропагандистська машина.</em></strong></li>\n</ul>"
+  },
+  "prototypeToken": {
+    "name": "Робооко",
+    "displayName": 50,
+    "actorLink": true,
+    "width": 1,
+    "height": 1,
+    "texture": {
+      "src": "systems/wastelanders/assets/robooko.png",
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "fit": "contain",
+      "scaleX": 1,
+      "scaleY": 1,
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": -1,
+    "displayBars": 40,
+    "bar1": {
+      "attribute": null
+    },
+    "bar2": {
+      "attribute": "hp"
+    },
+    "light": {
+      "negative": false,
+      "priority": 0,
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "color": null,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    "sight": {
+      "enabled": false,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "color": null,
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0
+    },
+    "detectionModes": {},
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 1,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null,
+    "flags": {},
+    "randomImg": false,
+    "appendNumber": false,
+    "prependAdjective": false,
+    "depth": 1
+  },
+  "items": [],
+  "effects": [],
+  "sort": 100000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.359",
+    "systemId": "wastelanders",
+    "systemVersion": "0.3",
+    "createdTime": 1768935968640,
+    "modifiedTime": 1769782005278,
+    "lastModifiedBy": "CXn23KOmyfe6wBkg"
+  },
+  "_key": "!actors!ArUD05yKyT97r9dx"
+}

@@ -1,0 +1,31 @@
+{
+  "folder": "FLfxVg0BtCTRbfwu",
+  "name": "Суперстимпак",
+  "type": "drug",
+  "_id": "w7UmFaH3l6LI84QX",
+  "img": "systems/wastelanders/assets/chem-stimpak.webp",
+  "system": {
+    "price": 4,
+    "addiction": 0,
+    "description": "<p>Старший брат звичайного стимпака.</p>\n<p>Негайно відновлює 1d6 + 4 ОЗ. Застосовуючи суперстимпак, відклади вбік 1d6 або десь познач, скільки таких кісток уже накопичилося. Наприкінці сцени або через кілька хвилин кинь усі накопичені кістки, порахуй суму й отримай стільки шкоди, ігноруючи броню. Так, через це можна отримати наслідки й навіть померти. </p>\n<p>Якщо ти вибуваєш зі сцени, маючи накопичені таким чином кістки шкоди, спиши їх усі, але одразу отримай додатковий легкий наслідок.</p>"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768648930974,
+    "modifiedTime": 1769781830080,
+    "lastModifiedBy": "CXn23KOmyfe6wBkg"
+  },
+  "_key": "!items!w7UmFaH3l6LI84QX"
+}

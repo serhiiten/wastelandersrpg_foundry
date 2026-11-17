@@ -1,0 +1,31 @@
+{
+  "folder": "mZbStcf3nI7btQRp",
+  "name": "Змушений ховатися (Пазур Смерті)",
+  "type": "feat",
+  "_id": "ZvIzbI4gTNZSnyAP",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "isSpecies": true,
+    "description": "<p>щоб бодай якось приховати свою зовнішність у товаристві людей, Пазурові Смерті доведеться постійно носити щось на кшталт балахона, який ховає його від цікавих очей. Переважна більшість розумних істот, зустрівши Пазура Смерті, атакує його або намагається втекти. Зате, якщо ти не приховуєш свою зовнішність, то отримуєш Посилення до спроб залякати живих розумних істот.</p>",
+    "hpBonus": null
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1777150805110,
+    "modifiedTime": 1777150816080,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC",
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!items!ZvIzbI4gTNZSnyAP"
+}

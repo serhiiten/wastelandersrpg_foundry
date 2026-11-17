@@ -1,0 +1,50 @@
+{
+  "folder": "GV0LDBK7RFVXTWMn",
+  "name": "Кушнір",
+  "type": "perk",
+  "_id": "yTDhEpqFq430gYKZ",
+  "img": "systems/wastelanders/assets/binoculars.svg",
+  "system": {
+    "description": "<p>Ти вмієш майстерно знімати шкури з різних істот. Якщо шкуру не зіпсовано безповоротно (вогнем, кислотою чи влучанням з плазмової рушниці), ти можеш її зняти, витративши трохи часу. Після кожного бою з істотами, чия шкура має хоч якусь цінність (тобто з рядовими супротивниками і вище), кинь 1d6: на 1–2 ти збираєш шкур на 1 кришку, на 3–4 — на 2 кришки, на 5–6 — на 3 кришки. Шкури можна продати в найближчому поселенні.</p><p><strong>Вимоги:</strong> Навичка Виживання на рівні учня або вище, ВП 0 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": 0,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 6,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768668108457,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!yTDhEpqFq430gYKZ"
+}

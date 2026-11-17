@@ -1,0 +1,89 @@
+{
+  "name": "Супермутант",
+  "type": "species",
+  "_id": "BqFg9EQLLP8lAjRQ",
+  "img": "systems/wastelanders/assets/vitruvian-man.svg",
+  "system": {
+    "skills": 2,
+    "perks": 2,
+    "feats": [
+      {
+        "id": "1hBsrgnxZ5ZUpQ2v",
+        "uuid": "Compendium.wastelanders.feats.Item.1hBsrgnxZ5ZUpQ2v",
+        "name": "Жахливий вигляд (супермутант)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "1vsoVlHSmcMO1zr3",
+        "uuid": "Compendium.wastelanders.feats.Item.1vsoVlHSmcMO1zr3",
+        "name": "Невразливість до радіації (супермутант)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "hTLnmbuWBbX3JDAK",
+        "uuid": "Compendium.wastelanders.feats.Item.hTLnmbuWBbX3JDAK",
+        "name": "Довголіття (супермутант)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "nglpN8zAydJQ5Z9F",
+        "uuid": "Compendium.wastelanders.feats.Item.nglpN8zAydJQ5Z9F",
+        "name": "Здоровань (супермутант)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "qjoJH8BaIx7O69Tj",
+        "uuid": "Compendium.wastelanders.feats.Item.qjoJH8BaIx7O69Tj",
+        "name": "Безстатевий (супермутант)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "u7D9PxPv5z6z7pXK",
+        "uuid": "Compendium.wastelanders.feats.Item.u7D9PxPv5z6z7pXK",
+        "name": "Стерильність (супермутант)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "vMNPecye8vHk6vmI",
+        "uuid": "Compendium.wastelanders.feats.Item.vMNPecye8vHk6vmI",
+        "type": "feat",
+        "name": "З чистого аркуша (супермутант)",
+        "title": "Особливість",
+        "docType": "Item"
+      }
+    ],
+    "description": "<blockquote>\n<p>Завжди мріяв бути надзвичайно дужим зеленошкірим здорованем? Тоді супермутант — для тебе. Супермутанти — результат дії вірусу форсованої еволюції (ФЕВ), створеного під час довоєнного експерименту з пошуку панацеї. Після війни чимала кількість ФЕВ потрапила в довкілля й спричинила мутації всього живого в Пустці. Проте справжнім творцем супермутантів був Повелитель — божевільний учений, який прагнув удосконалити людину за допомогою вірусу. Його зупинив легендарний Виходець зі Сховища, що знищив і центр виробництва супермутантів, і храм Повелителя разом із ним самим. Відтоді супермутанти блукають Пусткою. Деякі з них стали рейдерами, багатьох просто знищили, а найрозумніші навіть знайшли собі місце серед людей, попри небезпідставний острах.</p>\n</blockquote>\n<h3>Видові властивості супермутантів:</h3>\n<ul>\n<li><strong>Довголіття:</strong> як і гулі, супермутанти майже не старіють і можуть спокійно прожити сотні років. Звісно, якщо Пустка не забере їх раніше.</li>\n<li><strong>Стерильність:</strong> супермутанти не здатні мати нащадків.</li>\n<li><strong>Безстатевий:</strong> перетворення на супермутанта стирає будь-які статеві відмінності. Усі супермутанти мають вигляд величезних накачаних стероїдами бодібілдерів.</li>\n<li><strong>З чистого аркуша:</strong> супермутанти здебільшого нічого не пам'ятають зі свого життя до занурення в чан із ФЕВ. Утім, іноді в їхній пам'яті таки спливають уривки спогадів.</li>\n<li><strong>Здоровань:</strong> супермутанти мають +5 ОЗ.</li>\n<li><strong>Невразливість до радіації:</strong> супермутанти невразливі до негативного впливу опромінення.</li>\n<li><strong>Жахливий вигляд:</strong> супермутанти отримують штраф −2 до соціальних перевірок, пов'язаних з людьми, які негативно ставляться до тих, хто не є людиною, зате мають Посилення до спроб залякати таких людей.</li>\n</ul>\n<table>\n<thead>\n<tr>\n<th><strong>Атрибут</strong></th>\n<th><strong>Мінімум</strong></th>\n<th><strong>Стартовий максимум</strong></th>\n<th><strong>Максимум</strong></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Сила</td>\n<td>0</td>\n<td>+3</td>\n<td>+4</td>\n</tr>\n<tr>\n<td>Сприйняття</td>\n<td>-1</td>\n<td>+2</td>\n<td>+3</td>\n</tr>\n<tr>\n<td>Витривалість</td>\n<td>0</td>\n<td>+3</td>\n<td>+4</td>\n</tr>\n<tr>\n<td>Привабливість</td>\n<td>-2</td>\n<td>+1</td>\n<td>+2</td>\n</tr>\n<tr>\n<td>Інтелект</td>\n<td>-2</td>\n<td>0</td>\n<td>+1</td>\n</tr>\n<tr>\n<td>Вправність</td>\n<td>-1</td>\n<td>+2</td>\n<td>+3</td>\n</tr>\n<tr>\n<td>Удача</td>\n<td>-1</td>\n<td>+2</td>\n<td>+3</td>\n</tr>\n</tbody>\n</table>"
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1777144630956,
+    "modifiedTime": 1777151211505,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC",
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!items!BqFg9EQLLP8lAjRQ"
+}

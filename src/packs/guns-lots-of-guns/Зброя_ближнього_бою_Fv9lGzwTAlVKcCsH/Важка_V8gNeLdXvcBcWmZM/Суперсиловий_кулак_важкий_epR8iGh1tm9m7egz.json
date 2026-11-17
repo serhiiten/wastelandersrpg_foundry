@@ -1,0 +1,32 @@
+{
+  "folder": "V8gNeLdXvcBcWmZM",
+  "name": "Суперсилові кулаки (важкі)",
+  "type": "weapon",
+  "_id": "epR8iGh1tm9m7egz",
+  "img": "systems/wastelanders/assets/hammer-drop.svg",
+  "system": {
+    "description": "<p>Дальність: Ближ</p><p>Властивість: У разі успіху та критичного успіху перевірок ближнього бою дозволяють за 1 звичайний варіант одночасно і <strong><em>збити супротивника з ніг,</em></strong> і відкинути його в сусідню зону. Гострі.</p>",
+    "price": 30,
+    "damage": "2d6+2",
+    "damageType": "phys"
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.1",
+    "createdTime": 1768608739620,
+    "modifiedTime": 1768827196413,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!epR8iGh1tm9m7egz"
+}

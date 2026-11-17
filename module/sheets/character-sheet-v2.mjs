@@ -1,0 +1,591 @@
+/**
+ * Електронний аркуш персонажа in Foundry: the HTML electronic sheet's features, rebuilt natively.
+ * The sheet reads the character through the rules engine (evaluate), shows buildView(), and sends
+ * every field change and button to the HTML sheet's handlers (controller) via runAction().
+ */
+import { hotbarDraggable } from "../helpers/macros.mjs";
+import { addHelpButton } from "../tours/help-button.mjs";
+import { QS_LOCKED_ACTS, isQuickstartActor, qsLockTip } from "../helpers/quickstart-lock.mjs";
+import { textToHtml } from "../rules/rich-text.mjs";
+import { keepNoteSizes, refitOnResize, rememberScroll, watchNotes } from "./refit.mjs";
+import { createController } from "../rules/controller.mjs";
+import { FEAT, PERK, SPECIES, blankState } from "../rules/core.mjs";
+import { recipeToDef, recipeTotals, speciesToX } from "../rules/designer.mjs";
+import { evaluate, readState, runAction } from "../applications/character-actions.mjs";
+import { exportCharacter, replaceCharacter, replaceCharacterFromFile } from "../applications/character-json.mjs";
+import { buildView } from "./character-view.mjs";
+import { useOnTarget } from "../applications/chem-target.mjs";
+import { openCheckPanel, rollWeaponDamage } from "../applications/check-panel.mjs";
+import { EXTRA_TYPES, weaponDmgType } from "../rules/damage-types.mjs";
+import { fateNow, fateSnap, postFateChange, postFateIfChanged, postSupIfChanged, supSnap } from "../applications/fate-card.mjs";
+import { notify } from "../helpers/notify.mjs";
+
+const { HandlebarsApplicationMixin } = foundry.applications.api;
+const { ActorSheetV2 } = foundry.applications.sheets;
+
+/** Buttons whose result is hard to undo ask twice (like the HTML sheet's «Натисни ще раз») */
+const CONFIRM_MS = 3000;
+
+/** The compact sheet (author, 2026-11-17): its width, and the choice remembered per user and character in this browser */
+const COMPACT_W = 460;
+const compactKey = (actor) => `pustelnyky-compact-${game.user.id}-${actor.id}`;
+function compactStored(actor) { try { return localStorage.getItem(compactKey(actor)) === "1"; } catch (_) { return false; } }
+function compactStore(actor, on) { try { if (on) localStorage.setItem(compactKey(actor), "1"); else localStorage.removeItem(compactKey(actor)); } catch (_) { /* not kept */ } }
+
+/** «2» → «2(к)», «безкоштовна» / empty → nothing */
+const priceTag = (p) => { const t = String(p ?? "").trim(); return !t || /^0$|безкоштов/i.test(t) ? "" : /^\d+$/.test(t) ? `${t}(к)` : t; };
+/**
+ * The compact sheet's gear chips (author, 2026-11-17): every weapon, armour and thing of «Інший мотлох» but the chems — the
+ * name, the damage (weapons) or the armour, the quantity (things), the price; a × for whatever the full sheet lets remove
+ */
+function compactGear(v) {
+  const w = (v.weapons ?? []).map((x) => ({ l: "weapons", i: x.i, n: x.n || "без назви", kind: x.kind, stat: x.dEff || x.d, statCls: `pust-dtin dt-${x.dt}`, price: priceTag(x.price), locked: x.locked }));
+  const a = (v.armorList ?? []).map((x) => ({ l: "armor", i: x.i, n: x.n || "без назви", kind: x.kind, stat: String(x.v ?? "").trim() ? `броня ${x.v}` : "", statCls: "arm", price: priceTag(x.price) }));
+  const o = (v.other ?? []).filter((x) => !x.hasActs).map((x) => ({ l: "other", i: x.i, n: x.n || "без назви", kind: x.kind, q: String(x.q ?? "").trim() && String(x.q).trim() !== "1" ? x.q : "", price: priceTag(x.price) }));
+  return [...w, ...a, ...o];
+}
+
+/** Actions that make the character anew: their Fate count is no token spent or gained */
+const FATE_QUIET = new Set(["new", "random", "preset", "apply-arch", "species-x", "roll-species", "roll-perks", "roll-feats", "roll-gear"]);
+
+export class WastelandersCharacterSheetV2 extends HandlebarsApplicationMixin(ActorSheetV2) {
+  static DEFAULT_OPTIONS = {
+    classes: ["wastelanders", "pust-sheet"],
+    position: { width: 900, height: 920 },
+    window: { resizable: true },
+    form: { submitOnChange: false, closeOnSubmit: false },
+    actions: {
+      act: WastelandersCharacterSheetV2.#onAct,
+      pustTab: WastelandersCharacterSheetV2.#onTab,
+      pick: WastelandersCharacterSheetV2.#onPick,
+      uiToggle: WastelandersCharacterSheetV2.#onUiToggle,
+      sitAdd: WastelandersCharacterSheetV2.#onSitAdd,
+      addictionAdd: WastelandersCharacterSheetV2.#onAddictionAdd,
+      customForm: WastelandersCharacterSheetV2.#onCustomForm,
+      customSave: WastelandersCharacterSheetV2.#onCustomSave,
+      checkPanel: WastelandersCharacterSheetV2.#onCheckPanel,
+      weaponDamage: WastelandersCharacterSheetV2.#onWeaponDamage,
+      jsonOpen: WastelandersCharacterSheetV2.#onJsonOpen,
+      jsonSave: WastelandersCharacterSheetV2.#onJsonSave,
+      addPick: WastelandersCharacterSheetV2.#onAddPick,
+      drugAdd: WastelandersCharacterSheetV2.#onDrugAdd,
+      compactToggle: WastelandersCharacterSheetV2.#onCompactToggle,
+    },
+  };
+
+  static PARTS = {
+    sheet: { template: "systems/wastelanders/templates/actor/character-v2.hbs", scrollable: [".pust-body"] },
+  };
+
+  /** Sheet UI state (not saved): tab, open pickers, search, rest options, unsent inputs */
+  ui = { tab: "build", pick: "", q: "", showAll: false, cat: false, catQ: "", rest: { restQr: "hp" } };
+  customKind = "";
+
+  get title() {
+    return this.document.name || game.i18n.localize("TYPES.Actor.character");
+  }
+
+  /** @override */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    const { st, d, L } = evaluate(this.document);
+    // the world's custom species and designer drugs (author, 2026-11-15): the view stays pure, the sheet hands them over
+    const world = {
+      worldSpecies: game.items.filter((i) => i.type === "species" && i.system.custom && speciesToX({ ...i.system.custom, n: i.name }))
+        .map((i) => ({ id: i.id, n: i.name, base: i.system.custom.base })).sort((a, b) => a.n.localeCompare(b.n, "uk")),
+      worldDrugs: game.items.filter((i) => i.type === "drug" && i.system.recipe)
+        .map((i) => ({ id: i.id, n: i.name, recipe: i.system.recipe, desc: recipeToDef(i.system.recipe).d })).sort((a, b) => a.n.localeCompare(b.n, "uk")),
+    };
+    context.v = buildView(st, d, L, { ...this.ui, ...world });
+    context.actor = this.document;
+    context.tab = this.ui.tab;
+    // «Компактний» (author, 2026-11-17; feedback p19): opens full until the user switches, then remembered per character
+    if (this.ui.compact === undefined) this.ui.compact = compactStored(this.document);
+    context.compact = !!this.ui.compact;
+    if (context.compact) {
+      const v = context.v;
+      context.cmp = {
+        arch: v.arch || "",
+        species: [...(v.species ?? []), ...(v.speciesX ?? [])].find((o) => o.sel)?.n ?? "",
+        aspects: (v.aspects ?? []).filter((a) => String(a.v).trim()),
+        chems: (v.other ?? []).filter((o) => o.hasActs).map((o) => ({ ...o, more: !!o.treat })),
+        gear: compactGear(v),
+        catSecName: (v.catSecs ?? []).find((o) => o.sel)?.n ?? "", catSecAll: !!(v.catSecs ?? [])[0]?.sel,
+        catSortName: (v.catSorts ?? []).find((o) => o.sel)?.n ?? "",
+      };
+    }
+    context.quickFold = !context.compact && !!this.ui.quickFold; // the compact sheet has no fold for «Швидкий доступ»
+    context.statusFold = !!this.ui.statusFold;
+    context.ui = { ovOpen: !!this.ui.ovOpen, defOpen: !!this.ui.defOpen, xpHelpOpen: !!this.ui.xpHelpOpen, sheetBarOpen: !!this.ui.sheetBarOpen }; // folded blocks in «Налаштування» (closed by default)
+    context.restUi = this.ui.rest;
+    context.customKind = this.customKind;
+    context.editable = this.isEditable;
+    context.qsLock = isQuickstartActor(this.document) ? qsLockTip(this.document) : ""; // «Швидкий старт» actors: no random / clear (quickstart-lock.mjs)
+    return context;
+  }
+
+  /** Run one of the HTML sheet's handlers on this character and save */
+  #run(fn) {
+    const toast = (msg, kind) => (kind === "bad" ? notify.warn(msg) : notify.info(msg));
+    return runAction(this.document, (st, L) => fn(createController(st, L, { toast }), st, L), { ui: this.ui.rest });
+  }
+
+  /** @override */
+  /** @override — remember the scroll, so a re-render keeps it (refit.mjs) */
+  async _preRender(context, options) {
+    await super._preRender(context, options);
+    rememberScroll(this);
+  }
+
+  _onRender(context, options) {
+    super._onRender(context, options);
+    // «Повний / Компактний» in the window's header too (author, 2026-11-17)
+    this.#compactControl();
+    // the compact chips show only their icons: the names go to the tooltips
+    // the compact chips (author, 2026-11-17): short names (ОЗ, Броня, ЖД, Припаси, (к), ОД), the full one in the tooltip;
+    // the caps' field takes a smaller font past two digits
+    if (this.ui.compact) {
+      const SHORT = { "fa-heart-pulse": "ОЗ", "fa-shield-halved": "Броня", "fa-clover": "ЖД", "fa-backpack": "Припаси", "fa-coins": "(к)", "fa-medal": "ОД" };
+      this.element.querySelectorAll(".pust-qgrid .pust-qi > span:first-child").forEach((s) => {
+        if (!s.title) s.title = s.textContent.trim();
+        const k = Object.keys(SHORT).find((c) => s.querySelector(`i.${c}`));
+        if (k) { s.dataset.short = SHORT[k]; s.closest(".pust-qi").dataset.q = k.replace("fa-", ""); }
+      });
+      const fitDigits = (inp) => inp.classList.toggle("pust-long", String(inp.value).trim().length > 2);
+      this.element.querySelectorAll('.pust-qgrid input[data-k]').forEach((inp) => { fitDigits(inp); inp.addEventListener("input", () => fitDigits(inp)); });
+    }
+    // «?» (author, 2026-11-17): the tour page of the tab now open
+    addHelpButton(this, () => (game.user.isGM ? ["gm-char", this.ui.tab || "build"] : ["pl-sheet", this.ui.tab || "build"]));
+    // to the hotbar (helpers/macros.mjs; author, 2026-11-17): attributes, skills, a weapon's attack and its damage
+    if (!this.document.pustTourDemo) {
+      const uuid = this.document.uuid;
+      const name = (el) => el.closest(".pust-gcard")?.querySelector("input.pust-gname")?.value?.trim() || "";
+      this.element.querySelectorAll('[data-action="checkPanel"][data-attr]').forEach((el) =>
+        hotbarDraggable(el, { kind: "attr", actor: uuid, attr: el.dataset.attr, label: el.querySelector(".pust-attr-full")?.textContent.trim() || el.dataset.attr }));
+      this.element.querySelectorAll('[data-action="checkPanel"][data-skill]').forEach((el) =>
+        hotbarDraggable(el, { kind: "skill", actor: uuid, skill: el.dataset.skill, label: el.dataset.skill }));
+      this.element.querySelectorAll('[data-action="checkPanel"][data-weapon]').forEach((el) =>
+        hotbarDraggable(el, () => (name(el) ? { kind: "attack", actor: uuid, label: name(el) } : null)));
+      this.element.querySelectorAll('[data-action="weaponDamage"][data-weapon]').forEach((el) =>
+        hotbarDraggable(el, () => (name(el) ? { kind: "damage", actor: uuid, label: name(el) } : null)));
+    }
+    const root = this.element;
+    const fits = []; // every wrapping field's fit, run again when the window's width changes (refitOnResize)
+    // aspects wrap: the field grows with its text; Enter doesn't add a line break (the value stays one line)
+    root.querySelectorAll(".pust-asp-ta").forEach((ta) => {
+      const fit = () => { ta.style.height = "auto"; ta.style.height = `${ta.scrollHeight + 2}px`; };
+      fit();
+      fits.push(fit);
+      ta.addEventListener("input", () => {
+        if (/\n/.test(ta.value)) ta.value = ta.value.replace(/\n/g, " ");
+        fit();
+      });
+      ta.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); ta.blur(); } });
+    });
+    // Enter in «Новий аспект…» adds it, as «+» (stress test, 2026-11-17; the enemy's and the zone's fields did already)
+    root.querySelector('input[data-ui="sitNew"]')?.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter" || ev.isComposing) return;
+      ev.preventDefault();
+      this.ui.sitNew = ev.currentTarget.value;
+      WastelandersCharacterSheetV2.#onSitAdd.call(this);
+    });
+    // «Видові властивості» folds; the sheet remembers it while open (closed again for a new window)
+    root.querySelector(".pust-props")?.addEventListener("toggle", (ev) => { this.ui.propsOpen = ev.currentTarget.open; });
+    root.querySelectorAll("details[data-fold]").forEach((el) => el.addEventListener("toggle", () => { this.ui[el.dataset.fold] = el.open; }));
+    this.#showGoTo(root);
+    // the damage field (author, 2026-11-14): a long value («менша з 2d6») gets a smaller font (down to 10 px), so it fits the cell;
+    // one that still doesn't fit («1d10[отрута]+2d6[пси]») moves to a row of its own under the weapon, with a «Шкода» chip,
+    // and wraps there (the field grows with its text; Enter leaves the field)
+    // (the text is measured on a canvas in the field's own font: a field's scrollWidth doesn't tell the text width reliably)
+    const ctx = (WastelandersCharacterSheetV2.#measure ||= document.createElement("canvas").getContext("2d"));
+    const fitDmg = (el) => {
+      const row = el.closest(".pust-grow");
+      row?.classList.remove("dmg-wide");
+      el.style.fontSize = "";
+      el.style.height = "";
+      const cs = getComputedStyle(el);
+      const room = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 3;
+      const base = parseFloat(cs.fontSize) || 13;
+      let px = base;
+      const width = () => { ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${px}px ${cs.fontFamily}`; return ctx.measureText(el.value).width; };
+      while (width() > room && px > 10) px -= 0.5;
+      if (width() <= room) {
+        if (px !== base) el.style.fontSize = `${px}px`;
+        return;
+      }
+      row?.classList.add("dmg-wide");
+      if (el.scrollHeight > el.clientHeight + 1) {
+        el.style.height = "auto";
+        el.style.height = `${el.scrollHeight + 2}px`;
+      }
+    };
+    const dmgFields = root.querySelectorAll("textarea.pust-dmg-in");
+    requestAnimationFrame(() => dmgFields.forEach(fitDmg));
+    dmgFields.forEach((el) => fits.push(() => fitDmg(el)));
+    dmgFields.forEach((el) => {
+      el.addEventListener("input", () => {
+        if (/\n/.test(el.value)) el.value = el.value.replace(/\n/g, "");
+        fitDmg(el);
+      });
+      el.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); el.blur(); } });
+    });
+    // a cryo weapon's damage field shows the damage one step down; while editing it shows the base damage, which is what is saved
+    root.querySelectorAll(".pust-cryo[data-base]").forEach((el) => {
+      el.addEventListener("focus", () => { el.value = el.dataset.base; el.select(); fitDmg(el); });
+      el.addEventListener("blur", () => { if (el.value === el.dataset.base) el.value = el.dataset.eff; fitDmg(el); });
+    });
+    // gear notes wrap: the field grows with its text (one paragraph, Enter leaves the field);
+    // in Броня / Інший мотлох a note that doesn't fit its column on one line gets a row of its own
+    root.querySelectorAll(".pust-gnote-in, .pust-gnote-ta").forEach((ta) => {
+      const row = ta.classList.contains("pust-gnote-in") ? ta.closest(".pust-grow") : null;
+      // one line keeps the CSS height (the same as the fields beside it); longer text grows the field
+      const grow = () => {
+        ta.style.height = "";
+        if (ta.scrollHeight <= ta.clientHeight + 1) return;
+        ta.style.height = "auto";
+        ta.style.height = `${ta.scrollHeight + 2}px`;
+      };
+      const fit = (resized = false) => {
+        if (row && resized) row.classList.remove("wide"); // a wider window may fit the note on its row again
+        if (row && !row.classList.contains("wide")) {
+          ta.style.height = "";
+          if (ta.scrollHeight > ta.clientHeight + 2) row.classList.add("wide");
+        }
+        grow();
+      };
+      requestAnimationFrame(() => fit());
+      fits.push(fit);
+      ta.addEventListener("input", () => {
+        if (/\n/.test(ta.value)) ta.value = ta.value.replace(/\n/g, " ");
+        fit();
+      });
+      ta.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); ta.blur(); } });
+    });
+    refitOnResize(this, fits);
+    // «Біографія» / «Інші» in Foundry's editor (author, 2026-11-15): saved as you write (refit.mjs watchNotes) and before the sheet closes (_preClose)
+    keepNoteSizes(this, root);
+    watchNotes(this, root, (el) => this.#saveNote(el), this.isEditable);
+    if (!this.isEditable) {
+      root.querySelectorAll("input, select, textarea, button[data-action='act'], button[data-action='drugAdd']").forEach((el) => (el.disabled = true));
+      return;
+    }
+    // fields bound to the HTML sheet's state
+    root.querySelectorAll("[data-k]").forEach((el) => el.addEventListener("change", (ev) => this.#onField(ev)));
+    root.querySelectorAll("[data-change]").forEach((el) => el.addEventListener("change", (ev) => this.#onSpecialChange(ev)));
+    // sheet UI state (search boxes, pending text)
+    root.querySelectorAll("[data-ui]").forEach((el) => {
+      el.addEventListener("input", (ev) => this.#onUiInput(ev));
+      el.addEventListener("change", (ev) => this.#onUiInput(ev));
+    });
+    root.querySelectorAll("[data-ui-rest]").forEach((el) => el.addEventListener("change", (ev) => {
+      const t = ev.currentTarget;
+      this.ui.rest[t.dataset.uiRest] = t.type === "checkbox" ? t.checked : t.value;
+    }));
+    // keep focus in the search box after a re-render
+    if (this.#refocus) {
+      const el = root.querySelector(`[data-ui="${this.#refocus}"]`);
+      if (el) {
+        el.focus();
+        el.setSelectionRange?.(el.value.length, el.value.length);
+      }
+      this.#refocus = null;
+    }
+  }
+
+  #refocus = null;
+
+  /** Save a note editor's text when it changed: straight into the actor, no re-render (the editor keeps its state);
+   *  the .json gets plain text */
+  #saveNote(el) {
+    const path = { bio: "system.description", others: "system.others" }[el.dataset.note];
+    if (!path || !el.isConnected || !this.isEditable) return undefined;
+    const v = String(el.value ?? "");
+    if (v === textToHtml(foundry.utils.getProperty(this.document, path))) return undefined;
+    return this.document.update({ [path]: v }, { render: false });
+  }
+
+  /** @override — an unsaved note is kept when the sheet closes */
+  async _preClose(options) {
+    for (const el of this.element?.querySelectorAll?.("prose-mirror[data-note]") ?? []) await this.#saveNote(el);
+    return super._preClose(options);
+  }
+  /** A canvas context for measuring text (the damage field fit) */
+  static #measure = null;
+  #searchTimer = null;
+
+  async #onField(event) {
+    const t = event.currentTarget;
+    const k = t.dataset.k;
+    let v = t.type === "checkbox" || t.type === "radio" ? t.checked : t.value;
+    // a custom species of the world («Власні види», value «x:<id>»): the character takes a copy of its definition
+    if (k === "species" && String(v).startsWith("x:")) {
+      if (v === "x:cur") return undefined; // the character's own copy is already chosen
+      return this.#takeSpecies(game.items.get(String(v).slice(2)));
+    }
+    const num = !!t.dataset.num;
+    if (k === "fdCur") { // a typed count of Fate tokens posts a chat card too (author, 2026-11-15)
+      const was = fateNow(this.document);
+      const out = await this.#run((C) => C.setField(k, v, { num }));
+      await postFateChange(this.document, was, fateNow(this.document));
+      return out;
+    }
+    return this.#run((C) => C.setField(k, v, { num }));
+  }
+
+  /** A custom species item → the character's species (st.speciesX); true when taken */
+  async #takeSpecies(item) {
+    const x = item?.type === "species" && item.system.custom ? speciesToX({ ...item.system.custom, n: item.name }) : null;
+    if (!x) {
+      notify.warn("Цей вид не вдалося прочитати: у нього немає назви чи основи.");
+      this.render();
+      return false;
+    }
+    return this.#run((C) => C.act("species-x", { x }));
+  }
+
+  /** A designer drug item → the character's own drug (st.customDrugs) and one dose in «Інший мотлох»; false when refused */
+  async #takeDrug(item) {
+    const recipe = item?.type === "drug" ? item.system.recipe : null;
+    if (!recipe) return false;
+    const err = recipeTotals(recipe).errors[0];
+    if (err) {
+      notify.warn(`«${item.name}»: ${err}`);
+      return false;
+    }
+    return this.#run((C) => C.act("drug-add-custom", { n: item.name, def: recipeToDef(recipe) }));
+  }
+
+  #onSpecialChange(event) {
+    const t = event.currentTarget;
+    switch (t.dataset.change) {
+      case "erudit": return this.#run((C) => C.setErudite(t.dataset.i, t.value));
+      case "fav": return this.#run((C) => C.setFavourite(t.value));
+      case "chem-used": return this.#run((C, st, L) => L.chemToggleUsed(t.dataset.drug, t.checked));
+      case "grant": return this.#run((C) => C.setGrantSkill(t.dataset.n, t.value));
+      // «Тип» of a weapon: an energy version goes to the rules (en); fire, psi, poison, radiation only colour the damage (dt)
+      case "dtype": return this.#run((C, st) => {
+        const i = +t.dataset.i;
+        const w = st.weapons[i];
+        if (!w) return false;
+        const v = t.value;
+        if (EXTRA_TYPES.includes(v)) {
+          if (w.en) C.setField(`weapons.${i}.en`, "");
+          st.weapons[i].dt = v;
+        } else {
+          if ((w.en || "") !== v) C.setField(`weapons.${i}.en`, v);
+          delete st.weapons[i].dt;
+          // «звичайна» for a weapon whose name or note says fire / psi / poison / radiation: physical, as chosen
+          if (!v && EXTRA_TYPES.includes(weaponDmgType({ w: st.weapons[i] }))) st.weapons[i].dt = "phys";
+        }
+      });
+    }
+  }
+
+  #onUiInput(event) {
+    const t = event.currentTarget;
+    const key = t.dataset.ui;
+    this.ui[key] = t.type === "checkbox" ? t.checked : t.value;
+    if (["catSec", "catSort"].includes(key) && event.type === "change") return this.render();
+    if (["q", "catQ", "addQ"].includes(key) && event.type === "input") {
+      clearTimeout(this.#searchTimer);
+      this.#searchTimer = setTimeout(() => {
+        this.#refocus = key;
+        this.render();
+      }, 250);
+    } else if (key === "showAll") this.render();
+  }
+
+  /* ---------- actions ---------- */
+
+  /** A button of the HTML sheet (data-act + its dataset) */
+  static async #onAct(event, target) {
+    const { action, act, confirm, ...data } = target.dataset;
+    if (QS_LOCKED_ACTS.has(act) && isQuickstartActor(this.document)) return void notify.warn(qsLockTip(this.document));
+    if (confirm && !WastelandersCharacterSheetV2.#armed(target)) return;
+    if (target.type === "checkbox") event.preventDefault?.();
+    // «На ціль» (author, 2026-11-15): the medicine goes to the user's one target (applications/chem-target.mjs)
+    if (act === "chem-target") return void (await useOnTarget(this.document, +data.i));
+    // a change of the Fate tokens posts a chat card (author, 2026-11-15; fate-card.mjs): the counter's −/+, +1 for
+    // dropping to 0 ОЗ, «Кінець сесії»… — not a character made anew
+    const fdWas = FATE_QUIET.has(act) ? null : fateSnap(this.document);
+    const supWas = FATE_QUIET.has(act) ? null : supSnap(this.document); // Припаси too: lamps, rest, «Поповнити» (author, 2026-11-15)
+    const ok = await this.#run((C) => C.act(act, data));
+    if (fdWas) await postFateIfChanged(this.document, fdWas);
+    if (supWas) await postSupIfChanged(this.document, supWas);
+    // «Очистити аркуш» also puts back the default picture (portrait and token)
+    if (act === "new" && ok !== false) {
+      const img = this.document.constructor.getDefaultArtwork({ type: this.document.type }).img;
+      await this.document.update({ img, "prototypeToken.texture.src": img });
+    }
+  }
+
+  /** A tab; a guide link also names the block to show (data-go: a selector; no data-tab — the block is above the tabs) */
+  static #onTab(event, target) {
+    const { tab, go } = target.dataset;
+    if (tab) this.ui.tab = tab;
+    if (go) {
+      this.#goTo = go;
+      if (go.startsWith(".q-")) this.ui.quickFold = false; // «Швидкий доступ» unfolds to show ОЗ / жетони Долі
+    }
+    this.render();
+  }
+
+  /** The block a guide link asked for: scrolled into view and flashed after the render */
+  #goTo = null;
+
+  #showGoTo(root) {
+    const sel = this.#goTo;
+    this.#goTo = null;
+    const el = sel && root.querySelector(sel);
+    if (!el) return;
+    const block = el.matches("input, select, textarea") ? el.closest(".pust-row") || el : el;
+    requestAnimationFrame(() => {
+      block.scrollIntoView({ block: "center", behavior: "smooth" });
+      block.classList.remove("pust-flash");
+      void block.offsetWidth; // restart the animation
+      block.classList.add("pust-flash");
+      setTimeout(() => block.classList.remove("pust-flash"), 1800);
+    });
+  }
+
+  static #onPick(event, target) {
+    const kind = target.dataset.pick;
+    this.ui.pick = this.ui.pick === kind ? "" : kind;
+    this.ui.q = "";
+    this.render();
+  }
+
+  /** The header's switch: the icon says where a click goes */
+  #compactControl() {
+    const header = this.window?.header;
+    if (!header) return;
+    let b = header.querySelector(".pust-cmp-hd");
+    if (!b) {
+      b = document.createElement("button");
+      b.type = "button";
+      b.addEventListener("pointerdown", (ev) => ev.stopPropagation());
+      b.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); b.blur(); WastelandersCharacterSheetV2.#onCompactToggle.call(this, ev, { dataset: {} }); });
+      const close = header.querySelector('[data-action="close"]');
+      if (close) close.before(b); else header.append(b);
+    }
+    const c = !!this.ui.compact;
+    b.className = `header-control icon fa-solid ${c ? "fa-up-right-and-down-left-from-center" : "fa-down-left-and-up-right-to-center"} pust-cmp-hd`;
+    b.dataset.tooltip = c ? "Повний аркуш" : "Компактний аркуш";
+    b.setAttribute("aria-label", b.dataset.tooltip);
+  }
+
+  /** «Повний / Компактний»: the window narrows to the table's needs and back to the size it had */
+  static async #onCompactToggle(event, target) {
+    const on = target.dataset.v === "1" ? true : target.dataset.v === "0" ? false : !this.ui.compact;
+    if (on === !!this.ui.compact) return;
+    this.ui.compact = on;
+    compactStore(this.document, on);
+    if (on) this.#fullSize = { width: this.position.width, height: this.position.height };
+    await this.render();
+    this.setPosition(on ? { width: COMPACT_W, height: Math.min(this.position.height, 760) } : (this.#fullSize ?? { width: 900, height: 920 }));
+  }
+  #fullSize = null;
+
+  /** Opened compact (remembered for this character): at the compact width from the start */
+  _onFirstRender(context, options) {
+    super._onFirstRender?.(context, options);
+    if (this.ui.compact) { this.#fullSize = { width: 900, height: 920 }; this.setPosition({ width: COMPACT_W, height: Math.min(this.position.height, 760) }); }
+  }
+
+  static #onUiToggle(event, target) {
+    const key = target.dataset.key;
+    this.ui[key] = !this.ui[key];
+    this.render();
+  }
+
+  static async #onSitAdd() {
+    const t = this.ui.sitNew;
+    const ok = await this.#run((C) => C.act("sit-add", { t }));
+    if (ok !== false) this.ui.sitNew = "";
+  }
+
+  static async #onAddictionAdd() {
+    const name = this.ui.chemNew;
+    await this.#run((C) => C.act("addiction-add", { name }));
+    this.ui.chemNew = "";
+  }
+
+  static #onCustomForm(event, target) {
+    this.customKind = target.dataset.kind || "";
+    this.ui.cName = "";
+    this.ui.cDesc = "";
+    this.ui.cExtra = false;
+    this.render();
+  }
+
+  static async #onCustomSave() {
+    const data = { kind: this.customKind, name: this.ui.cName, desc: this.ui.cDesc, extra: this.ui.cExtra };
+    const ok = await this.#run((C) => C.act("custom-save", data));
+    if (ok !== false) {
+      this.customKind = "";
+      this.render();
+    }
+  }
+
+  /** «Дизайнерські» in the gear catalogue: a world drug with a recipe */
+  static #onDrugAdd(event, target) {
+    if (!this.isEditable) return undefined;
+    return this.#takeDrug(game.items.get(target.dataset.id));
+  }
+
+  /** «+ Зброя / + Броня / + Річ»: open (or close) that list's catalogue under it */
+  static #onAddPick(event, target) {
+    const l = target.dataset.l || "";
+    this.ui.addPick = this.ui.addPick === l ? "" : l;
+    this.ui.addQ = "";
+    this.render();
+  }
+
+  /** «Шкода» of a weapon in Мотлох: just its damage dice, to chat (author, 2026-11-14) */
+  static #onWeaponDamage(event, target) {
+    return rollWeaponDamage(this.document, +target.dataset.weapon);
+  }
+
+  static #onCheckPanel(event, target) {
+    openCheckPanel(this.document, { ...target.dataset });
+  }
+
+  /** Two-click confirmation; true on the second click */
+  static #armed(target) {
+    if (target.classList.contains("armed")) return true;
+    target.classList.add("armed");
+    notify.info("Натисни ще раз, щоб підтвердити.");
+    setTimeout(() => target.classList.remove("armed"), CONFIRM_MS);
+    return false;
+  }
+
+  static #onJsonOpen() {
+    if (isQuickstartActor(this.document)) return void notify.warn(qsLockTip(this.document)); // quickstart-lock.mjs
+    return replaceCharacterFromFile(this.document);
+  }
+
+  static #onJsonSave() {
+    return exportCharacter(this.document);
+  }
+
+  /* ---------- drag & drop ---------- */
+
+  /** Perks and feats dropped from compendiums follow the HTML sheet's rules (eligibility, slots) */
+  async _onDropItem(event, item) {
+    if (!this.document.isOwner) return null;
+    if (item.parent?.uuid === this.document.uuid) return super._onDropItem(event, item);
+    const base = (n) => n.replace(/\s*\([^)]*\)\s*$/, "");
+    // a custom species / a designer drug of the world: the character takes a copy of the definition, no embedded item is made
+    if (item.type === "species" && item.system.custom) return this.#takeSpecies(item);
+    if (item.type === "drug" && item.system.recipe) return this.#takeDrug(item);
+    if (item.type === "perk") {
+      const n = PERK[item.name] ? item.name : base(item.name);
+      if (PERK[n]) return this.#run((C) => C.act("perk-add", { n }));
+    }
+    if (item.type === "feat") {
+      const n = FEAT[item.name] ? item.name : base(item.name);
+      if (FEAT[n]) return this.#run((C) => C.act("feat-add", { n }));
+    }
+    return super._onDropItem(event, item);
+  }
+}

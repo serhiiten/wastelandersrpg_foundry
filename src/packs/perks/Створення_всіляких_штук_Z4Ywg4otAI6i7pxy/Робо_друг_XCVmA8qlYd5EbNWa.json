@@ -1,0 +1,50 @@
+{
+  "folder": "Z4Ywg4otAI6i7pxy",
+  "name": "Робо-друг",
+  "type": "perk",
+  "_id": "XCVmA8qlYd5EbNWa",
+  "img": "systems/wastelanders/assets/auto-repair.svg",
+  "system": {
+    "description": "<p>У тебе є вірний друг-робооко, якого можна використовувати для розвідки місцевості, невеликих доставок або як радіо. Дай йому ім'я та опиши його одним аспектом. Щоб дізнатися, чи вдалося твоєму робоокові щось зробити, пройди перевірку подолання труднощів <strong>ІН + Техніка</strong>. У бою ти можеш витратити свою дію, щоб робооко завдало комусь шкоди. Для цього пройди перевірку атаки <strong>ІН + Техніка</strong>. Якщо робооко вийде з ладу, ти можеш відремонтувати його, як і будь-якого іншого робота.</p>\n<p><strong>Параметри робоока:</strong></p>\n<p>●   <strong>Категорія:</strong> статист</p>\n<p>●   <strong>ОЗ:</strong> 5</p>\n<p>●   <strong>Броня:</strong> 1 (летючий: його не можна збити з ніг)</p>\n<p>●   <strong>Шкода:</strong> <u>Лазер</u> (1d6 фізичної шкоди, бій на відстані, ігнорує 1 броні)</p><p><strong>Вимоги:</strong> Навичка Техніка на рівні учня або вище, ІН 0 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": 0,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 6,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768671113675,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!XCVmA8qlYd5EbNWa"
+}

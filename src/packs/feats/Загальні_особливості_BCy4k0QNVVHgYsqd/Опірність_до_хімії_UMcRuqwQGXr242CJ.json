@@ -1,0 +1,30 @@
+{
+  "name": "Опірність до хімії",
+  "type": "feat",
+  "_id": "UMcRuqwQGXr242CJ",
+  "img": "systems/wastelanders/assets/body-swapping.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Лікувальні медикаменти діють на тебе лише наполовину (з округленням угору), зате під час вживання наркотиків шанс залежності для тебе знижується на 2 (але не нижче 1). Ти не можеш узяти перки «Покращений метаболізм» та «Електрохімічний жокей».</p><blockquote class=\"aside\"><p>Роботи не можуть взяти цю особливість.</p></blockquote>"
+  },
+  "effects": [],
+  "folder": "BCy4k0QNVVHgYsqd",
+  "sort": 300000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.1",
+    "createdTime": 1768569128889,
+    "modifiedTime": 1768827073324,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!UMcRuqwQGXr242CJ"
+}

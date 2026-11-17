@@ -1,0 +1,50 @@
+{
+  "folder": "UovOVWv9un3ryLjb",
+  "name": "Паралізувальний удар",
+  "type": "perk",
+  "_id": "cDafY1lPkInvzzHU",
+  "img": "systems/wastelanders/assets/high-punch.svg",
+  "system": {
+    "description": "<p>У разі успіху або критичного успіху перевірки атаки в ближньому бою ти можеш повністю відмовитися від завдання шкоди, щоб <strong><em>паралізувати</em></strong> супротивника на кілька хвилин. <strong><em>Паралізовані</em></strong> супротивники не можуть діяти чи пересуватися. Проти елітних супротивників це спрацьовує лише за критичного успіху. На босів цей перк не діє.</p><p><strong>Вимоги:</strong> Навичка Герць на рівні підмайстра або вище, ВП +1 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": 1,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 8,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768662316961,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!cDafY1lPkInvzzHU"
+}

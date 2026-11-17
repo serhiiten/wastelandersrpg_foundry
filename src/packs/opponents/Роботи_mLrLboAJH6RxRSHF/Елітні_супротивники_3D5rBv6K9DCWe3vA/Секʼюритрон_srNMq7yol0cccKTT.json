@@ -1,0 +1,252 @@
+{
+  "folder": "3D5rBv6K9DCWe3vA",
+  "name": "Секʼюритрон",
+  "type": "enemy",
+  "_id": "srNMq7yol0cccKTT",
+  "img": "systems/wastelanders/assets/sek-yurytron.png",
+  "system": {
+    "v": 1,
+    "cat": "elite",
+    "hp": {
+      "value": 15,
+      "max": 15
+    },
+    "armor": 2,
+    "psiArmor": 0,
+    "armorText": "2",
+    "def": {
+      "phys": "normal",
+      "energy": "normal",
+      "fire": "normal",
+      "rad": "normal",
+      "poison": "normal",
+      "psy": "normal"
+    },
+    "flags": {
+      "electricVuln": true,
+      "halfPartial": false,
+      "noKnockdown": false,
+      "noStun": false,
+      "noDisarm": false,
+      "kamikaze": false,
+      "psyVuln": false
+    },
+    "attacks": [
+      {
+        "name": "Кулемет",
+        "dice": "1d10",
+        "type": "phys",
+        "note": "фізичної шкоди, бій на відстані",
+        "ammoMax": 0,
+        "ammo": 0,
+        "ignoreN": 0,
+        "ignoreArmor": false
+      },
+      {
+        "name": "Вбудований гранатомет",
+        "dice": "2d6",
+        "type": "phys",
+        "note": "фізичної шкоди всім істотам в одній зоні, 2 гранати",
+        "ammoMax": 2,
+        "ammo": 2,
+        "ignoreN": 0,
+        "ignoreArmor": false
+      }
+    ],
+    "baseAspects": [
+      {
+        "t": "удосконалений робот-охоронець",
+        "inv": 0
+      },
+      {
+        "t": "гучні динаміки",
+        "inv": 0
+      }
+    ],
+    "aspects": [],
+    "moves": [
+      {
+        "n": "Сигналізація",
+        "t": "раз за сцену кличе на допомогу ще одного сек'юритрона, який з’являється в сцені й піднімає тривогу. Якщо в сцені один сек'юритрон уже покликав допомогу, інші цього зробити не можуть.",
+        "used": false
+      }
+    ],
+    "notes": "",
+    "reveal": false,
+    "orig": {
+      "hp": 15,
+      "armor": 2,
+      "psiArmor": 0,
+      "def": {
+        "phys": "normal",
+        "energy": "normal",
+        "fire": "normal",
+        "rad": "normal",
+        "poison": "normal",
+        "psy": "normal"
+      },
+      "flags": {
+        "electricVuln": true,
+        "halfPartial": false,
+        "noKnockdown": false,
+        "noStun": false,
+        "noDisarm": false,
+        "kamikaze": false,
+        "psyVuln": false
+      },
+      "attacks": [
+        {
+          "name": "Кулемет",
+          "dice": "1d10",
+          "type": "phys",
+          "note": "фізичної шкоди, бій на відстані",
+          "ammoMax": 0,
+          "ammo": 0,
+          "ignoreN": 0,
+          "ignoreArmor": false
+        },
+        {
+          "name": "Вбудований гранатомет",
+          "dice": "2d6",
+          "type": "phys",
+          "note": "фізичної шкоди всім істотам в одній зоні, 2 гранати",
+          "ammoMax": 2,
+          "ammo": 2,
+          "ignoreN": 0,
+          "ignoreArmor": false
+        }
+      ],
+      "baseAspects": [
+        {
+          "t": "удосконалений робот-охоронець",
+          "inv": 0
+        },
+        {
+          "t": "гучні динаміки",
+          "inv": 0
+        }
+      ],
+      "moves": [
+        {
+          "n": "Сигналізація",
+          "t": "раз за сцену кличе на допомогу ще одного сек'юритрона, який з’являється в сцені й піднімає тривогу. Якщо в сцені один сек'юритрон уже покликав допомогу, інші цього зробити не можуть.",
+          "used": false
+        }
+      ],
+      "notes": ""
+    },
+    "description": "<blockquote>\n<p>Удосконалений одноколісний робот-охоронець виробництва компанії RobCo. Очі й руки містера Хауса в Пустці. Здебільшого сек'юритрони охороняють Стріп Нью-Вегаса, але іноді містер Хаус посилає їх на завдання. Трапляються групами по 2–3 роботи.</p>\n</blockquote>\n<ul>\n<li><strong>Категорія:</strong> елітний супротивник.</li>\n<li><strong>ОЗ:</strong> 15</li>\n<li><strong>Броня:</strong> 2</li>\n<li><strong>Шкода:</strong> <u>Кулемет</u> (1d10 фізичної шкоди, бій на відстані); <u>вбудований гранатомет</u> (2d6 фізичної шкоди всім істотам в одній зоні, 2 гранати)</li>\n<li><strong>Аспекти: <em>удосконалений робот-охоронець; гучні динаміки.</em></strong></li>\n<li><strong>Ходи:</strong><ul>\n<li><strong>Сигналізація:</strong> раз за сцену кличе на допомогу ще одного сек'юритрона, який з’являється в сцені й піднімає тривогу. Якщо в сцені один сек'юритрон уже покликав допомогу, інші цього зробити не можуть.</li>\n</ul>\n</li>\n</ul>"
+  },
+  "prototypeToken": {
+    "name": "Секʼюритрон",
+    "displayName": 50,
+    "actorLink": true,
+    "width": 1,
+    "height": 1,
+    "texture": {
+      "src": "systems/wastelanders/assets/sek-yurytron.png",
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "fit": "contain",
+      "scaleX": 1,
+      "scaleY": 1,
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": -1,
+    "displayBars": 40,
+    "bar1": {
+      "attribute": null
+    },
+    "bar2": {
+      "attribute": "hp"
+    },
+    "light": {
+      "negative": false,
+      "priority": 0,
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "color": null,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    "sight": {
+      "enabled": false,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "color": null,
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0
+    },
+    "detectionModes": {},
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 1,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null,
+    "flags": {},
+    "randomImg": false,
+    "appendNumber": false,
+    "prependAdjective": false,
+    "depth": 1
+  },
+  "items": [],
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.359",
+    "systemId": "wastelanders",
+    "systemVersion": "0.3",
+    "createdTime": 1768938590503,
+    "modifiedTime": 1769782005278,
+    "lastModifiedBy": "CXn23KOmyfe6wBkg"
+  },
+  "_key": "!actors!srNMq7yol0cccKTT"
+}

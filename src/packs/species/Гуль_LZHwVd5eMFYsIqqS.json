@@ -1,0 +1,65 @@
+{
+  "name": "Гуль",
+  "type": "species",
+  "_id": "LZHwVd5eMFYsIqqS",
+  "img": "systems/wastelanders/assets/vitruvian-man.svg",
+  "system": {
+    "skills": 2,
+    "perks": 2,
+    "feats": [
+      {
+        "id": "F75mVDMKHjdx3qfb",
+        "uuid": "Compendium.wastelanders.feats.Item.F75mVDMKHjdx3qfb",
+        "name": "На вигляд не дуже (гуль)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "WppNsVKjc6Ce73th",
+        "uuid": "Compendium.wastelanders.feats.Item.WppNsVKjc6Ce73th",
+        "name": "Стійкість до отрут (гуль)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "dIsRqVPI3xSRM1xp",
+        "uuid": "Compendium.wastelanders.feats.Item.dIsRqVPI3xSRM1xp",
+        "name": "Цілюще випромінювання (гуль)",
+        "type": "feat",
+        "title": "Особливість",
+        "docType": "Item"
+      },
+      {
+        "id": "mqureHJQgf55RS7x",
+        "uuid": "Compendium.wastelanders.feats.Item.mqureHJQgf55RS7x",
+        "type": "feat",
+        "name": "Довголіття (гуль)",
+        "title": "Особливість",
+        "docType": "Item"
+      }
+    ],
+    "description": "<blockquote>\n<p>Колись цим бідолахам дуже не пощастило. А може, й пощастило — тут як подивитися. Гулі — це люди, що зазнали надмірного опромінення й перетворилися на потворних за людськими мірками ходячих трупів. Більшість із них унаслідок мутацій втратили розум і стали агресивними дикими гулями. Проте деяким удалося зберегти свідомість і навіть вписатися в людське суспільство, хоча товариство «мертв'яків» людям і не до душі.</p>\n</blockquote>\n<h3>Видові властивості гулів:</h3>\n<ul>\n<li><strong>Довголіття:</strong> гулі можуть жити неймовірно довго. Досить сказати, що жоден гуль ще не помер від старості.</li>\n<li><strong>Цілюще випромінювання:</strong> радіація не вбиває гулів, а лікує. Щоразу, коли гуль мав би отримати шкоду від радіації, він натомість відновлює 1 ОЗ за кожну кістку шкоди. Якщо гуль відпочиває поруч із досить сильним джерелом радіації, він відновлює на 1d10 ОЗ більше.</li>\n<li><strong>Стійкість до отрут:</strong> отрути завдають гулям лише половини шкоди (з округленням угору).</li>\n<li><strong>На вигляд не дуже:</strong> гулі отримують штраф −2 до соціальних перевірок, пов'язаних з людьми, які негативно ставляться до тих, хто не є людиною.</li>\n</ul>\n<table>\n<thead>\n<tr>\n<th><strong>Атрибут</strong></th>\n<th><strong>Мінімум</strong></th>\n<th><strong>Стартовий максимум</strong></th>\n<th><strong>Максимум</strong></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Сила</td>\n<td>-1</td>\n<td>+1</td>\n<td>+2</td>\n</tr>\n<tr>\n<td>Сприйняття</td>\n<td>-1</td>\n<td>+3</td>\n<td>+4</td>\n</tr>\n<tr>\n<td>Витривалість</td>\n<td>-1</td>\n<td>+2</td>\n<td>+2</td>\n</tr>\n<tr>\n<td>Привабливість</td>\n<td>-2</td>\n<td>+1</td>\n<td>+2</td>\n</tr>\n<tr>\n<td>Інтелект</td>\n<td>-1</td>\n<td>+3</td>\n<td>+4</td>\n</tr>\n<tr>\n<td>Вправність</td>\n<td>-1</td>\n<td>+2</td>\n<td>+2</td>\n</tr>\n<tr>\n<td>Удача</td>\n<td>-1</td>\n<td>+2</td>\n<td>+4</td>\n</tr>\n</tbody>\n</table>"
+  },
+  "effects": [],
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1777144531557,
+    "modifiedTime": 1777151048613,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC",
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!items!LZHwVd5eMFYsIqqS"
+}

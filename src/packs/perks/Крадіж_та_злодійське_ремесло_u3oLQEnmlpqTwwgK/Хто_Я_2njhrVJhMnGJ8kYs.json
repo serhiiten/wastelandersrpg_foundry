@@ -1,0 +1,50 @@
+{
+  "folder": "u3oLQEnmlpqTwwgK",
+  "name": "Хто? Я?",
+  "type": "perk",
+  "_id": "2njhrVJhMnGJ8kYs",
+  "img": "systems/wastelanders/assets/robber.svg",
+  "system": {
+    "description": "<p>Раз за сесію, якщо перевірка крадіжки закінчується невдачею чи частковим успіхом, ти автоматично й успішно вдаєш, що нічого поганого не робив. Однак якщо ти знову попадешся на крадіжці в присутності тих самих персонажів, тебе битимуть з особливою старанністю та натхненням.</p><p><strong>Вимоги:</strong> Навичка Крадіж на рівні учня або вище, ПВ +1 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": 1,
+      "intelligence": null,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 6,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768668729435,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!2njhrVJhMnGJ8kYs"
+}

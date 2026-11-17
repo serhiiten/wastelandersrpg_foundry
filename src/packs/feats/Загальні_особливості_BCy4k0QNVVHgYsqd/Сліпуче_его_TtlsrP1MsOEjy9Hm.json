@@ -1,0 +1,30 @@
+{
+  "name": "Сліпуче его",
+  "type": "feat",
+  "_id": "TtlsrP1MsOEjy9Hm",
+  "img": "systems/wastelanders/assets/body-swapping.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Твоя особистість просто-таки блискуча. Настільки, що ти звик не дивитися довкола, а натомість купатися в променях власної чарівності. Твій видовий і стартовий максимум ПВ збільшується на 1 (але не вище +4), зате видовий максимум СПР зменшується на 1.</p>"
+  },
+  "effects": [],
+  "folder": "BCy4k0QNVVHgYsqd",
+  "sort": 700000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.1",
+    "createdTime": 1768569223983,
+    "modifiedTime": 1768827073324,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!TtlsrP1MsOEjy9Hm"
+}

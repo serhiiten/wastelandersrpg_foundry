@@ -1,0 +1,31 @@
+{
+  "folder": "s79KMLexURirt4v9",
+  "name": "Вразливість до електрики (робот)",
+  "type": "feat",
+  "_id": "pjvV8Lhw8iiSEIjR",
+  "img": "icons/svg/item-bag.svg",
+  "system": {
+    "isSpecies": true,
+    "description": "<p>якщо робот отримує шкоду від зброї з аспектом <strong><em>електрична</em></strong> або в будь-який інший спосіб зазнає удару струмом, ця шкода збільшується на 1d6.</p>",
+    "hpBonus": null
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1777150588635,
+    "modifiedTime": 1777150611899,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC",
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null
+  },
+  "_key": "!items!pjvV8Lhw8iiSEIjR"
+}

@@ -1,0 +1,212 @@
+{
+  "folder": "g10mzEtL1K7Xzb0b",
+  "name": "Радскорпіон",
+  "type": "enemy",
+  "_id": "5iS7eZXGi5ieIpDZ",
+  "img": "systems/wastelanders/assets/radskorpion.png",
+  "system": {
+    "v": 1,
+    "cat": "regular",
+    "hp": {
+      "value": 8,
+      "max": 8
+    },
+    "armor": 2,
+    "psiArmor": 0,
+    "armorText": "2",
+    "def": {
+      "phys": "normal",
+      "energy": "normal",
+      "fire": "normal",
+      "rad": "normal",
+      "poison": "normal",
+      "psy": "normal"
+    },
+    "flags": {
+      "electricVuln": false,
+      "halfPartial": false,
+      "noKnockdown": false,
+      "noStun": false,
+      "noDisarm": false,
+      "kamikaze": false,
+      "psyVuln": false
+    },
+    "attacks": [
+      {
+        "name": "Жало",
+        "dice": "1d6",
+        "type": "phys",
+        "note": "фізичної шкоди + 2 шкоди отрутою, ближній бій, отрута ігнорує броню",
+        "ammoMax": 0,
+        "ammo": 0,
+        "ignoreN": 0,
+        "ignoreArmor": true
+      }
+    ],
+    "baseAspects": [
+      {
+        "t": "агресивна отруйна комаха",
+        "inv": 0
+      }
+    ],
+    "aspects": [],
+    "moves": [],
+    "notes": "З радскорпіона можна зцідити отруту. Кинь 1d6: якщо випаде 4–5, вдається добути одну дозу, якщо 6 — дві. Отрута радскорпіона вважається слабкою отрутою.",
+    "reveal": false,
+    "orig": {
+      "hp": 8,
+      "armor": 2,
+      "psiArmor": 0,
+      "def": {
+        "phys": "normal",
+        "energy": "normal",
+        "fire": "normal",
+        "rad": "normal",
+        "poison": "normal",
+        "psy": "normal"
+      },
+      "flags": {
+        "electricVuln": false,
+        "halfPartial": false,
+        "noKnockdown": false,
+        "noStun": false,
+        "noDisarm": false,
+        "kamikaze": false,
+        "psyVuln": false
+      },
+      "attacks": [
+        {
+          "name": "Жало",
+          "dice": "1d6",
+          "type": "phys",
+          "note": "фізичної шкоди + 2 шкоди отрутою, ближній бій, отрута ігнорує броню",
+          "ammoMax": 0,
+          "ammo": 0,
+          "ignoreN": 0,
+          "ignoreArmor": true
+        }
+      ],
+      "baseAspects": [
+        {
+          "t": "агресивна отруйна комаха",
+          "inv": 0
+        }
+      ],
+      "moves": [],
+      "notes": "З радскорпіона можна зцідити отруту. Кинь 1d6: якщо випаде 4–5, вдається добути одну дозу, якщо 6 — дві. Отрута радскорпіона вважається слабкою отрутою."
+    },
+    "description": "<blockquote>\n<p>Звичайні скорпіони й до Війни були не подарунком, а після неї, збільшившись удесятеро, стали справжньою проблемою. Трапляються групами по 2–3 особини.</p>\n</blockquote>\n<ul>\n<li><strong>Категорія:</strong> рядовий супротивник.</li>\n<li><strong>ОЗ:</strong> 8</li>\n<li><strong>Броня:</strong> 2</li>\n<li><strong>Шкода:</strong> <u>Жало</u> (1d6 фізичної шкоди + 2 шкоди отрутою, ближній бій, отрута ігнорує броню)</li>\n<li><strong>Аспект:</strong> <strong><em>агресивна отруйна комаха.</em></strong></li>\n</ul><blockquote class=\"aside\"><p>З радскорпіона можна зцідити отруту. Кинь 1d6: якщо випаде 4–5, вдається добути одну дозу, якщо 6 — дві. Отрута радскорпіона вважається слабкою отрутою.</p></blockquote>"
+  },
+  "prototypeToken": {
+    "name": "Радскорпіон",
+    "displayName": 50,
+    "actorLink": true,
+    "width": 1,
+    "height": 1,
+    "texture": {
+      "src": "systems/wastelanders/assets/radskorpion.png",
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "fit": "contain",
+      "scaleX": 1,
+      "scaleY": 1,
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": -1,
+    "displayBars": 40,
+    "bar1": {
+      "attribute": null
+    },
+    "bar2": {
+      "attribute": "hp"
+    },
+    "light": {
+      "negative": false,
+      "priority": 0,
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "color": null,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      }
+    },
+    "sight": {
+      "enabled": false,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "color": null,
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0
+    },
+    "detectionModes": {},
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 1,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null,
+    "flags": {},
+    "randomImg": false,
+    "appendNumber": false,
+    "prependAdjective": false,
+    "depth": 1
+  },
+  "items": [],
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.359",
+    "systemId": "wastelanders",
+    "systemVersion": "0.3",
+    "createdTime": 1768848654687,
+    "modifiedTime": 1769782005278,
+    "lastModifiedBy": "CXn23KOmyfe6wBkg"
+  },
+  "_key": "!actors!5iS7eZXGi5ieIpDZ"
+}

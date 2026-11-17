@@ -1,0 +1,432 @@
+/**
+ * What the character sheet shows, built from the HTML sheet's state (pure, testable in Node).
+ *   buildView(st, d, L, ui) → plain object for templates/actor/character-v2.hbs
+ * st: HTML sheet state, d: compute(st), L: createLogic(st), ui: sheet UI state (open pickers, search…)
+ */
+import { textToHtml } from "../rules/rich-text.mjs";
+import { attrTip, skillTip } from "../rules/book-desc.mjs";
+import {
+  ARCH_ORDER, ATTRS, BUILTIN_CAT, DEF_LABEL, DEF_TYPES, ENERGY, ENERGY_ORDER, FEAT, FEATS, GUN_CLS, GUN_RANGE, GUN_ROF,
+  DRUGS, IMP_ATTR, IMPS, LVL, LVLDIE, PERK, PERKS, PRESETS, SKILLS, SPECIES, SPECIES_ORDER, catalogAll, catalogView, catProps, countedFeats,
+  countedPerks, drugOf, featElig, gunsOn, perkElig, presetLabel, CAT_SECS, weaponDmg, spOf, speciesExtra,
+} from "../rules/core.mjs";
+import { recipeTotals } from "../rules/designer.mjs";
+import { HP_PER_CAP, SUP_PER_CAP, buyButton, consPlan } from "../rules/char-services.mjs";
+import { isPowerCell, usesPowerCells } from "../rules/power-cell.mjs";
+import { catalogDescription } from "../applications/catalog-descriptions.mjs";
+import { DMG_TYPES, EXTRA_TYPES, weaponDmgType } from "../rules/damage-types.mjs";
+import { GRANT_FEATS, grantOptions, lastingCaps, startPicks } from "../rules/skill-sources.mjs";
+
+const sgn = (v) => (v > 0 ? `+${v}` : v < 0 ? `−${Math.abs(v)}` : "0");
+const CONS = [
+  ["l", "Легкий"], ["m", "Середній"], ["m2", "Середній (Міцний)"], ["h", "Тяжкий"],
+];
+const ASPECTS = [["concept", "Концепція"], ["problem", "Проблема"], ["goal", "Ціль"]];
+/**
+ * The HTML sheet's «?» guide: 11 steps of character creation — text, the tab to open (null: the block is above the tabs),
+ * the block to scroll to and flash (a CSS selector), the link's label.
+ */
+const GUIDE = [
+  ["Обери архетип. Цей крок необов'язковий, але архетип допоможе тобі визначитися з образом персонажа й наступними кроками створення.", null, '[data-k="arch"]', "Шапка: архетип"],
+  ["Обери вид. Вид визначає мінімальні та максимальні значення атрибутів, дає видові особливості, а також сам по собі є аспектом.", null, '[data-k="species"]', "Шапка: вид"],
+  ["Розподіли пункти атрибутів. Початкове значення кожного з семи атрибутів — 0, і в тебе є 3 вільні пункти. Знизиш атрибут нижче 0 — отримаєш додатковий пункт. На старті атрибути не можуть бути нижчими за −1 і вищими за +2, а максимум будь-якого атрибута — +3, але вид може змінювати ці межі. Або розподіли набір: +2, +2, +1, 0, 0, −1, −1.", "build", '.pust-attrs', "Атрибути"],
+  ["Обери дві навички на рівні учня, або три, якщо граєш за людину.", "build", '[data-go="skills"]', "Навички"],
+  ["Обери два перки, або три, якщо граєш за людину.", "perks", '[data-go="perks"]', "Перки"],
+  ["Обери від нуля до двох особливостей. Не забувай про видові особливості.", "perks", '[data-go="feats"]', "Особливості"],
+  ["Розрахуй очки здоров'я (ОЗ). На старті максимум ОЗ становить 15: +3 за кожну одиницю ВТР понад 0 і −3 за кожну нижче 0. Аркуш рахує ОЗ сам, разом із бонусами та штрафами від перків і особливостей.", null, '.q-life', "Швидкий доступ: ОЗ"],
+  ["Запиши жетони Долі (ЖД). На початку кожної ігрової сесії персонаж відновлює 2 + УДЧ жетонів Долі. Аркуш рахує це сам.", null, '.q-fate', "Швидкий доступ: жетони Долі"],
+  ["Дай персонажеві ім'я, зовнішність і аспекти. Кинь випадкові або вигадай самостійно.", null, '.pust-who', "Шапка: ім'я й аспекти"],
+  ["Придбай спорядження. Кожен персонаж починає гру з 10 кришками на закупівлю та 3 одиницями Припасів. Крім того, один вид легкої зброї ти отримуєш безкоштовно.", "gear", '[data-go="gear"]', "Мотлох"],
+  ["Кинь випадкову деталь персонажа.", null, '.asp-detail', "Шапка: деталь"],
+];
+/**
+ * Free mode skips the rules' checks, yet the sheet still says what breaks them — softly, as reminders
+ * (Foundry only, author 2026-11-14): too many perks or feats, unmet requirements.
+ */
+function freeModeIssues(st, d) {
+  if (!d.free) return [];
+  const out = [];
+  const np = countedPerks(st);
+  if (np > d.perkSlots) out.push(`Перків більше, ніж слотів: ${np} з ${d.perkSlots}.`);
+  if (countedFeats(st) > 2) out.push("Особливостей більше двох.");
+  (d.perkEval || []).forEach((e, i) => { if (!e.ok) out.push(`Перк «${st.perks[i].n}»: ${(e.why || []).join("; ")}.`); });
+  (d.featEval || []).forEach((e, i) => { if (!e.ok) out.push(`Особливість «${st.feats[i]}»: ${(e.why || []).join("; ")}.`); });
+  return out.map((msg) => ({ lvl: "warn", msg: `${msg} (вільний режим)` }));
+}
+
+/** The decorative HP bar under the portrait: fill 0–100 % and a colour step (ok / hurt / low / down) */
+function hpBar(hp, max) {
+  const pct = max > 0 ? Math.max(0, Math.min(100, Math.round((hp / max) * 100))) : 0;
+  const level = hp <= 0 ? "down" : pct <= 25 ? "low" : pct <= 50 ? "hurt" : "ok";
+  return { pct, level };
+}
+/** A chem's addiction chance (d10 ≤ N), 0 for none */
+function catAddict(e) {
+  const key = drugOf(e.n);
+  return key && DRUGS[key]?.ch > 0 ? DRUGS[key].ch : 0;
+}
+
+/** A catalogue entry's description: the add-on's properties and the book's note (the price and damage have their own places) */
+function catDesc(e) {
+  const d = String(e.d || "").trim();
+  // the compendium's full text when there is one (it has the add-on's range and fire mode too), else the sheet's short note
+  const full = catalogDescription(e.n);
+  if (full) return full;
+  return [catProps(e), String(e.note || "").trim()]
+    .map((x) => String(x || "").trim())
+    .map((x) => (d && x.startsWith(`${d}, `) ? x.slice(d.length + 2) : x)) // «1d6, уся зона» → «уся зона» (1d6 is shown already)
+    .filter((x) => x && x !== d)
+    .join("; ");
+}
+/** The HTML sheet's catalogue sorting (app.js CAT_SORT) */
+const CAT_SORT = { price: "за ціною ↑", pdesc: "за ціною ↓", power: "за шкодою чи бронею", name: "за назвою" };
+const IMP_TARGET = { attr2: "attr", attr3: "attr", attr4: "attr", skill: "skill", skill2: "skill", skill3: "skill" };
+
+/** A weapon's kind for its card's stripe (author, 2026-11-15): energy weapons, psychic powers, built-in / natural ones,
+ *  melee, explosives, the rest firearms */
+function weaponKind(w) {
+  const txt = `${w.n || ""} ${w.note || ""}`;
+  if (w.auto === "psi") return "psi";
+  if (w.claw || w.auto === "builtin") return "natural";
+  if (w.en || /лазер|плазм|гаус|електр|кріо|енергетичн/i.test(txt)) return "energy";
+  if (/гранат|динаміт|вибух|ракет|\bміна\b/i.test(txt)) return "boom";
+  if (/ближн|ніж|кастет|молот|бита|меч|сокир|спис|кийок|беззбройн|кулак/i.test(txt)) return "melee";
+  return "gun";
+}
+
+export function buildView(st, d, L, ui = {}) {
+  const c = L.chem();
+  const free = !!d.free;
+
+  /* ---------- who ---------- */
+  // the five species, then the world's custom ones (ui.worldSpecies: [{ id, n, base }] from the sheet; author, 2026-11-15)
+  const sx = speciesExtra(st);
+  const species = SPECIES_ORDER.map((k) => ({
+    v: k, n: SPECIES[k].n, sel: st.species === k && !sx, disabled: k === "claw" && !st.set.claws && st.species !== "claw",
+  }));
+  const speciesX = (ui.worldSpecies || []).map((w) => ({
+    v: `x:${w.id}`, n: w.n, sel: !!sx && sx.n === w.n && sx.base === w.base, disabled: w.base === "claw" && !st.set.claws && st.species !== "claw",
+  }));
+  // the character's own copy stays listed (selected) even when the world item is gone or renamed
+  if (sx && !speciesX.some((o) => o.sel)) speciesX.push({ v: "x:cur", n: sx.n, sel: true, disabled: false });
+  const archetypes = [{ v: "", n: "— архетип —", sel: !st.arch }].concat(
+    ARCH_ORDER.map((a) => ({ v: a, n: a, sel: st.arch === a, disabled: a === "Псионік" && !st.set.psi })),
+  );
+
+  /* ---------- attributes ---------- */
+  const attrs = ATTRS.map((A) => {
+    const k = A.k;
+    const b = d.bounds[k];
+    const now = L.effAttr(d, k);
+    return {
+      k, s: A.s, n: A.n,
+      base: st.base[k], baseS: sgn(st.base[k]),
+      eff: d.eff[k], effS: sgn(d.eff[k]),
+      now, nowS: sgn(now), changed: now !== d.eff[k],
+      bonus: d.bonus[k], imp: d.attrImp[k],
+      range: `${sgn(b.min)} … ${sgn(b.start)} (макс. ${sgn(b.max)})`,
+      rStart: `${sgn(b.min)} … ${sgn(b.start)}`, rMax: sgn(b.max),
+      lim: { min: sgn(b.min), start: sgn(b.start), max: sgn(b.max) }, // the species' limits: minimum, at creation, maximum
+      canUp: free || (st.base[k] + 1 <= d.allowMax[k] && d.left > 0),
+      canDown: free || st.base[k] - 1 >= d.allowMin[k],
+      chemNote: L.chemAttrNote(k),
+      tip: attrTip(A.n, A.s, k), // the book's description (wiki «Атрибути»)
+    };
+  });
+
+  /* ---------- skills ---------- */
+  const sc = d.skillCheck;
+  // out of free mode the list only picks the starting skills at «учень» (Foundry only): the other boxes are locked,
+  // higher levels come from improvements, perks and feats that name their skill
+  const sp = startPicks(st, d);
+  const skills = SKILLS.map((s) => {
+    const lv = st.skills[s] || 0;
+    const fromSrc = sp.contrib[s] > 0;
+    return {
+      s, tip: skillTip(s), lv, die: LVLDIE[lv] || "—", level: lv ? LVL[lv] : "—", cap: d.caps[s],
+      dots: [1, 2, 3].map((j) => {
+        const locked = !free && (j >= 2 || fromSrc || (lv < 1 && (sp.left <= 0 || d.caps[s] < 1)));
+        return { j, on: lv >= j, label: LVL[j], over: j > d.caps[s], locked,
+          why: !locked ? LVL[j] : j >= 2 ? "Підмайстер і майстер — через покращення" : fromSrc ? "Цю навичку дає покращення, перк чи особливість" : "Стартові навички вже обрано" };
+      }),
+    };
+  });
+  const skillBudget = free
+    ? { ok: sc.ok, text: `учень: ${sc.nN} (вільно ${sc.freeN}), підмайстер: ${sc.nJ} (вільно ${sc.freeJ}), майстер: ${sc.nM} (вільно ${sc.freeM})`
+      + (d.sk.flex ? `, гнучких слотів: ${sc.freeFlex}` : "") }
+    : { ok: sp.left >= 0, text: sp.left > 0 ? `стартові: обери ${sp.left}` : sp.left === 0 ? "стартові: обрано" : `стартові: на ${-sp.left} більше, ніж можна` };
+
+  /* ---------- perks & feats ---------- */
+  const perks = st.perks.map((p, i) => {
+    const ev = d.perkEval[i] || { ok: true, why: [] };
+    const P = PERK[p.n];
+    const c = L.chem();
+    return {
+      i, n: p.n, note: p.note || "", custom: !!p.custom, ok: ev.ok, why: (ev.why || []).join("; "),
+      // a note only where the book asks for one («категорія ворогів»…), for own perks, or when one is written already
+      needNote: !!P?.note || !!p.custom || !!String(p.note || "").trim(), notePh: typeof P?.note === "string" ? P.note : "примітка",
+      req: P?.rt || "", text: P?.d || p.d || "", erudite: p.n === "Ерудит",
+      d: p.d || "", extra: !!p.extra, path: `perks.${i}`,
+      rage: p.n === "Лють ботана" ? { active: c.scene.some((e) => e.rage), used: c.rageSession === c.session } : null,
+      eruditeOptions: [{ v: "", n: "— навичка —", sel: !p.note }].concat(grantOptions(st, d, "Ерудит", p.note).map((s) => ({ v: s, n: s, sel: p.note === s }))),
+    };
+  });
+  const feats = st.feats.map((fn, i) => {
+    const ev = d.featEval[i] || { ok: true, why: [] };
+    const F = FEAT[fn];
+    const ci = (st.customFeats || []).findIndex((x) => x.n === fn);
+    const custom = ci >= 0 ? st.customFeats[ci] : null;
+    return {
+      i, n: fn, note: st.featNotes?.[fn] || "", custom: !!custom,
+      needNote: !!F?.note || !!custom || !!String(st.featNotes?.[fn] || "").trim(), notePh: typeof F?.note === "string" ? F.note : "примітка",
+      // «Добра душа», «Переконаний дикун»: pick the skill they raise (Foundry only)
+      grant: GRANT_FEATS.includes(fn) && !free
+        ? [{ v: "", n: "— навичка —", sel: !st.featNotes?.[fn] }].concat(grantOptions(st, d, fn, st.featNotes?.[fn]).map((s) => ({ v: s, n: s, sel: st.featNotes?.[fn] === s })))
+        : null, ok: ev.ok, why: (ev.why || []).join("; "), text: F?.d || custom?.d || "",
+      d: custom?.d || "", extra: !!custom?.extra, path: `customFeats.${ci}`,
+    };
+  });
+  const q = String(ui.q || "").toLowerCase();
+  const match = (o) => !q || o.n.toLowerCase().includes(q) || String(o.d || "").toLowerCase().includes(q);
+  let perkPicker = null;
+  if (ui.pick === "perk") {
+    const have = new Set(st.perks.map((p) => p.n));
+    const groups = {};
+    PERKS.filter((p) => !have.has(p.n) && (st.set.psi || !p.psi) && match(p)).forEach((p) => {
+      const ev = perkElig(p, st, d, -1);
+      if (!ui.showAll && !ev.ok && !free) return;
+      (groups[p.c] ||= []).push({ n: p.n, ok: ev.ok, why: ev.why.join("; "), req: p.rt, text: p.d });
+    });
+    perkPicker = Object.entries(groups).map(([c, list]) => ({ c, list }));
+  }
+  let featPicker = null;
+  if (ui.pick === "feat") {
+    const have = new Set(st.feats);
+    const groups = {};
+    FEATS.filter((f) => !have.has(f.n) && (!f.sp || f.sp.includes(st.species)) && (st.set.psi || f.n !== "Псионік") && match(f)).forEach((f) => {
+      const ev = featElig(f, st, d, -1);
+      if (!ui.showAll && !ev.ok && !free) return;
+      (groups[f.c] ||= []).push({ n: f.n, ok: ev.ok, why: ev.why.join("; "), text: f.d });
+    });
+    featPicker = Object.entries(groups).map(([c, list]) => ({ c, list }));
+  }
+
+  /* ---------- improvements ---------- */
+  // skill improvements offer only the skills they can raise: «учень» — skills not learnt yet, «підмайстер» — at учень,
+  // «майстер» — at підмайстер (Foundry only, author 2026-11-14); a skill another slot of the row took is left out, the chosen one stays
+  const SKILL_NEED = { skill: 0, skill2: 1, skill3: 2 };
+  const capsForImps = lastingCaps(st);
+  const skillFits = (k, i, s) => {
+    const others = (st.imp[k] || []).some((x, j) => j !== i && x.on && x.t === s);
+    const lv = parseInt(st.skills?.[s], 10) || 0;
+    return !others && lv === SKILL_NEED[k] && lv + 1 <= capsForImps[s]; // a lasting feat cap («Добра душа») bars it
+  };
+  // attribute improvements the same way: only attributes this step can raise, as they are before this slot
+  // («до +2» — below +2; «з +2 до +3» — at +2; «з +3 до +4» — at +3; never past the species maximum)
+  const ATTR_OK = Object.fromEntries(IMP_ATTR);
+  const attrFits = (k, i, a) => {
+    const v = d.impSnap?.[`${k}:${i}`]?.[a];
+    return v != null && ATTR_OK[k]?.(v) && v + 1 <= (d.impMax?.[a] ?? 4);
+  };
+  const targetOptions = (kind, cur, k, i) => [{ v: "", n: "— ціль —", sel: !cur }].concat(
+    kind === "attr" ? ATTRS.filter((A) => A.k === cur || attrFits(k, i, A.k)).map((A) => ({ v: A.k, n: A.n, sel: cur === A.k }))
+      : SKILLS.filter((s) => s === cur || skillFits(k, i, s)).map((s) => ({ v: s, n: s, sel: cur === s })),
+  );
+  const imps = IMPS.map((im) => ({
+    k: im.k, label: `${im.ico} ${im.t}${im.sub ? ` (${im.sub})` : ""}`, cost: im.cost,
+    ico: im.ico, t: im.t, sub: im.sub || "",
+    // the HTML sheet shows the row's prices («10/15 ОД» when perks or skills change the price)
+    costLabel: [...new Set(d.xpCost.rows[im.k] || [im.cost])].join("/"),
+    taken: (st.imp[im.k] || []).filter((x) => x.on).length,
+    slots: (st.imp[im.k] || []).map((x, i) => ({
+      i, on: !!x.on, t: x.t || "", cost: d.xpCost.rows[im.k]?.[i] ?? im.cost,
+      targets: IMP_TARGET[im.k] ? targetOptions(IMP_TARGET[im.k], x.t, im.k, i) : null,
+      bad: !!x.on && IMP_TARGET[im.k] === "attr" && x.t && d.impVal[`${im.k}:${i}`] && !d.impVal[`${im.k}:${i}`].ok,
+    })),
+  }));
+
+  /* ---------- health & fate ---------- */
+  const hpMax = L.hpMaxNow(d);
+  const fd = st.fdCur === "" || st.fdCur == null ? d.fd : parseInt(st.fdCur, 10) || 0;
+  const cons = CONS.filter(([k]) => k !== "m2" || d.medSlots > 1).map(([k, label]) => ({
+    k, label, v: st.cons?.[k] || "", treated: !!st.consT?.[k],
+    // «Вилікувати за N(к)» (author, 2026-11-15): at a qualified medic, light 2 / moderate 5 / heavy 8 caps
+    buy: (() => {
+      const p = consPlan(k, st.cons?.[k], st.consT?.[k], st.caps);
+      const text = String(st.cons?.[k] || "").trim();
+      return { price: p.price, off: !p.can, title: !text ? "Наслідку немає" : st.consT?.[k] ? "Лікування вже почалося"
+        : p.can ? `Лікування в кваліфікованого медика: ${p.price}(к) з кришок; наслідок позначиться «проліковано»` : `Лікування коштує ${p.price}(к), а кришок менше` };
+    })(),
+  }));
+  // «Вилікувати за N(к)» (HP: 1 cap for 5) and «Поповнити за N(к)» (Припаси: 3 for 1 cap) from the character's caps
+  const supNow = parseInt(st.supplies, 10) || 0;
+  const buy = {
+    heal: buyButton(hpMax - L.curHp(d), st.caps, HP_PER_CAP, { verb: "Вилікувати", unit: "ОЗ", full: "ОЗ повні", rate: "1(к) за 5 ОЗ у кваліфікованого медика" }),
+    sup: buyButton(d.supMax - supNow, st.caps, SUP_PER_CAP, { verb: "Поповнити", unit: "од. Припасів", full: "Припасів повно", rate: "1(к) за 3 Припаси" }),
+  };
+  const ovDef = st.defOv || {};
+  const sit = (st.sit || []).map((a, i) => ({ i, t: a.t, inv: a.inv || 0 }));
+  const quickAspects = L.QUICK_ASPECTS.filter((x) => !sit.some((a) => a.t === x[1]))
+    .map(([k, t, why]) => ({ t, off: ovDef[k] === "yes", why }));
+  const defenses = L.defenses(d).map(([cls, t]) => ({ cls, t }));
+
+  /* ---------- chems & rest ---------- */
+  const rest = L.restInfo(d);
+  // «Швидкий доступ»: why resting is not possible now
+  const restBlock = rest.rested ? "Сьогодні вже відпочивали — наступний відпочинок після «Новий день»." : rest.sup <= 0 ? "Немає Припасів — відпочити не вийде." : "";
+  const chem = {
+    session: c.session, day: c.dayNo, scene: c.sceneNo,
+    effects: [...c.scene.map((e) => ({ ...e, when: "сцена" })), ...c.day.map((e) => ({ ...e, when: "день" }))]
+      .map((e) => ({ id: e.id, drug: e.drug, t: e.t || "", when: e.when })),
+    addictions: c.addictions.map((a, i) => ({ i, drug: a.drug, src: a.src || "", used: c.used.includes(a.drug), incurable: !!a.incurable })),
+    unsatisfied: L.unsatAddictions().map((a) => a.drug),
+    last: c.last || "", restLast: c.restLast || "", superDice: c.superDice || 0, ko: L.curHp(d) <= 0,
+    // the 0 HP block: +1 fate once per fall; Друге дихання / Швидке відновлення only with those perks
+    koFate: !!c.koFate,
+    koWind: d.allPerks.includes("Друге дихання"), koWindUsed: c.swSession === c.session,
+    koQuick: d.allPerks.includes("Швидке відновлення"),
+  };
+
+  /* ---------- gear ---------- */
+  const energyOptions = (cur) => ENERGY_ORDER.map((k) => ({ v: k, n: k ? ENERGY[k]?.n || k : "звичайна", sel: (cur || "") === k }));
+  // «Тип»: the energy versions (rules) plus the other damage types (Foundry only: the colour of the damage, author 2026-11-14);
+  // shown: the type chosen, else the energy version, else a fire / psi / poison / radiation type found in the name or note
+  const typeOptions = (w) => {
+    const auto = weaponDmgType({ w });
+    const cur = EXTRA_TYPES.includes(w.dt) ? w.dt : w.en || (!w.dt && EXTRA_TYPES.includes(auto) ? auto : "");
+    return [...energyOptions(cur), ...EXTRA_TYPES.map((k) => ({ v: k, n: DMG_TYPES[k], sel: cur === k }))];
+  };
+  const opts = (map, cur) => Object.entries(map).map(([v, n]) => ({ v, n, sel: (cur || "") === v }));
+  const weapons = st.weapons.map((w, i) => ({
+    i, n: w.n || "", d: w.d || "", h: !!w.h,
+    // cryo: the damage one step down (as the damage roll counts it); the field shows it, editing shows the base damage
+    dEff: weaponDmg(w) !== (w.d || "").trim() ? weaponDmg(w) : "",
+    en: w.en || "", note: w.note || "", price: w.price || "", hand: !!w.hand, fav: !!w.fav,
+    dt: weaponDmgType({ w }), // the damage type, for the colour of the «Шкода» field
+    auto: !!(w.auto || w.claw), locked: !!(w.claw || w.auto === "builtin"), energyOptions: typeOptions(w),
+    kind: weaponKind(w),
+    guns: gunsOn(st), r: w.r || "", rof: w.rof || "", cls: w.cls || "",
+    rangeOptions: opts(GUN_RANGE, w.r), rofOptions: opts(GUN_ROF, w.rof), clsOptions: opts(GUN_CLS, w.cls),
+    mods: (w.mods || []).map((m, j) => ({ j, n: m.n || "", inv: m.inv || 0, crit: !!m.crit, set: !!String(m.n || "").trim() })), sharp: !!w.sharp,
+    builtin: w.auto === "builtin"
+      ? Object.entries(BUILTIN_CAT).map(([v, c]) => ({ v, n: `${c.n} (${c.d})`, sel: (w.cat || "medium") === v }))
+      : null,
+  }));
+  const favWeapon = d.allPerks.includes("Улюблена зброя")
+    ? [{ v: "", n: "— не обрано —", sel: !st.weapons.some((w) => w.fav) }].concat(
+      st.weapons.map((w, i) => ({ v: String(i), n: w.n || "без назви", sel: !!w.fav })).filter((o) => !st.weapons[+o.v]?.auto))
+    : null;
+  const armor = st.armor.map((a, i) => ({
+    i, n: a.n || "", v: a.v ?? "", h: !!a.h, w: a.w !== false, note: a.note || "", price: a.price || "",
+    guns: gunsOn(st), mods: (a.mods || []).map((m, j) => ({ j, n: m.n || "", inv: m.inv || 0, crit: !!m.crit, set: !!String(m.n || "").trim() })),
+    kind: /силов/i.test(a.n || "") ? "power-armor" : /важк/i.test(`${a.n} ${a.note}`) || a.h ? "heavy-armor" : "armor",
+  }));
+  const consL = String(st.cons?.l || "").trim();
+  const other = st.other.map((o, i) => {
+    const key = drugOf(o.n);
+    const D = key ? DRUGS[key] : null;
+    const row = {
+      i, n: o.n || "", q: o.q ?? "1", note: o.note || "", price: o.price || "", h: !!o.h, auto: !!o.auto, usable: !!key,
+      power: !key && isPowerCell(o.n) && usesPowerCells(st), // a robot's power cell (author, 2026-11-15)
+      booster: D?.booster && !/\(/.test(o.n || "")
+        ? [{ v: "", n: "атрибут…", sel: !o.attr }].concat(ATTRS.filter((A) => A.k !== "UDCH").map((A) => ({ v: A.k, n: A.s, sel: o.attr === A.k })))
+        : null,
+      treat: !!(D && (D.heal || D.superHeal) && consL && !st.consT?.l),
+      desc: D?.d || "", // the drug's description (the compact sheet shows it; author, 2026-11-17)
+    };
+    row.hasActs = row.usable || row.power || !!row.booster || row.treat; // «Вжити» and the rest take the end of the note's column
+    // the card's stripe by the kind of thing (author, 2026-11-15): chems, explosives, power cells, everything else
+    row.kind = row.usable || row.booster || row.treat ? "chem" : row.power ? "power" : /гранат|динаміт|вибухівк|\bміна\b|\bміни\b/i.test(`${o.n} ${o.note}`) ? "boom" : "gear";
+    return row;
+  });
+  const robotBody = st.species === "robot" && !d.has("Кіборг");
+  const ai = st.other.findIndex((o) => {
+    const k = drugOf(o.n);
+    return (k === "Адреналін" && !robotBody) || (k === "Ребут" && robotBody);
+  });
+  // catalogue: the HTML sheet's search, sections and sorting (catalogView)
+  const secs = [...new Set(catalogAll(gunsOn(st)).map((e) => e.sec))];
+  const catSec = secs.includes(ui.catSec) ? ui.catSec : "all";
+  const catSort = ui.catSort || "price";
+  // catalogView → { groups: [{ g, sec, items }], total, all }
+  const cv = ui.cat ? catalogView(ui.catQ || "", catSec, catSort, gunsOn(st)) : null;
+  const catalog = cv
+    ? {
+      total: cv.total, all: cv.all,
+      groups: cv.groups.map((g) => ({ g: g.g, items: g.items.map((e) => ({ id: e.id, n: e.n, d: e.d || "", price: e.price ?? "", desc: catDesc(e), addict: catAddict(e) })) })),
+    }
+    : null;
+  // «+ Зброя / + Броня / + Річ»: that list's catalogue at the bottom of its block (search and sorting as in the catalogue)
+  const ADD_KIND = { weapons: "w", armor: "a", other: "o" };
+  const addPick = ADD_KIND[ui.addPick] ? ui.addPick : "";
+  let addCat = null;
+  if (addPick) {
+    const v = catalogView(ui.addQ || "", "all", catSort, gunsOn(st));
+    const groups = v.groups
+      .map((g) => ({ g: g.g, items: g.items.filter((e) => e.kind === ADD_KIND[addPick])
+        .map((e) => ({ id: e.id, n: e.n, d: e.d || "", price: e.price ?? "", desc: catDesc(e), addict: catAddict(e) })) }))
+      .filter((g) => g.items.length);
+    addCat = { groups, total: groups.reduce((n, g) => n + g.items.length, 0) };
+  }
+  // «Дизайнерські» (author, 2026-11-15): the world's designer drugs with a valid recipe (ui.worldDrugs: [{ id, n, recipe }])
+  const designer = (ui.worldDrugs || []).map((w) => ({ w, T: recipeTotals(w.recipe) }))
+    .filter(({ T }) => !T.errors.length)
+    .map(({ w, T }) => ({ id: w.id, n: w.n, price: T.price, addict: T.ch, desc: w.desc || "" }));
+  const dq = (s) => { const q = String(s || "").trim().toLowerCase(); return q ? designer.filter((e) => e.n.toLowerCase().includes(q)) : designer; };
+  const designerBig = catSec === "all" ? dq(ui.catQ) : [];
+  const designerAdd = addPick === "other" ? dq(ui.addQ) : [];
+  const catSecs = [{ v: "all", n: "усі розділи", sel: catSec === "all" }].concat(secs.map((k) => ({ v: k, n: CAT_SECS[k] || k, sel: catSec === k })));
+  const catSorts = Object.entries(CAT_SORT).map(([v, n]) => ({ v, n, sel: catSort === v }));
+
+  return {
+    name: st.name || "", gender: st.gender, genders: [["m", "чол."], ["f", "жін."], ["n", "без статі"]].map(([v, n]) => ({ v, n, sel: st.gender === v })),
+    species, speciesX, // «Назва: опис» → a name and a description, like the feats above (props without a name stay text only)
+    speciesProps: (spOf(st).props || []).map((p) => {
+      const m = /^([^:.]{2,60}):\s*(.+)$/s.exec(p);
+      return m ? { n: m[1], text: m[2].charAt(0).toUpperCase() + m[2].slice(1) } : { n: "", text: p };
+    }), archetypes, arch: st.arch || "",
+    aspects: ASPECTS.map(([f, label], i) => ({ f, label, v: st[f] || "", i, locked: !!st.manual?.[f] })), detail: st.detail || "",
+    locks: { name: !!st.manual?.name, detail: !!st.manual?.detail }, // typed by hand: the die is locked
+    issues: d.issues.map(([lvl, msg]) => ({ lvl, msg })).concat(freeModeIssues(st, d)),
+    chips: L.statusChips(d).map(([cls, t, tip]) => ({ cls, t, tip: tip || "" })),
+    chipsGood: L.statusChips(d).filter(([cls]) => cls !== "bad").map(([cls, t, tip]) => ({ cls, t, tip: tip || "" })),
+    chipsBad: L.statusChips(d).filter(([cls]) => cls === "bad").map(([cls, t, tip]) => ({ cls, t, tip: tip || "" })),
+    free,
+    attrs, points: { left: d.left, total: d.points, spent: d.spent },
+    skills, skillBudget,
+    perks, perkSlots: d.perkSlots, perksCounted: countedPerks(st), freePerks: d.freePerks,
+    feats, featsCounted: countedFeats(st),
+    pick: ui.pick || "", q: ui.q || "", showAll: !!ui.showAll, perkPicker, featPicker,
+    imps, xp: st.xp || 0, xpSpent: d.xpSpent, xpLeft: d.xpLeft, modelBonus: st.exp,
+    hasModel: d.has("Експериментальна модель"),
+    hp: L.curHp(d), hpMax, hpRed: d.hpRed, fd, fdMax: d.fd, hpBar: hpBar(L.curHp(d), hpMax),
+    armor: d.armorTotal + L.chemArmor(), psi: d.psiTotal + L.chemPsi(),
+    cons, buy, sit, quickAspects, defenses, restBlock,
+    supplies: parseInt(st.supplies, 10) || 0, supMax: d.supMax, supMaxAuto: d.supMaxAuto,
+    supLamps: d.supMax <= 6, // more than 6 Припасів: a counter instead of lamps
+    supDots: Array.from({ length: d.supMax }, (_, j) => ({ n: j + 1, on: j < (parseInt(st.supplies, 10) || 0) })),
+    caps: parseInt(st.caps, 10) || 0,
+    chem, rest,
+    weapons, favWeapon, armorList: armor, other, heavy: { n: d.heavyN, cap: d.heavyCap, over: d.heavyN > d.heavyCap },
+    cat: !!ui.cat, catQ: ui.catQ || "", catalog, designerBig, designerAdd, catSecs, catSorts, addPick, addCat, addQ: ui.addQ || "",
+    adren: ai >= 0 ? { i: ai, n: drugOf(st.other[ai].n) } : null,
+    presets: PRESETS.map((p, i) => ({ i, n: presetLabel ? presetLabel(p) : p[1] })),
+    bio: textToHtml(st.bio), others: textToHtml(st.others), // Foundry's editor (rich-text.mjs; author, 2026-11-15)
+    set: { ...st.set },
+    overrides: { hpMaxOv: st.hpMaxOv ?? "", fdOv: st.fdOv ?? "", armorOv: st.armorOv ?? "", psiArmorOv: st.psiArmorOv ?? "", supMax: st.supMax ?? "" },
+    ovList: [["hpMaxOv", "до максимуму ОЗ"], ["fdOv", "до жетонів Долі"], ["armorOv", "до броні"], ["psiArmorOv", "до пси-броні"]]
+      .map(([k, n]) => ({ k, n, val: st[k] ?? "" })),
+    // how many are set (shown on the folded headers)
+    ovSet: ["hpMaxOv", "fdOv", "armorOv", "psiArmorOv"].filter((k) => String(st[k] ?? "").trim() !== "").length,
+    defSet: Object.keys(DEF_TYPES).filter((k) => ovDef[k]).length,
+    defTypes: Object.entries(DEF_TYPES).map(([k, T]) => ({
+      k, n: T.n,
+      options: [{ v: "", n: "за правилами", sel: !ovDef[k] }].concat(
+        (T.bool ? [["yes", "так"], ["no", "ні"]] : T.opts.map((o) => [o, DEF_LABEL[o]])).map(([v, n]) => ({ v, n, sel: ovDef[k] === v })),
+      ),
+    })),
+    loot: { yao: !!st.loot?.yao, egg: !!st.loot?.egg },
+    propsOpen: !!ui.propsOpen,
+    guide: ui.guide ? GUIDE.map(([t, tab, go, label], i) => ({ n: i + 1, t, tab, go, label })) : null,
+  };
+}

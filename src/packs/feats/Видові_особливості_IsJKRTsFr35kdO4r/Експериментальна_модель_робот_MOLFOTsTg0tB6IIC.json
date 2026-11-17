@@ -1,0 +1,32 @@
+{
+  "name": "Експериментальна модель (робот)",
+  "type": "feat",
+  "_id": "MOLFOTsTg0tB6IIC",
+  "img": "systems/wastelanders/assets/dna1.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Ти прототип модельного ряду, виготовлений в одному екземплярі. Тому ти маєш особливі здібності, недоступні іншим роботам, але частіше ламаєшся і тебе важче лагодити. На старті гри ти отримуєш на вибір 1 додатковий пункт атрибутів <strong>або</strong> 1 додатковий перк. Натомість твій максимум ОЗ зменшується на 5, а всі перевірки Техніки для твого ремонту отримують −1 через рідкісність деталей.</p>",
+    "isSpecies": true,
+    "hpBonus": null
+  },
+  "effects": [],
+  "folder": "IsJKRTsFr35kdO4r",
+  "sort": 1100000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1768569708824,
+    "modifiedTime": 1777149805022,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC"
+  },
+  "_key": "!items!MOLFOTsTg0tB6IIC"
+}

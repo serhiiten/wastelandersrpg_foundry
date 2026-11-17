@@ -1,0 +1,30 @@
+{
+  "name": "Вибивайло",
+  "type": "feat",
+  "_id": "ZoF3kGGRJ5aN6blA",
+  "img": "systems/wastelanders/assets/body-swapping.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Ти великий, але повільний. Довго розганяєшся, зате як удариш, то наче вантажівка на повному ходу. Ти не можеш атакувати в ближньому бою два кола дій поспіль (в наступному колі після атаки ти маєш робити щось інше, крім атаки), але отримуєш +1 до СЛ (не вище видового максимуму).</p>"
+  },
+  "effects": [],
+  "folder": "BCy4k0QNVVHgYsqd",
+  "sort": 100000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.1",
+    "createdTime": 1768569081888,
+    "modifiedTime": 1768827073324,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!ZoF3kGGRJ5aN6blA"
+}

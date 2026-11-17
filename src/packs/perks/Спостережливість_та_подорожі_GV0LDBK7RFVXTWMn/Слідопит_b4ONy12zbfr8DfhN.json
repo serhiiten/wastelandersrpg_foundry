@@ -1,0 +1,50 @@
+{
+  "folder": "GV0LDBK7RFVXTWMn",
+  "name": "Слідопит",
+  "type": "perk",
+  "_id": "b4ONy12zbfr8DfhN",
+  "img": "systems/wastelanders/assets/binoculars.svg",
+  "system": {
+    "description": "<p>Коли ти бачиш сліди, яким не більше трьох днів, ти можеш раз за сцену поставити Доглядачеві два запитання з цього списку:</p>\n<p>●   Хто тут був?</p>\n<p>●   Скільки їх було?</p>\n<p>●   Що вони тут робили? Ну, хоча б приблизно?</p>\n<p>●   Куди вони пішли?</p>\n<p>Доглядач має відповісти якомога чесніше. Крім того, ти отримуєш +1 до перевірок вистежування будь-кого та пошуку прихованих речей на кшталт схованок і пасток.</p><p><strong>Вимоги:</strong> Навичка Виживання на рівні учня або вище, СПР +1 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": 1,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 6,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768667987288,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!b4ONy12zbfr8DfhN"
+}

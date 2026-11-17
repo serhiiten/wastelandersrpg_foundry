@@ -1,0 +1,50 @@
+{
+  "folder": "4bNsAKB1jmixQ0iI",
+  "name": "Пси-удар",
+  "type": "perk",
+  "_id": "rqvOWXJonlPE2e4u",
+  "img": "systems/wastelanders/assets/psychic-waves.svg",
+  "system": {
+    "description": "<p>Ти можеш використовувати свої пси-сили як легку зброю для бою на відстані. Пси-удари працюють тільки на живих істот і завдають психічної шкоди, яка ігнорує фізичну броню. Для перевірки атаки ти використовуєш атрибут ІН. Візьми цей перк ще раз, і твій пси-удар стане середньою зброєю. Ти не можеш завдавати фізичної шкоди цією здатністю.</p>\n<p>Альтернативно, ти можеш відмовитися від психічної шкоди на користь енергетичної. Вибери <strong><em>вогонь</em></strong>, <strong><em>електрику</em></strong> чи <strong><em>холод</em></strong>. Твій пси-удар більше не завдає психічної шкоди, однак отримує відповідний аспект як енергетична зброя, а також стає середньою зброєю. Візьми цей перк ще раз, і він стане важкою зброєю. Ти також можеш створювати відповідні переваги за допомогою своїх сил, наприклад, <strong><em>підпалювати</em></strong> або <em>з<strong>аморожувати</strong></em> предмети, або бити їх <strong><em>розрядами струму</em></strong>.</p><p><strong>Вимоги:</strong> ІН +1 або вище.</p>",
+    "attributes": {
+      "strength": null,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": 1,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 0,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768671720092,
+    "modifiedTime": 1769783832108,
+    "lastModifiedBy": "CXn23KOmyfe6wBkg"
+  },
+  "_key": "!items!rqvOWXJonlPE2e4u"
+}

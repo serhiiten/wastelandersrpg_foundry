@@ -1,0 +1,32 @@
+{
+  "name": "Кіборг (робот)",
+  "type": "feat",
+  "_id": "hp4CYH2ddoe42hee",
+  "img": "systems/wastelanders/assets/dna1.svg",
+  "system": {
+    "active": false,
+    "description": "<p>Ти не зовсім робот. Колись ти був людиною, але потім усвідомив слабкість власної плоті (найімовірніше, не з власної волі), і більшість твоїх м'ясних частин замінили кібернетичними. Ти втрачаєш видову властивість «Неживий», тобто імунітет до отрут і психічної шкоди, а радіація завдає тобі повної шкоди. Окрім елементів живлення, як звичайним роботам, тобі час від часу потрібні їжа й вода, а також сон і повітря. З іншого боку, ти можеш відновлювати ОЗ під час відпочинку, як живі істоти, брати перки, недоступні звичайним роботам, а також уживати наркотики, бухло та медикаменти.</p>",
+    "isSpecies": true,
+    "hpBonus": null
+  },
+  "effects": [],
+  "folder": "IsJKRTsFr35kdO4r",
+  "sort": 1300000,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "14.360",
+    "systemId": "wastelanders",
+    "systemVersion": "0.4.2",
+    "createdTime": 1768569774618,
+    "modifiedTime": 1777149812476,
+    "lastModifiedBy": "Te0NoAFEwBAH20vC"
+  },
+  "_key": "!items!hp4CYH2ddoe42hee"
+}

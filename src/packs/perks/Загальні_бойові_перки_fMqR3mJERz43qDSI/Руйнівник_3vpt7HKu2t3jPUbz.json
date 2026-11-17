@@ -1,0 +1,50 @@
+{
+  "folder": "fMqR3mJERz43qDSI",
+  "name": "Руйнівник",
+  "type": "perk",
+  "_id": "3vpt7HKu2t3jPUbz",
+  "img": "systems/wastelanders/assets/crossed-axes.svg",
+  "system": {
+    "description": "<p>Ти отримуєш +2 до всіх перевірок подолання труднощів, коли грубою силою прибираєш ситуативні аспекти оточення: ламаєш <strong><em>барикади</em></strong>, розбиваєш <strong><em>перевернуті столи</em></strong>, трощиш ящики тощо. Цей бонус також діє на перевірки вибивання дверей і подібні випадки, коли тобі просто треба розтрощити якийсь предмет на друзки.</p><p><strong>Вимоги:</strong> Навичка Атлетика на рівні учня, СЛ +1 або вище.</p>",
+    "attributes": {
+      "strength": 1,
+      "perception": null,
+      "endurance": null,
+      "attractiveness": null,
+      "intelligence": null,
+      "dexterity": null,
+      "luck": null
+    },
+    "skills": {
+      "athletics": 6,
+      "thievery": 0,
+      "marksmanship": 0,
+      "dueling": 0,
+      "medicine": 0,
+      "mechanics": 0,
+      "knowledge": 0,
+      "survival": 0,
+      "manipulation": 0,
+      "intimidation": 0
+    }
+  },
+  "effects": [],
+  "sort": 0,
+  "ownership": {
+    "default": 0,
+    "Te0NoAFEwBAH20vC": 3
+  },
+  "flags": {},
+  "_stats": {
+    "compendiumSource": null,
+    "duplicateSource": null,
+    "exportSource": null,
+    "coreVersion": "13.351",
+    "systemId": "wastelanders",
+    "systemVersion": "0.2",
+    "createdTime": 1768667574783,
+    "modifiedTime": 1768827159592,
+    "lastModifiedBy": "W42gkP6LZH5xXz85"
+  },
+  "_key": "!items!3vpt7HKu2t3jPUbz"
+}
