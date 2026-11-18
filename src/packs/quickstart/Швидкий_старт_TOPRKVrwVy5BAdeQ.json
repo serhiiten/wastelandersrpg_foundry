@@ -9200,8 +9200,8 @@
             "top": 4
           },
           "background": {
-            "color": "#c8ad7f",
-            "src": "systems/wastelanders/assets/maps/battle-sand.webp",
+            "color": "#73412d",
+            "src": "systems/wastelanders/assets/maps/battle/p22.webp",
             "tint": "#ffffff",
             "alphaThreshold": 0.75
           },
@@ -9245,13 +9245,14 @@
         "wastelanders": {
           "battleScene": 2,
           "battlePlace": "Каньйон",
-          "battleHazard": ""
+          "battleHazard": "",
+          "battleBg": "22"
         }
       },
       "_id": "ZxrqfNkXOLM6qUUk",
       "active": false,
       "navOrder": 0,
-      "thumb": "systems/wastelanders/assets/maps/battle-sand-thumb.webp",
+      "thumb": "systems/wastelanders/assets/maps/battle/p22-thumb.webp",
       "shiftX": 0,
       "shiftY": 0,
       "initial": {
@@ -9300,12 +9301,12 @@
       },
       "drawings": [
         {
-          "x": 1300,
-          "y": 1400,
+          "x": 1200,
+          "y": 1100,
           "shape": {
             "type": "r",
-            "width": 700,
-            "height": 500,
+            "width": 2200,
+            "height": 700,
             "radius": null,
             "points": []
           },
@@ -9355,11 +9356,11 @@
           "interface": false
         },
         {
-          "x": 1300,
-          "y": 1000,
+          "x": 1700,
+          "y": 700,
           "shape": {
             "type": "r",
-            "width": 700,
+            "width": 2000,
             "height": 400,
             "radius": null,
             "points": []
@@ -9406,12 +9407,12 @@
           "interface": false
         },
         {
-          "x": 2000,
-          "y": 1500,
+          "x": 3400,
+          "y": 1100,
           "shape": {
             "type": "r",
             "width": 800,
-            "height": 300,
+            "height": 800,
             "radius": null,
             "points": []
           },
@@ -9453,12 +9454,12 @@
           "interface": false
         },
         {
-          "x": 600,
+          "x": 200,
           "y": 1500,
           "shape": {
             "type": "r",
-            "width": 700,
-            "height": 300,
+            "width": 1000,
+            "height": 700,
             "radius": null,
             "points": []
           },
@@ -9590,8 +9591,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "JgmkMQmC7tobzWN4",
-          "x": 1300,
-          "y": 1200,
+          "x": 1700,
+          "y": 900,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "H9ojg4hiXU8PNbBh",
@@ -9692,8 +9693,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "wT8ShLp5eByIy2yR",
-          "x": 2200,
-          "y": 1600,
+          "x": 3400,
+          "y": 1200,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "b5Oo5AUp2IsBhERY",
@@ -9794,8 +9795,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "7cGcM4Lctr86nJUV",
-          "x": 1500,
-          "y": 1200,
+          "x": 1900,
+          "y": 900,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "vyA2IPBTQAm8UKqB",
@@ -9896,8 +9897,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "lnfb7aQe8qz5NgBH",
-          "x": 1700,
-          "y": 1200,
+          "x": 2100,
+          "y": 900,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "Oi35YA3y5HsujqJt",
@@ -9998,8 +9999,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "hsib8fcAzDRKnSNp",
-          "x": 2500,
-          "y": 1600,
+          "x": 3400,
+          "y": 1500,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "dZKLxxwlBeaSxiND",
@@ -10076,8 +10077,8 @@
             "top": 4
           },
           "background": {
-            "color": "#c8ad7f",
-            "src": "systems/wastelanders/assets/maps/battle-sand.webp",
+            "color": "#9b9179",
+            "src": "systems/wastelanders/assets/maps/battle/p14.webp",
             "tint": "#ffffff",
             "alphaThreshold": 0.75
           },
@@ -10121,13 +10122,14 @@
         "wastelanders": {
           "battleScene": 2,
           "battlePlace": "Покинута заправка",
-          "battleHazard": ""
+          "battleHazard": "",
+          "battleBg": "14"
         }
       },
       "_id": "cRu1SDvxoGthxtzU",
       "active": false,
       "navOrder": 0,
-      "thumb": "systems/wastelanders/assets/maps/battle-sand-thumb.webp",
+      "thumb": "systems/wastelanders/assets/maps/battle/p14-thumb.webp",
       "shiftX": 0,
       "shiftY": 0,
       "initial": {
@@ -10176,12 +10178,12 @@
       },
       "drawings": [
         {
-          "x": 1400,
-          "y": 1300,
+          "x": 1000,
+          "y": 500,
           "shape": {
             "type": "r",
-            "width": 700,
-            "height": 300,
+            "width": 2500,
+            "height": 700,
             "radius": null,
             "points": []
           },
@@ -10223,12 +10225,12 @@
           "interface": false
         },
         {
-          "x": 2100,
+          "x": 1000,
           "y": 1200,
           "shape": {
             "type": "r",
-            "width": 600,
-            "height": 500,
+            "width": 1600,
+            "height": 700,
             "radius": null,
             "points": []
           },
@@ -10278,11 +10280,11 @@
           "interface": false
         },
         {
-          "x": 2700,
-          "y": 1100,
+          "x": 2600,
+          "y": 1200,
           "shape": {
             "type": "r",
-            "width": 500,
+            "width": 900,
             "height": 700,
             "radius": null,
             "points": []
@@ -10419,7 +10421,7 @@
           "movementAction": null,
           "flags": {},
           "actorId": "3UQlEKbCDjZGGyzE",
-          "x": 2200,
+          "x": 1100,
           "y": 1400,
           "shape": 4,
           "level": "pustBattleLevel1",
@@ -10521,8 +10523,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "t2nT2YCbyUJMOgdm",
-          "x": 2800,
-          "y": 1400,
+          "x": 2700,
+          "y": 1500,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "QKfI5MAhAUnR3Q81",
@@ -10599,8 +10601,8 @@
             "top": 4
           },
           "background": {
-            "color": "#c8ad7f",
-            "src": "systems/wastelanders/assets/maps/battle-sand.webp",
+            "color": "#a3957c",
+            "src": "systems/wastelanders/assets/maps/battle/p21.webp",
             "tint": "#ffffff",
             "alphaThreshold": 0.75
           },
@@ -10644,13 +10646,14 @@
         "wastelanders": {
           "battleScene": 2,
           "battlePlace": "Руїни міста",
-          "battleHazard": ""
+          "battleHazard": "",
+          "battleBg": "21"
         }
       },
       "_id": "OZg0SW4x9WXWt4wu",
       "active": false,
       "navOrder": 0,
-      "thumb": "systems/wastelanders/assets/maps/battle-sand-thumb.webp",
+      "thumb": "systems/wastelanders/assets/maps/battle/p21-thumb.webp",
       "shiftX": 0,
       "shiftY": 0,
       "initial": {
@@ -10699,12 +10702,12 @@
       },
       "drawings": [
         {
-          "x": 1700,
-          "y": 1300,
+          "x": 1600,
+          "y": 1800,
           "shape": {
             "type": "r",
-            "width": 700,
-            "height": 700,
+            "width": 900,
+            "height": 900,
             "radius": null,
             "points": []
           },
@@ -10750,12 +10753,12 @@
           "interface": false
         },
         {
-          "x": 1000,
-          "y": 1500,
+          "x": 300,
+          "y": 1900,
           "shape": {
             "type": "r",
-            "width": 700,
-            "height": 300,
+            "width": 1300,
+            "height": 700,
             "radius": null,
             "points": []
           },
@@ -10797,12 +10800,12 @@
           "interface": false
         },
         {
-          "x": 1700,
-          "y": 300,
+          "x": 3000,
+          "y": 1900,
           "shape": {
             "type": "r",
-            "width": 700,
-            "height": 700,
+            "width": 800,
+            "height": 800,
             "radius": null,
             "points": []
           },
@@ -10848,12 +10851,12 @@
           "interface": false
         },
         {
-          "x": 1800,
-          "y": 1000,
+          "x": 2500,
+          "y": 2000,
           "shape": {
             "type": "r",
             "width": 500,
-            "height": 300,
+            "height": 500,
             "radius": null,
             "points": []
           },
@@ -10985,8 +10988,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "2Bwaf013fzEHGkHS",
-          "x": 1800,
-          "y": 1600,
+          "x": 1700,
+          "y": 2100,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "WiPRqACtO4qEwQwa",
@@ -11087,8 +11090,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "GhztKK8YDKyghRC3",
-          "x": 1800,
-          "y": 1800,
+          "x": 1700,
+          "y": 2300,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "wFd1dA4Opzbml68n",
@@ -11189,8 +11192,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "dCegRNbXa9PU0xLb",
-          "x": 1700,
-          "y": 600,
+          "x": 3000,
+          "y": 2200,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "PuTnDlSSb0AS5417",
@@ -11291,8 +11294,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "bbbSnqtWRC1UsOQY",
-          "x": 1700,
-          "y": 800,
+          "x": 3000,
+          "y": 2400,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "YjY6inXI2R7fv3tw",
@@ -11393,8 +11396,8 @@
           "movementAction": null,
           "flags": {},
           "actorId": "HbqTcU1dGqwyhORP",
-          "x": 1900,
-          "y": 900,
+          "x": 3200,
+          "y": 2500,
           "shape": 4,
           "level": "pustBattleLevel1",
           "_id": "7YHtd6DD7RApXJno",
@@ -11471,8 +11474,8 @@
             "top": 4
           },
           "background": {
-            "color": "#c8ad7f",
-            "src": "systems/wastelanders/assets/maps/battle-sand.webp",
+            "color": "#6f695b",
+            "src": "systems/wastelanders/assets/maps/battle/p44.webp",
             "tint": "#ffffff",
             "alphaThreshold": 0.75
           },
@@ -11516,13 +11519,14 @@
         "wastelanders": {
           "battleScene": 2,
           "battlePlace": "Котеджне містечко",
-          "battleHazard": ""
+          "battleHazard": "",
+          "battleBg": "44"
         }
       },
       "_id": "KE83gT2jvXPYdR1G",
       "active": false,
       "navOrder": 0,
-      "thumb": "systems/wastelanders/assets/maps/battle-sand-thumb.webp",
+      "thumb": "systems/wastelanders/assets/maps/battle/p44-thumb.webp",
       "shiftX": 0,
       "shiftY": 0,
       "initial": {
