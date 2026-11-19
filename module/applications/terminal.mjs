@@ -9,8 +9,8 @@ import { CASE_DIFF, caseBattle, caseKind, casePower } from "../rules/case-battle
 import { travelDamage } from "./battle-panel.mjs";
 import { sharedGet, sharedSet, travelToScene } from "../helpers/scene-shared.mjs";
 import { createTerminal } from "../rules/terminal.mjs";
-import { createBattle, openGeneratedEnemy, generatedEnemyImg, dropGeneratedEnemy, OPPONENT_ALIASES } from "./terminal-battle.mjs";
-import { concreteKinds } from "../rules/enemy-kinds.mjs";
+import { createBattle, openGeneratedEnemy, generatedEnemyImg, dropGeneratedEnemy, dropCompendiumEnemy, isCompendiumEnemyDrop, OPPONENT_ALIASES } from "./terminal-battle.mjs";
+import { concreteKinds, namePicks } from "../rules/enemy-kinds.mjs";
 import { postChat } from "./chat.mjs";
 import { postTerminalRoll } from "./check-panel.mjs";
 import { luckCaravan } from "./map-dice.mjs";
@@ -119,6 +119,14 @@ Hooks.on("dropCanvasData", (cv, data) => {
   if (data?.type !== DROP_TYPE) return;
   const app = foundry.applications.instances.get("pust-terminal");
   if (app) dropGeneratedEnemy(app.T, app.st, data.name, { x: data.x, y: data.y });
+  return false;
+});
+
+/** An enemy dragged from a compendium onto the scene (author, 2026-11-19): the GM's goes to «Битви» as the «Битва» panel's */
+Hooks.on("dropCanvasData", (cv, data, event) => {
+  if (!game.user.isGM || !isCompendiumEnemyDrop(data, fromUuidSync(data?.uuid ?? "", { strict: false }))) return;
+  if (!canvas.dimensions.rect.contains(data.x, data.y)) return false;
+  dropCompendiumEnemy(data, { hidden: !!event?.altKey });
   return false;
 });
 
@@ -287,7 +295,8 @@ class TerminalApp extends HandlebarsApplicationMixin(ApplicationV2) {
     sharedSet({ place: s.place || "", hazard: s.hazard || "" }); // the travel's place becomes the battle's, on every scene
     this.st.battle.difficulty = s.difficulty;
     this.st.battle.names = s.names || [];
-    this.st.battle.picks = {};
+    // the names say the kind: «Рейдер 3» is a Рейдер, and the crowd's leader and boss follow (author, 2026-11-19)
+    this.st.battle.picks = namePicks(s.last?.allocations, s.names, OPPONENT_ALIASES);
     this.st.battle.state = concreteKinds(clone({ ...s, names: undefined }), this.st.battle.picks, OPPONENT_ALIASES);
     this.st.tab = "battle";
     notify.info("Битву з подорожі перенесено на вкладку «Битви».");
