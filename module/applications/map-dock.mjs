@@ -16,7 +16,7 @@
  *    openDockCheck: their Player Character, or a list of the characters they own).
  */
 import { overviewSectionHtml, mountOverview, redrawOverview } from "./battle-overview.mjs";
-import { travelToScene } from "../helpers/scene-shared.mjs";
+import { travelToScene, sharedGet, playerBattleStripHtml } from "../helpers/scene-shared.mjs";
 import { addPlace } from "./map-tools.mjs";
 import { fateActors, fateInfo, fatePickList, luckCaravan, rollDice, rollFate } from "./map-dice.mjs";
 import { mountCounters } from "./game-counters.mjs";
@@ -25,13 +25,16 @@ import { postChat } from "./chat.mjs";
 import { postTerminalRoll, toggleDockCheck, placeDockCheck, dockCheckOpen } from "./check-panel.mjs";
 import { battleFromTravel, startTravelBattle } from "./terminal.mjs";
 import { createTerminal } from "../rules/terminal.mjs";
-import { LUCKS, prettyTravel, travelChat } from "./terminal-view.mjs";
+import { LUCKS, placeSpecialReroll, prettyTravel, travelChat } from "./terminal-view.mjs";
+import { rerollSpecial, specialLeft } from "../rules/travel-special.mjs";
 import { battleSectionHtml, mountBattlePanel, redrawBattlePanel, travelDamage } from "./battle-panel.mjs";
 import { isBattleScene } from "../helpers/default-scene.mjs";
 import { evaluate, runAction } from "./character-actions.mjs";
 import { compute } from "../rules/core.mjs";
 import { fdOf, postFateChange, postSupChange } from "./fate-card.mjs";
+import { caravanLuck } from "./party-luck.mjs";
 import { notify } from "../helpers/notify.mjs";
+import { layerOn, toggleLayer } from "../helpers/faction-layer.mjs";
 
 const DOCK = "pust-mapdock";
 const POS_KEY = "pustelnyky-mapdock-pos";   // { map: {x, y}, dice: {x, y} } in window pixels; absent = the default place
@@ -62,8 +65,30 @@ function mapButtons() {
     btn("poi", "fa-star", "Точка інтересу", "Додати точку інтересу: оранжевий токен"),
   ];
   const row2 = [btn("note", "fa-note-sticky", "Примітка", "Додати стікер на мапу й одразу писати на ньому (спершу схований від гравців)")];
-  return [row1, row2].map((r) => `<div class="pust-md-row">${r.join("")}</div>`).join("");
+  // «Шари» (author, 2026-11-19, mockup А): a row of its own under the place buttons, a switch per layer
+  const pill = (key) => `<button type="button" class="pust-md-layer" data-mapdock="layer" data-layer="${key}" aria-pressed="false" title="${LAYER_TIP[key].off}"><i class="fa-solid ${LAYER_TIP[key].icon}"></i><span>${LAYER_TIP[key].label}</span></button>`;
+  const layers = `<div class="pust-md-layers"><span>Шари:</span>${pill("factions")}${pill("routes")}</div>`;
+  return [row1, row2].map((r) => `<div class="pust-md-row">${r.join("")}</div>`).join("") + layers;
 }
+/** «Шари:» (author, 2026-11-19): the map's layers on / off for everyone (helpers/faction-layer.mjs) */
+const LAYER_TIP = {
+  factions: { label: "Фракції", icon: "fa-flag",
+    off: "Показати всім шар «Положення сторін»: території фракцій, спірні землі, Сяюче море, токени фракцій",
+    on: "Сховати шар «Положення сторін»" },
+  routes: { label: "Шляхи", icon: "fa-route",
+    off: "Показати всім торгові шляхи",
+    on: "Сховати торгові шляхи" },
+};
+function syncLayerButtons() {
+  for (const b of document.querySelectorAll(`#${DOCK} [data-mapdock="layer"]`)) {
+    const key = b.dataset.layer;
+    const on = layerOn(key);
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.title = on ? LAYER_TIP[key].on : LAYER_TIP[key].off;
+  }
+}
+for (const h of ["createTile", "deleteTile", "canvasReady"]) Hooks.on(h, () => syncLayerButtons());
 /** Players' «Примітка» (through the GM when Foundry does not let them draw; author, 2026-11-18) */
 const NOTE_TIP = "Додати стікер на мапу й одразу писати на ньому: його бачать усі, під ним стоїть твоє ім'я. Подвійний клік по стікеру знову відкриває його, розмір змінюється за правий нижній кут";
 
@@ -72,6 +97,7 @@ async function onMap(ev) {
   if (!b) return;
   const k = b.dataset.mapdock;
   if (k === "town" || k === "danger" || k === "poi") return addPlace(k);
+  if (k === "layer") return toggleLayer(b.dataset.layer);
   if (k === "note") {
     // the stickers live in module/canvas/map-notes.mjs (loaded lazily, so the panel works before they are there)
     const m = await import("../canvas/map-notes.mjs").catch(() => null);
@@ -249,7 +275,7 @@ const tv = { open: false, type: "travel", luck: 0, luckFrom: "", main: "", addit
 function travelLuck() {
   const car = luckCaravan();
   if (!car) { tv.luckFrom = ""; return null; }
-  const l = parseInt(car.system.luck, 10) || 0;
+  const l = caravanLuck(car);
   const v = Math.max(-2, Math.min(2, l));
   const from = `${car.id}:${l}`;
   if (tv.luckFrom !== from) { tv.luck = v; tv.luckFrom = from; } // a hand-picked luck stays until the caravan changes
@@ -282,6 +308,9 @@ function redrawTravel() {
   if (tv.open) {
     box.innerHTML = travelHtml();
     travelBattleButtons(box);
+    // «Особлива зустріч»: «Перекинути» (F5, author 2026-11-20)
+    T ??= createTerminal({ toast: (m) => notify.info(m) });
+    box.querySelectorAll(".pust-md-tvout .special-encounter").forEach((sec) => placeSpecialReroll(sec, specialLeft(tv.main, T.travel.specials()), 'data-tv="special"'));
     // a hazard's damage die says where it goes (author, 2026-11-16)
     box.querySelectorAll(".pust-md-tvout button.die[data-dice]").forEach((b) => { if (travelDamage(b)) { b.title = "Перенести в «Шкода й лікування» панелі"; b.classList.add("pust-die-dmg"); } });
   }
@@ -352,6 +381,7 @@ async function onTravel(ev) {
     travelToScene(tv.main, tv.additional); // its place and hazard into «Сцена» / «Битва» (author, 2026-11-16)
   }
   if (k === "kinds") travelKinds(+b.dataset.i);
+  if (k === "special") { T ??= createTerminal({ toast: (m) => notify.info(m) }); tv.main = rerollSpecial(tv.main, T.travel.specials()) ?? tv.main; }
   if (k === "battle") return battleFromTravel({ type: tv.type, luck: tv.luck, main: tv.main, additional: tv.additional }, +b.dataset.i);
   if (k === "fight") { tv.open = false; redrawTravel(); return startTravelBattle({ type: tv.type, luck: tv.luck, main: tv.main, additional: tv.additional }, +b.dataset.i); }
   if (k === "chat") {
@@ -628,7 +658,7 @@ export function renderMapDock() {
       </div>
       <div class="pust-md-unit${fold.dice ? " folded" : ""}" data-unit="dice">
         <section class="pust-md-panel pust-md-dice">${header("fa-dice", "Кістки", gm ? "gm-map:dice" : "pl-panels:dice")}<div class="pust-md-body">${diceHtml()}</div></section>
-        ${gm ? "" : `<div class="pust-md-fdrow" hidden><button type="button" class="pust-md-fdspend" data-mapdock="fd-spend"><i class="fa-solid fa-clover"></i><span>Витратити ЖД</span><b class="pust-md-fdn">0</b></button><button type="button" class="pust-md-fdgain" data-mapdock="fd-gain"><i class="fa-solid fa-plus"></i><span>Отримати ЖД</span></button></div>
+        ${gm ? "" : `<div class="pust-md-pstrip" hidden></div><div class="pust-md-fdrow" hidden><button type="button" class="pust-md-fdspend" data-mapdock="fd-spend"><i class="fa-solid fa-clover"></i><span>Витратити ЖД</span><b class="pust-md-fdn">0</b></button><button type="button" class="pust-md-fdgain" data-mapdock="fd-gain"><i class="fa-solid fa-plus"></i><span>Отримати ЖД</span></button></div>
         <div class="pust-md-fdrow pust-md-suprow" hidden><button type="button" class="pust-md-fdspend pust-md-supspend" data-mapdock="sup-spend"><i class="fa-solid fa-backpack"></i><span>Витратити Припас</span><b class="pust-md-fdn pust-md-supn">0</b></button><button type="button" class="pust-md-fdgain pust-md-supgain" data-mapdock="sup-gain"><i class="fa-solid fa-plus"></i><span>Отримати Припас</span></button></div>
         <div class="pust-md-fdrow pust-md-carrow" hidden><button type="button" class="pust-md-car" aria-haspopup="true"><i class="fa-solid fa-truck"></i><span>Караван</span></button></div><section class="pust-md-panel pust-md-carpick" hidden></section><section class="pust-md-panel pust-md-ctr pust-md-ctr-pl" hidden></section>`}
       </div>
@@ -648,6 +678,7 @@ export function renderMapDock() {
     const ctrUnit = dock.querySelector('[data-unit="ctr"]');
     const diceUnit = dock.querySelector('[data-unit="dice"]');
     mapUnit.querySelector(".pust-md-map .pust-md-body")?.addEventListener("click", onMap);
+    syncLayerButtons();
     dock.querySelector(".pust-md-note")?.addEventListener("click", onMap); // players' «Примітка» in the targets' row
     if (gm) mountBattlePanel(mapUnit.querySelector(".pust-md-battle"));
     // off the battle map the GM's «Битва» is «lite», top right (author, 2026-11-16: damage to the characters on «Мапа Пустки»)
@@ -676,6 +707,7 @@ export function renderMapDock() {
     dock.querySelector(".pust-md-car")?.addEventListener("click", onCaravanButton);
     dock.querySelector(".pust-md-carpick")?.addEventListener("click", onCaravanPick);
     syncFdRow();
+    redrawPlayerStrip();
     const chk = ctrUnit.querySelector(".pust-md-check");
     if (chk) {
       syncCheckButton();
@@ -718,6 +750,25 @@ export function renderMapDock() {
     side?.addEventListener("transitionend", () => requestAnimationFrame(placeAll));
   }
   requestAnimationFrame(placeAll);
+}
+
+/* ---------------- players' battle strip (U3, author, 2026-11-21) ---------------- */
+/**
+ * On the battle map, over the players' Fate rows: «Коло дій N» and, while the GM opened them in «Битва», the place and the
+ * hazard (helpers/scene-shared.mjs playerBattleStripHtml); read-only, always opaque. Off the battle map: none. Redrawn when
+ * the shared values change (scene-shared.mjs onChange) and when the scene does (syncSceneKind).
+ */
+export function redrawPlayerStrip() {
+  if (game.user.isGM) return;
+  const el = document.querySelector(`#${DOCK} .pust-md-pstrip`);
+  if (!el) return;
+  const battle = isBattleScene(canvas?.scene);
+  el.hidden = !battle;
+  el.innerHTML = battle ? playerBattleStripHtml({
+    round: sharedGet("round"), place: sharedGet("place"), hazard: sharedGet("hazard"),
+    placeOpen: sharedGet("placeOpen"), hazardOpen: sharedGet("hazardOpen"),
+  }) : "";
+  requestAnimationFrame(fitCounters);
 }
 
 /* ---------------- players' Fate tokens (author, 2026-11-15) ---------------- */
@@ -947,6 +998,7 @@ Hooks.on("canvasReady", () => { redrawCounters(); syncSceneKind(); });
  */
 function syncSceneKind() {
   syncPlayerTargets();
+  redrawPlayerStrip();
   const unit = document.querySelector(`#${DOCK} [data-unit="map"]`);
   if (!game.user.isGM) requestAnimationFrame(placeAll); // players' row: «Примітка» or the targets
   if (!unit || !game.user.isGM) return;

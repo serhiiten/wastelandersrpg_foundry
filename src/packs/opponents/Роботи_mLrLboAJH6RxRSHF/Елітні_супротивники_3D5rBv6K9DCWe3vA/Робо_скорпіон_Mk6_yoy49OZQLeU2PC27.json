@@ -27,7 +27,7 @@
       "halfPartial": false,
       "noKnockdown": false,
       "noStun": false,
-      "noDisarm": false,
+      "noDisarm": true,
       "kamikaze": false,
       "psyVuln": false
     },
@@ -45,7 +45,7 @@
       {
         "name": "Плазмовий хвіст",
         "dice": "3d6",
-        "type": "plasma",
+        "type": "phys",
         "note": "фізичної шкоди всім істотам в одній зоні, 1 заряд",
         "ammoMax": 1,
         "ammo": 1,
@@ -90,7 +90,7 @@
         "halfPartial": false,
         "noKnockdown": false,
         "noStun": false,
-        "noDisarm": false,
+        "noDisarm": true,
         "kamikaze": false,
         "psyVuln": false
       },
@@ -108,7 +108,7 @@
         {
           "name": "Плазмовий хвіст",
           "dice": "3d6",
-          "type": "plasma",
+          "type": "phys",
           "note": "фізичної шкоди всім істотам в одній зоні, 1 заряд",
           "ammoMax": 1,
           "ammo": 1,

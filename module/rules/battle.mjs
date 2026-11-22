@@ -176,13 +176,17 @@ export function diceInText(text) {
     // the clause the die stands in: from the last «.;» before it to the next «.;» after it
     const from = Math.max(t.lastIndexOf(".", at), t.lastIndexOf(";", at)) + 1;
     const ends = [t.indexOf(".", at + raw.length), t.indexOf(";", at + raw.length)].filter((x) => x >= 0);
-    const clause = t.slice(from, ends.length ? Math.min(...ends) : t.length);
+    let clause = t.slice(from, ends.length ? Math.min(...ends) : t.length);
+    // «…1d6 шкоди від отрути щоразу… Ця шкода ігнорує броню.»: the next sentence speaks of this very damage
+    const next = /^[.;]\s*(?:ця|ця\s+ж)\s+шкода\s+ігнору\S*\s+броню/i.exec(t.slice(from + clause.length));
+    if (next) clause += next[0];
     // damage when «шкод…» follows the die closely (before a comma) or «завдає / отримує» stands right before it
     const after = t.slice(at + raw.length).split(/[,.;:(]/)[0];
     const before = t.slice(Math.max(from, at - 24), at);
     const damage = (/^\s*(?:\S+\s+){0,2}шкод/i.test(after) || /(?:завда\S*|отриму\S*)\s*$/i.test(before)) && !/відновлю|лікує|зцілю|повертає\s+\S*\s*оз/i.test(clause);
     const dice = raw.replace(/\s+/g, "").replace(/к/gi, "d").replace(/^d/i, "1d");
-    const near = `${raw} ${after}`;
+    // «1d6+3 шкоди радіацією»: the «+3» is the die's, not an extra part of radiation
+    const near = /^\s*шкод/i.test(after) ? `${raw.replace(/\s*[+\-].*$/, "")} ${after}` : `${raw} ${after}`;
     out.push({ dice, label: raw, damage, type: atkType(near), ignoreArmor: atkIgnores(clause), ignoreN: atkIgnoreN(clause) });
     last = at + raw.length;
   }
@@ -239,7 +243,7 @@ export function enemyTraits(enemy) {
     immuneRad: /невразлив\S*\s+до\s+радіації/.test(t),
     halfRad: /половину шкоди від радіації|від радіації( та отрути)? отримує лише половину/.test(t),
     halfPoison: /від радіації та отрути отримує лише половину|від отрут\S* отримує лише половину/.test(t),
-    healRad: /радіація лікує/.test(t),
+    healRad: /радіаці\S*\s+лікує/.test(t), // «радіація лікує» (HTML terminal) and the wiki's «шкода від радіації лікує»
     immuneFire: /невразлив\S*\s+до\s+шкоди вогнем/.test(t),
     halfEnergy: /від енергетичної зброї отримує лише половину/.test(t),
     halfPartial: /за часткового успіху в перевірці атаки отримує лише половину/.test(t),
@@ -308,6 +312,7 @@ export function normalizeTarget(t = {}) {
     halfPartial: flag("halfPartial", "partialHalf"),
     noKnockdown: flag("noKnockdown"), noStun: flag("noStun"), noDisarm: flag("noDisarm"),
     kamikaze: flag("kamikaze"), psycho: flag("psycho"), psyVuln: flag("psyVuln"),
+    nonliving: flag("nonliving"),
   };
 }
 
@@ -341,7 +346,7 @@ function computeDamageCore(p, base, typeKey, opts) {
   const type = DMG_TYPES[typeKey] || DMG_TYPES.phys;
   const steps = [];
   let dmg = base;
-  if (type.electric && p.electricVuln) {
+  if (type.electric && p.electricVuln && !opts.noElectric) {
     const r = opts.rollD6 ? opts.rollD6() : randIntWith(opts.rnd || Math.random)(1, 6);
     dmg += r; steps.push(`+1d6 електрика [${r}]`);
   }
@@ -354,7 +359,7 @@ function computeDamageCore(p, base, typeKey, opts) {
   };
   // «½ шкоди» (author, 2026-11-16): half of the damage, rounded up, for any target — a partial avoidance (10–14), one's own
   // blast, «Погонич»…; one more «½» of the hit, so it adds up with the others (the wiki's glossary: halves add up)
-  const partial = () => { if (opts.partial && p.halfPartial) halves.push("частковий успіх"); if (opts.dodge) halves.push("½ шкоди"); };
+  const partial = () => { if (opts.partial && p.halfPartial) halves.push("частковий успіх"); if (opts.dodge) halves.push("½ шкоди"); if (opts.avoid) halves.push("уникнення 10–14"); if (opts.half) halves.push(String(opts.half)); };
   if (type.special === "rad") {
     if (p.rad === "immune") return { final: 0, steps: ["невразливий до радіації"] };
     if (p.rad === "heal") { const h = Math.max(0, opts.dice || 0); return { final: 0, heal: h, steps: [`радіація лікує: +1 ОЗ за кожну кістку (${h})`] }; }
@@ -426,12 +431,19 @@ const SPECIAL = new Set(["rad", "poison", "psychic"]);
  * @param {number} hp0 @param {number} max
  * @param {{total:number, type:string, dice?:number, ignoreArmor?:boolean, ignoreN?:number, poison?:number,
  *   parts?:{total:number, type:string, dice?:number}[]}} hit  types are keys of DMG_TYPES
- * @param {{partial?:boolean, dodge?:boolean, rollD6?:()=>number, rnd?:()=>number}} [opts]
+ * @param {{partial?:boolean, dodge?:boolean, avoid?:boolean, rollD6?:()=>number, rnd?:()=>number}} [opts] `avoid`: a partial
+ *   avoidance (10–14) of an enemy's hit (rules/dodge.mjs) — one more «½», adding up with «½ шкоди» of the menu (two take all)
+ *   `half`: one more «½» named by its reason («Спрямована дія», П3 3.4: the perk's own blast or grenade on the thrower and allies)
  * @returns {{hp:number, damage:number, heal:number, steps:string[], out:boolean}}
  */
 export function resolveHit(target, hp0, max, hit, opts = {}) {
   const p = normalizeTarget(target);
   const n0 = (v) => Math.max(0, Math.round(Number(v) || 0));
+  // «Електромагнітна граната» (author, 2026-11-20; the wiki: «лише роботам та електроніці»): only the non-living and those
+  // weak to electricity (robots, cyborgs, electronics) take it; its extra 1d6 is in the dice already, so no +1d6 on top
+  if (hit.empOnly && !p.nonliving && !p.electricVuln) {
+    return { hp: n0(hp0), damage: 0, heal: 0, steps: ["лише роботам та електроніці: живих не зачіпає"], out: false };
+  }
   const type = DMG_TYPES[hit.type] ? hit.type : "phys";
   // the parts: given, or the whole total in its type; a weapon's poison on top
   let parts = Array.isArray(hit.parts) && hit.parts.length
@@ -452,7 +464,7 @@ export function resolveHit(target, hp0, max, hit, opts = {}) {
   let damage = 0, heal = 0;
   const steps = [];
   for (const g of groups) {
-    const r = computeDamage(noKami, g.total, g.type, { ignoreArmor: !!hit.ignoreArmor, ignoreN: n0(hit.ignoreN), partial: !!opts.partial, dodge: !!opts.dodge, dice: g.dice, rollD6: opts.rollD6, rnd: opts.rnd });
+    const r = computeDamage(noKami, g.total, g.type, { ignoreArmor: !!hit.ignoreArmor, ignoreN: n0(hit.ignoreN), partial: !!opts.partial, dodge: !!opts.dodge, avoid: !!opts.avoid, half: opts.half ? String(opts.half) : "", dice: g.dice, rollD6: opts.rollD6, rnd: opts.rnd, noElectric: !!hit.empOnly });
     const h = n0(r.heal), f = n0(r.final);
     heal += h;
     if (!r.heal) damage += f;
@@ -544,7 +556,7 @@ export function atkType(text) {
   if (/кріо|морозн/.test(t)) return "cryo";
   if (/вогнемет|напалм|вогнян|запальн|молотова|струмін\S*\s+вогн|шкод\S*\s+вогнем|вогнем\s+\d/.test(t)) return "fire"; // «шкоди вогнем» too (author, 2026-11-14)
   if (/радіаційн|радіоактивн|гамма|шкод\S*\s+радіацією/.test(t)) return "rad";
-  if (/отруйн|токсичн|шкод\S*\s+отрутою/.test(t)) return "poison";
+  if (/отруйн|токсичн|шкод\S*\s+(?:отрутою|від\s+отрути)/.test(t)) return "poison";
   if (/психічн|пси[- ]/.test(t)) return "psychic";
   return "phys";
 }

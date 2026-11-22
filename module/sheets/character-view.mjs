@@ -4,6 +4,9 @@
  * st: HTML sheet state, d: compute(st), L: createLogic(st), ui: sheet UI state (open pickers, search…)
  */
 import { textToHtml } from "../rules/rich-text.mjs";
+import { isCoverText } from "../rules/cover.mjs";
+import { aspectImmune } from "../rules/states.mjs";
+import { characterProfileFromState } from "../rules/target-profile.mjs";
 import { attrTip, skillTip } from "../rules/book-desc.mjs";
 import {
   ARCH_ORDER, ATTRS, BUILTIN_CAT, DEF_LABEL, DEF_TYPES, ENERGY, ENERGY_ORDER, FEAT, FEATS, GUN_CLS, GUN_RANGE, GUN_ROF,
@@ -14,8 +17,8 @@ import { recipeTotals } from "../rules/designer.mjs";
 import { HP_PER_CAP, SUP_PER_CAP, buyButton, consPlan } from "../rules/char-services.mjs";
 import { isPowerCell, usesPowerCells } from "../rules/power-cell.mjs";
 import { catalogDescription } from "../applications/catalog-descriptions.mjs";
-import { DMG_TYPES, EXTRA_TYPES, weaponDmgType } from "../rules/damage-types.mjs";
-import { GRANT_FEATS, grantOptions, lastingCaps, startPicks } from "../rules/skill-sources.mjs";
+import { DMG_TYPES, EXTRA_TYPES, catalogEnergy, weaponDmgType } from "../rules/damage-types.mjs";
+import { GRANT_FEATS, grantOptions, impSkillOptions, startPicks } from "../rules/skill-sources.mjs";
 
 const sgn = (v) => (v > 0 ? `+${v}` : v < 0 ? `−${Math.abs(v)}` : "0");
 const CONS = [
@@ -147,7 +150,8 @@ export function buildView(st, d, L, ui = {}) {
       dots: [1, 2, 3].map((j) => {
         const locked = !free && (j >= 2 || fromSrc || (lv < 1 && (sp.left <= 0 || d.caps[s] < 1)));
         return { j, on: lv >= j, label: LVL[j], over: j > d.caps[s], locked,
-          why: !locked ? LVL[j] : j >= 2 ? "Підмайстер і майстер — через покращення" : fromSrc ? "Цю навичку дає покращення, перк чи особливість" : "Стартові навички вже обрано" };
+          why: !locked ? LVL[j] : j >= 2 ? "Підмайстер і майстер — через покращення" : fromSrc ? "Цю навичку дає покращення, перк чи особливість"
+            : d.caps[s] < 1 ? "Недоступна через особливість" : "Стартові навички вже обрано" }; // as the HTML sheet (row 3.3)
       }),
     };
   });
@@ -195,7 +199,8 @@ export function buildView(st, d, L, ui = {}) {
   if (ui.pick === "perk") {
     const have = new Set(st.perks.map((p) => p.n));
     const groups = {};
-    PERKS.filter((p) => !have.has(p.n) && (st.set.psi || !p.psi) && match(p)).forEach((p) => {
+    // a perk taken once stays in the list when it may be taken again (rep: «Здоровань», «Улюблена зброя»…); perkElig counts the limit
+    PERKS.filter((p) => (!have.has(p.n) || (p.rep || 1) > 1) && (st.set.psi || !p.psi) && match(p)).forEach((p) => {
       const ev = perkElig(p, st, d, -1);
       if (!ui.showAll && !ev.ok && !free) return;
       (groups[p.c] ||= []).push({ n: p.n, ok: ev.ok, why: ev.why.join("; "), req: p.rt, text: p.d });
@@ -216,14 +221,8 @@ export function buildView(st, d, L, ui = {}) {
 
   /* ---------- improvements ---------- */
   // skill improvements offer only the skills they can raise: «учень» — skills not learnt yet, «підмайстер» — at учень,
-  // «майстер» — at підмайстер (Foundry only, author 2026-11-14); a skill another slot of the row took is left out, the chosen one stays
-  const SKILL_NEED = { skill: 0, skill2: 1, skill3: 2 };
-  const capsForImps = lastingCaps(st);
-  const skillFits = (k, i, s) => {
-    const others = (st.imp[k] || []).some((x, j) => j !== i && x.on && x.t === s);
-    const lv = parseInt(st.skills?.[s], 10) || 0;
-    return !others && lv === SKILL_NEED[k] && lv + 1 <= capsForImps[s]; // a lasting feat cap («Добра душа») bars it
-  };
+  // «майстер» — at підмайстер (author 2026-11-14); a skill another slot of the row took is left out, the chosen one stays;
+  // a lasting feat cap («Добра душа») bars it — impSkillOptions of skill-sources.mjs (from the HTML sheet's skills.js)
   // attribute improvements the same way: only attributes this step can raise, as they are before this slot
   // («до +2» — below +2; «з +2 до +3» — at +2; «з +3 до +4» — at +3; never past the species maximum)
   const ATTR_OK = Object.fromEntries(IMP_ATTR);
@@ -233,7 +232,7 @@ export function buildView(st, d, L, ui = {}) {
   };
   const targetOptions = (kind, cur, k, i) => [{ v: "", n: "— ціль —", sel: !cur }].concat(
     kind === "attr" ? ATTRS.filter((A) => A.k === cur || attrFits(k, i, A.k)).map((A) => ({ v: A.k, n: A.n, sel: cur === A.k }))
-      : SKILLS.filter((s) => s === cur || skillFits(k, i, s)).map((s) => ({ v: s, n: s, sel: cur === s })),
+      : impSkillOptions(st, k, i, cur).map((s) => ({ v: s, n: s, sel: cur === s })),
   );
   const imps = IMPS.map((im) => ({
     k: im.k, label: `${im.ico} ${im.t}${im.sub ? ` (${im.sub})` : ""}`, cost: im.cost,
@@ -253,6 +252,8 @@ export function buildView(st, d, L, ui = {}) {
   const fd = st.fdCur === "" || st.fdCur == null ? d.fd : parseInt(st.fdCur, 10) || 0;
   const cons = CONS.filter(([k]) => k !== "m2" || d.medSlots > 1).map(([k, label]) => ({
     k, label, v: st.cons?.[k] || "", treated: !!st.consT?.[k],
+    // the max HP a failed «Лікування наслідків» took while this consequence lasts (A7, author 2026-11-21)
+    red: String(st.cons?.[k] || "").trim() ? parseInt(st.consRed?.[k], 10) || 0 : 0,
     // «Вилікувати за N(к)» (author, 2026-11-15): at a qualified medic, light 2 / moderate 5 / heavy 8 caps
     buy: (() => {
       const p = consPlan(k, st.cons?.[k], st.consT?.[k], st.caps);
@@ -268,9 +269,13 @@ export function buildView(st, d, L, ui = {}) {
     sup: buyButton(d.supMax - supNow, st.caps, SUP_PER_CAP, { verb: "Поповнити", unit: "од. Припасів", full: "Припасів повно", rate: "1(к) за 3 Припаси" }),
   };
   const ovDef = st.defOv || {};
-  const sit = (st.sit || []).map((a, i) => ({ i, t: a.t, inv: a.inv || 0 }));
+  // immunities (author, 2026-11-22, П3 3.5): a state's aspect may be taken by hand, its chip is red and «Сповіщення» says so
+  const prof = characterProfileFromState(st, { d, L });
+  // «Прикритий: …» (П3 3.2): its one invoke can't be changed here, only the whole aspect removed
+  const sit = (st.sit || []).map((a, i) => ({ i, t: a.t, inv: a.inv || 0, lock: isCoverText(a.t), imm: aspectImmune(a.t, prof) }));
   const quickAspects = L.QUICK_ASPECTS.filter((x) => !sit.some((a) => a.t === x[1]))
-    .map(([k, t, why]) => ({ t, off: ovDef[k] === "yes", why }));
+    .map(([, t]) => ({ t, imm: aspectImmune(t, prof) }));
+  const immIssues = sit.filter((a) => a.imm).map((a) => ({ lvl: "bad", msg: `Аспект «${a.t}»: імунітет, ${a.imm}.` }));
   const defenses = L.defenses(d).map(([cls, t]) => ({ cls, t }));
 
   /* ---------- chems & rest ---------- */
@@ -296,11 +301,25 @@ export function buildView(st, d, L, ui = {}) {
   // shown: the type chosen, else the energy version, else a fire / psi / poison / radiation type found in the name or note
   const typeOptions = (w) => {
     const auto = weaponDmgType({ w });
-    const cur = EXTRA_TYPES.includes(w.dt) ? w.dt : w.en || (!w.dt && EXTRA_TYPES.includes(auto) ? auto : "");
+    // a catalogue weapon's own energy type (a compendium's `damageType`: «Імпульсний пістолет» electric, «Кріорушниця» cryo) is
+    // shown as chosen (F9 of Fable's analysis, author 2026-11-20), not as «звичайна»
+    const cur = EXTRA_TYPES.includes(w.dt) ? w.dt : w.en || (catalogEnergy(w) ? w.dt : !w.dt && EXTRA_TYPES.includes(auto) ? auto : "");
     return [...energyOptions(cur), ...EXTRA_TYPES.map((k) => ({ v: k, n: DMG_TYPES[k], sel: cur === k }))];
   };
   const opts = (map, cur) => Object.entries(map).map(([v, n]) => ({ v, n, sel: (cur || "") === v }));
+  // «Вид» (author, 2026-11-20): Стрілецька / Ближній бій; shown as the rules guess it (the Guns data, the name) until chosen by
+  // hand (`w.wk`); «Не вказано» only while the guess fails; none for psychic powers, claws and built-in weapons
+  const WK = { ranged: "Стрілецька", melee: "Ближній бій" };
+  const wkOptions = (w, i) => {
+    if (w.auto || w.claw) return null;
+    const guess = L.weaponKind({ key: `w${i}`, w: { ...w, wk: "" } });
+    const cur = WK[w.wk] ? w.wk : WK[guess] ? guess : "";
+    return [...(cur ? [] : [{ v: "", n: "Не вказано", sel: true }]), ...Object.entries(WK).map(([v, n]) => ({ v, n, sel: cur === v }))];
+  };
+  // grenades and explosives of «Інший мотлох» the attack can throw (the rules' damage choices «o<i>»; author, 2026-11-20)
+  const expl = new Map((L.dmgChoices(d) || []).filter((c) => c.expl && /^o\d+$/.test(c.key)).map((c) => [+c.key.slice(1), c.d]));
   const weapons = st.weapons.map((w, i) => ({
+    wkOptions: wkOptions(w, i),
     i, n: w.n || "", d: w.d || "", h: !!w.h,
     // cryo: the damage one step down (as the damage roll counts it); the field shows it, editing shows the base damage
     dEff: weaponDmg(w) !== (w.d || "").trim() ? weaponDmg(w) : "",
@@ -336,6 +355,7 @@ export function buildView(st, d, L, ui = {}) {
         : null,
       treat: !!(D && (D.heal || D.superHeal) && consL && !st.consT?.l),
       desc: D?.d || "", // the drug's description (the compact sheet shows it; author, 2026-11-17)
+      atk: expl.has(i), atkD: expl.get(i) || "", // a grenade / explosive: «Атака» with it (СПР + Техніка)
     };
     row.hasActs = row.usable || row.power || !!row.booster || row.treat; // «Вжити» and the rest take the end of the note's column
     // the card's stripe by the kind of thing (author, 2026-11-15): chems, explosives, power cells, everything else
@@ -347,6 +367,12 @@ export function buildView(st, d, L, ui = {}) {
     const k = drugOf(o.n);
     return (k === "Адреналін" && !robotBody) || (k === "Ребут" && robotBody);
   });
+  // «Купити за N(к)» (author, 2026-11-21; A13): beside «Додати» for every catalogue thing with a price, off when the caps fall short
+  const capsNow = parseInt(st.caps, 10) || 0;
+  const buyOf = (price) => {
+    const n = parseInt(price, 10) || 0;
+    return n > 0 ? { buy: n, buyShort: n > capsNow, buyTip: n > capsNow ? `Не вистачає кришок: треба ${n}(к), є ${capsNow}(к)` : `Купити: −${n}(к) з Кришок (лишиться ${capsNow - n}) і додати в мотлох` } : {};
+  };
   // catalogue: the HTML sheet's search, sections and sorting (catalogView)
   const secs = [...new Set(catalogAll(gunsOn(st)).map((e) => e.sec))];
   const catSec = secs.includes(ui.catSec) ? ui.catSec : "all";
@@ -356,7 +382,7 @@ export function buildView(st, d, L, ui = {}) {
   const catalog = cv
     ? {
       total: cv.total, all: cv.all,
-      groups: cv.groups.map((g) => ({ g: g.g, items: g.items.map((e) => ({ id: e.id, n: e.n, d: e.d || "", price: e.price ?? "", desc: catDesc(e), addict: catAddict(e) })) })),
+      groups: cv.groups.map((g) => ({ g: g.g, items: g.items.map((e) => ({ id: e.id, n: e.n, d: e.d || "", price: e.price ?? "", desc: catDesc(e), addict: catAddict(e), ...buyOf(e.price) })) })),
     }
     : null;
   // «+ Зброя / + Броня / + Річ»: that list's catalogue at the bottom of its block (search and sorting as in the catalogue)
@@ -367,14 +393,14 @@ export function buildView(st, d, L, ui = {}) {
     const v = catalogView(ui.addQ || "", "all", catSort, gunsOn(st));
     const groups = v.groups
       .map((g) => ({ g: g.g, items: g.items.filter((e) => e.kind === ADD_KIND[addPick])
-        .map((e) => ({ id: e.id, n: e.n, d: e.d || "", price: e.price ?? "", desc: catDesc(e), addict: catAddict(e) })) }))
+        .map((e) => ({ id: e.id, n: e.n, d: e.d || "", price: e.price ?? "", desc: catDesc(e), addict: catAddict(e), ...buyOf(e.price) })) }))
       .filter((g) => g.items.length);
     addCat = { groups, total: groups.reduce((n, g) => n + g.items.length, 0) };
   }
   // «Дизайнерські» (author, 2026-11-15): the world's designer drugs with a valid recipe (ui.worldDrugs: [{ id, n, recipe }])
   const designer = (ui.worldDrugs || []).map((w) => ({ w, T: recipeTotals(w.recipe) }))
     .filter(({ T }) => !T.errors.length)
-    .map(({ w, T }) => ({ id: w.id, n: w.n, price: T.price, addict: T.ch, desc: w.desc || "" }));
+    .map(({ w, T }) => ({ id: w.id, n: w.n, price: T.price, addict: T.ch, desc: w.desc || "", ...buyOf(T.price) }));
   const dq = (s) => { const q = String(s || "").trim().toLowerCase(); return q ? designer.filter((e) => e.n.toLowerCase().includes(q)) : designer; };
   const designerBig = catSec === "all" ? dq(ui.catQ) : [];
   const designerAdd = addPick === "other" ? dq(ui.addQ) : [];
@@ -391,7 +417,7 @@ export function buildView(st, d, L, ui = {}) {
     }), archetypes, arch: st.arch || "",
     aspects: ASPECTS.map(([f, label], i) => ({ f, label, v: st[f] || "", i, locked: !!st.manual?.[f] })), detail: st.detail || "",
     locks: { name: !!st.manual?.name, detail: !!st.manual?.detail }, // typed by hand: the die is locked
-    issues: d.issues.map(([lvl, msg]) => ({ lvl, msg })).concat(freeModeIssues(st, d)),
+    issues: d.issues.map(([lvl, msg]) => ({ lvl, msg })).concat(freeModeIssues(st, d), immIssues),
     // `src`: the perk / feat a chip comes from ('p:…' / 'f:…'; the compact sheet leaves those out, author 2026-11-18, item 8)
     chips, chipsGood: chips.filter((c) => c.cls !== "bad"), chipsBad: chips.filter((c) => c.cls === "bad"),
     free,
@@ -402,6 +428,8 @@ export function buildView(st, d, L, ui = {}) {
     pick: ui.pick || "", q: ui.q || "", showAll: !!ui.showAll, perkPicker, featPicker,
     imps, xp: st.xp || 0, xpSpent: d.xpSpent, xpLeft: d.xpLeft, modelBonus: st.exp,
     hasModel: d.has("Експериментальна модель"),
+    // «Отримання наслідків» (A6): doomed, or back with 1 HP at the scene's end
+    ko: { doomed: !!st.ko?.doomed, wake: !st.ko?.doomed && !!st.ko?.wake },
     hp: L.curHp(d), hpMax, hpRed: d.hpRed, fd, fdMax: d.fd, hpBar: hpBar(L.curHp(d), hpMax),
     armor: d.armorTotal + L.chemArmor(), psi: d.psiTotal + L.chemPsi(),
     cons, buy, sit, quickAspects, defenses, restBlock,

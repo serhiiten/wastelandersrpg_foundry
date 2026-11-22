@@ -9,6 +9,7 @@
  */
 import { findBattleScene, findMapScene, isBattleScene } from "../helpers/default-scene.mjs";
 import { notify } from "../helpers/notify.mjs";
+import { serialQueue } from "./tour-queue.mjs";
 
 const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -155,14 +156,17 @@ function setIssuesDemo(on) {
   if (!on) return;
   const sheet = [...document.querySelectorAll(".pust-sheet:not(.pust-caravan-sheet):not(.pust-en-sheet):not(.pust-place-sheet)")].find((x) => x.offsetParent);
   const nav = sheet?.querySelector("nav.pust-tabs");
-  if (!nav || sheet.querySelector(".pust-issues")) return;
+  if (!nav) return;
+  // a real block, folded by default (author, 2026-11-20; U1): opened in the page for the step, the sheet's next render folds it
+  const real = sheet.querySelector(".pust-issues:not(.pust-demo-issues)");
+  if (real) { real.classList.remove("folded"); return; }
   const box = document.createElement("section");
   box.className = "pust-issues pust-demo-issues";
   box.innerHTML = `<div class="pust-issues-hd"><i class="fa-solid fa-triangle-exclamation"></i> Сповіщення й попередження <small>${ISSUES_DEMO.length}</small></div>`
     + ISSUES_DEMO.map(([lvl, msg]) => `<div class="pust-issue ${lvl}">${msg}</div>`).join("");
   nav.before(box);
 }
-const opened = { issues: false, travel: false, form: false, demo: false, note: false, move: false, zone: false, eform: false, tgt: false, newen: false, cargo: null, gear: null, check: false, dock: false, dockDemo: false, zframe: false, round: false, tok: false, compact: null };
+const opened = { issues: false, travel: false, form: false, demo: false, note: false, move: false, zone: false, eform: false, tgt: false, newen: false, cargo: null, gear: null, check: false, dock: false, dockDemo: false, zframe: false, round: false, tok: false, compact: null, weather: false, endStrip: false };
 /**
  * «Компактний режим» (author, 2026-11-18): the step switches the sheet on show to compact by its own switch, and the view it
  * had comes back when the step is left or the tour ends, so the demonstration never changes the user's remembered choice
@@ -214,6 +218,7 @@ async function restoreFull() {
 }
 async function closeTransient(keep = new Set()) {
   if (opened.compact && !keep.has("compactDemo")) await restoreCompact();
+  if (opened.endStrip && !keep.has("endStrip")) { document.body.classList.remove("pust-end-show"); opened.endStrip = false; }
   if (opened.issues && !keep.has("issuesDemo")) { setIssuesDemo(false); opened.issues = false; }
   if (opened.tok && !keep.has("tokenDemo") && !keep.has("caravanToken")) { await (await import("../canvas/token-demo.mjs")).setTokenDemo(false); opened.tok = false; }
   if (opened.zframe && !keep.has("zoneFrame")) { await (await import("../canvas/battle-zones.mjs")).setZoneFrame(null); opened.zframe = false; }
@@ -227,6 +232,7 @@ async function closeTransient(keep = new Set()) {
   if (opened.check && !keep.has("checkDemo")) { await (await import("../applications/check-panel.mjs")).setCheckDemo(null); opened.check = false; }
   if (opened.gear && !keep.has("gearDemo")) { try { await opened.gear.close({ animate: false }); } catch (_) { /* gone */ } opened.gear = null; }
   if (opened.cargo && !keep.has("cargoDemo")) { try { await opened.cargo.close({ animate: false }); } catch (_) { /* gone */ } opened.cargo = null; }
+  if (opened.weather && !keep.has("weather")) { await foundry.applications.instances.get("pust-weather")?.close({ animate: false }); opened.weather = false; }
   if (opened.newen && !keep.has("enemyCreate")) { await foundry.applications.instances.get("pust-enemy-create")?.close(); opened.newen = false; }
   if (opened.tgt && !keep.has("targetDemo")) { await (await import("../canvas/target-demo.mjs")).setTargetDemo(false); opened.tgt = false; }
   if (opened.eform && !keep.has("enemyForm")) { await (await import("../applications/battle-panel.mjs")).setEnemyFormOpen(false); opened.eform = false; }
@@ -245,7 +251,11 @@ export const PREPARE = {
   sidebar: async (tab) => {
     if (ui.sidebar?.changeTab) ui.sidebar.changeTab(tab, "primary"); else ui[tab]?.activate?.();
     if (ui.sidebar && !ui.sidebar.expanded) ui.sidebar.expand?.();
-    await sleep(500); // the sidebar slides open: the highlight is measured once it stands still
+    // the sidebar slides open: the highlight is measured once it stands still (2026-11-21: from a collapsed sidebar the slide
+    // was still under way after a fixed 500 ms, and the step was lit past the screen's right edge)
+    await sleep(300);
+    const at = () => Math.round(document.querySelector("#sidebar")?.getBoundingClientRect().left ?? 0);
+    for (let i = 0, was = at(); i < 20; i++) { await sleep(100); const now = at(); if (now === was && now < innerWidth - 200) break; was = now; }
   },
   scene: async (which) => {
     const s = which === "map" ? findMapScene() : which === "battle" ? bestBattleScene()
@@ -457,7 +467,14 @@ export const PREPARE = {
     if (app?.rendered) app.setPosition({ left: 110, top: 40 });
     await sleep(200);
   },
+  /** the strip under the end buttons, shown only on hover (author, 2026-11-21), held open for the step */
+  endStrip: async () => { document.body.classList.add("pust-end-show"); opened.endStrip = true; await sleep(100); },
   issuesDemo: async () => { setIssuesDemo(true); opened.issues = true; await sleep(150); },
+  /** «Статуси й відпочинок» folded by default (author, 2026-11-20; U1): opened in the page for the step, so its buttons show */
+  statusOpen: async () => {
+    document.querySelectorAll(".pust-sheet:not(.pust-caravan-sheet):not(.pust-en-sheet):not(.pust-place-sheet) .pust-qstat.folded").forEach((x) => x.classList.remove("folded"));
+    await sleep(50);
+  },
   targetDemo: async () => { await (await import("../canvas/target-demo.mjs")).setTargetDemo(true, await actorFor("enemy")); opened.tgt = true; await sleep(200); },
   enemyForm: async () => { await (await import("../applications/battle-panel.mjs")).setEnemyFormOpen(true); opened.eform = true; await sleep(300); },
   zoneDemo: async () => { await (await import("../canvas/battle-zones.mjs")).setZoneDemo(true); opened.zone = true; await sleep(300); },
@@ -466,6 +483,12 @@ export const PREPARE = {
   /** the travel window under «Подорож», with an event generated (nothing goes to the chat) */
   travel: async () => { (await import("../applications/map-dock.mjs")).setTravelOpen(true); opened.travel = true; await sleep(300); },
   /** the new counter's form of «Лічильники» */
+  /** «Погода й час дня»: the GM's popover opened beside its tool (closed when the step is left) */
+  weather: async () => {
+    if (!foundry.applications.instances.get("pust-weather")) { await (await import("../applications/weather-panel.mjs")).toggleWeatherPanel(true); opened.weather = true; }
+    await waitFor("#pust-weather");
+    await sleep(300);
+  },
   counterForm: async () => { await PREPARE.unfold("ctr"); (await import("../applications/game-counters.mjs")).setCountersForm(true); opened.form = true; await sleep(300); },
   /** two example counters (a scene's and the game's), shown only; never written */
   counterDemo: async () => { await PREPARE.unfold("ctr"); const G = await import("../applications/game-counters.mjs"); G.setCountersForm(false); opened.form = false; await G.setCountersDemo(true); opened.demo = true; await sleep(300); },
@@ -535,6 +558,24 @@ function outerBox(el) {
   return u;
 }
 
+/**
+ * The part of an element its scrolling windows show (2026-11-21: an open fold taller than its sheet's content, e.g. the
+ * enemy card's «Деталі», ran the highlight past the screen's edge; the hidden part is scrolled away, not off screen).
+ * `screen`: also within the browser window.
+ */
+export function visibleBox(el, { screen = false } = {}) {
+  const b = el.getBoundingClientRect();
+  const u = { left: b.left, top: b.top, right: b.right, bottom: b.bottom };
+  for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+    const cs = getComputedStyle(p);
+    if (!/(auto|scroll|hidden|clip)/.test(cs.overflowY + cs.overflowX)) continue;
+    const r = p.getBoundingClientRect();
+    u.left = Math.max(u.left, r.left); u.top = Math.max(u.top, r.top); u.right = Math.min(u.right, r.right); u.bottom = Math.min(u.bottom, r.bottom);
+  }
+  if (screen) { u.left = Math.max(u.left, 0); u.top = Math.max(u.top, 0); u.right = Math.min(u.right, innerWidth); u.bottom = Math.min(u.bottom, innerHeight); }
+  return { ...u, width: Math.max(0, u.right - u.left), height: Math.max(0, u.bottom - u.top) };
+}
+
 /** Esc always leaves a tour of the system: nothing else can be pressed while its overlay is up */
 document.addEventListener("keydown", (ev) => {
   const t = foundry.nue?.Tour?.activeTour;
@@ -551,6 +592,28 @@ export class PustTour extends foundry.nue.Tour {
     document.body.classList.add("pust-touring");
     return super.start();
   }
+
+  /**
+   * One step change at a time, the newest wins (2026-11-21, the reviewer: quick `progress(i)` calls, a resize, `exit()`, and
+   * an overlay stayed, blocking every click). Foundry's `progress` ran side by side: each call drew its own highlight and
+   * overlay, the tour kept only the last one, and `exit()` took down only that. Now a call waits until the one before has
+   * wholly finished; a waiting call a newer one overtook is skipped; a call overtaken (or left by `exit()`) while it runs
+   * draws nothing.
+   */
+  #queue = serialQueue();
+  progress(stepIndex) {
+    // a step shown again after the tour ended (the audit walks tours by `progress`, without `start`): drawing allowed again;
+    // a step change still running from before the end is stale all the same (this call overtakes it)
+    if (stepIndex >= 0 && stepIndex < this.steps.length) this.#done = false;
+    return this.#queue.run(() => super.progress(stepIndex));
+  }
+
+  /** everything this tour put over the page (highlight, overlay, its own cards): none may outlive its step */
+  #films = new Set();
+  #film(el) { if (el) this.#films.add(el); return el; }
+  #sweep() { for (const el of this.#films) el.remove(); this.#films.clear(); }
+  /** may this tour draw now: running, not ending, and its step change not overtaken */
+  get #live() { return !this.#done && this.#queue.current && foundry.nue.Tour.activeTour === this; }
 
   /** the step whose element was missing: its selector is put back after it */
   #hidden = null;
@@ -606,30 +669,47 @@ export class PustTour extends foundry.nue.Tour {
     this.#unwatch();
     const key = () => {
       const el = this.currentStep?.selector ? this._getTargetElement(this.currentStep.selector) : null;
-      const r = el?.getBoundingClientRect();
+      // the shown part too: a window that settles its height later cuts a tall fold after the step was drawn
+      const r = el ? visibleBox(el, { screen: true }) : null;
       return `${innerWidth}x${innerHeight}|${r ? [r.left, r.top, r.width, r.height].map(Math.round).join(",") : "-"}`;
     };
     this.#watchRect = key();
     this.#watchTimer = setInterval(() => {
-      if (foundry.nue.Tour.activeTour !== this) return this.#unwatch();
+      if (!this.#live) return this.#unwatch();
+      if (this.#queue.busy) return; // a step change is under way: it draws the step itself
       // Foundry's tooltip manager hides the card when the pointer «leaves» its element (author, 2026-11-16: the zone
       // editor's step lost its card after «Далі»): drawn again
       if (this.#onTooltip && !game.tooltip.tooltip.classList.contains("active")) { this.#watchRect = key(); return this.#redraw(); }
       const k = key();
-      if (k === this.#watchRect) return;
+      if (k === this.#watchRect && !this.#fadeOff()) return;
       this.#watchRect = k;
       this.#redraw();
     }, 250);
   }
   #unwatch() { clearInterval(this.#watchTimer); this.#watchTimer = null; }
+  /** the highlight no longer over its element's shown part (the element was replaced or cut after the step was drawn) */
+  #fadeOff() {
+    // the highlight's box from its style, not its rect: Foundry moves it with a 0.3 s transition (a rect read mid-way would
+    // ask for one redraw after another)
+    const sel = this.currentStep?.selector, fs = this.fadeElement?.style;
+    const el = sel ? this._getTargetElement(sel) : null;
+    if (!el || !fs?.width || this.#hidden) return false;
+    const f = { left: parseFloat(fs.left), top: parseFloat(fs.top) };
+    f.right = f.left + parseFloat(fs.width); f.bottom = f.top + parseFloat(fs.height);
+    if (this.targetElement !== el) return true; // replaced: the redraw takes the new one
+    const v = visibleBox(el, { screen: true }), pad = foundry.nue.Tour.HIGHLIGHT_PADDING / 2;
+    if (!v.width || !v.height) return false;
+    return Math.max(Math.abs(f.left + pad - v.left), Math.abs(f.top + pad - v.top), Math.abs(f.right - pad - v.right), Math.abs(f.bottom - pad - v.bottom)) > 2;
+  }
   /** the same step drawn again where its element is now */
   async #redraw() {
     this.#unwatch();
+    if (!this.#live || this.#queue.busy) return;
     const step = this.currentStep;
     await this._postStep();
     // the tour may have moved on, ended or been left while the old card was taken down (author, 2026-11-17: the last
     // step's card came back over «Тур завершено» — a redraw raced with «Готово» while the view still panned)
-    if (this.#done || foundry.nue.Tour.activeTour !== this || this.currentStep !== step) return;
+    if (!this.#live || this.#queue.busy || this.currentStep !== step) return;
     this.targetElement = step?.selector ? this._getTargetElement(step.selector) : null;
     if (step) await this._renderStep();
   }
@@ -643,6 +723,7 @@ export class PustTour extends foundry.nue.Tour {
     this.#proxy?.remove();
     this.#proxy = null;
     await super._postStep();
+    this.#sweep();
     if (this.#hidden) { this.#hidden.step.selector = this.#hidden.selector; this.#hidden = null; }
   }
 
@@ -667,6 +748,9 @@ export class PustTour extends foundry.nue.Tour {
   }
 
   async _renderStep() {
+    // a step change overtaken by a newer one, or by the tour's end, while it prepared: nothing is drawn
+    if (!this.#live) return;
+    this.#sweep(); // the step before took its own down; anything left of it goes now
     const step = this.currentStep;
     const missing = !!step.selector && !this.targetElement;
     if (missing) { this.#hidden = { step, selector: step.selector }; step.selector = undefined; }
@@ -693,11 +777,27 @@ export class PustTour extends foundry.nue.Tour {
       card.innerHTML = html;
       card.classList.add("tour-center-step", "tour", "themed", "theme-dark", "pust-tour");
       document.body.appendChild(card);
+      this.#film(card);
       if (lit) { this.#centerCard = card; card.classList.add("pust-tour-aside"); placeAside(card, lit); }
       else this.targetElement = card;
     }
-    this.fadeElement = foundry.nue.Tour.highlightElement(this.targetElement, { padding: step.selector && !this.#hidden ? foundry.nue.Tour.HIGHLIGHT_PADDING : 0 });
-    this.overlayElement = document.createElement("div");
+    const pad = step.selector && !this.#hidden ? foundry.nue.Tour.HIGHLIGHT_PADDING : 0;
+    this.fadeElement = this.#film(foundry.nue.Tour.highlightElement(this.targetElement, { padding: pad }));
+    // only the part its window shows: a fold taller than the sheet's content is lit down to the sheet's edge, not past the screen
+    if (this.targetElement !== card) {
+      const fade = this.fadeElement, sel = step.selector;
+      const clip = () => {
+        if (!fade.isConnected || this.fadeElement !== fade || !this.#live) return;
+        // found again: a sheet re-rendered for the step (a fold remembered) has replaced the element it was measured on
+        const el = (sel && this._getTargetElement(sel)) || this.targetElement;
+        if (!el?.isConnected) return;
+        const v = visibleBox(el, { screen: true });
+        if (v.width && v.height) Object.assign(fade.style, { transition: "none", left: `${v.left - pad / 2}px`, top: `${v.top - pad / 2}px`, width: `${v.width + pad}px`, height: `${v.height + pad}px` });
+      };
+      // again once the window has settled its height (a sheet opened for the step cuts its content a moment later)
+      clip(); setTimeout(clip, 60); setTimeout(clip, 150);
+    }
+    this.overlayElement = this.#film(document.createElement("div"));
     this.overlayElement.classList.add("tour-overlay");
     document.body.appendChild(this.overlayElement);
 
@@ -723,11 +823,19 @@ export class PustTour extends foundry.nue.Tour {
 
   exit() {
     this.#done = true;
+    const late = this.#queue.busy; // a step change still preparing (opening windows): it is let finish, then cleaned up
+    this.#queue.cancel();
     this.#unwatch();
     document.body.classList.remove("pust-touring");
     super.exit();
+    this.#sweep();
     // the sheet's own view first, then the windows the tour opened go with it
-    restoreCompact().then(restoreFull).finally(() => { closeAll(); closeTransient(); });
+    const clean = () => restoreCompact().then(restoreFull).finally(() => { closeAll(); closeTransient(); });
+    clean();
+    if (late) this.#queue.settled().then(() => {
+      this.#sweep();
+      if (!foundry.nue.Tour.activeTour) clean(); // another tour started meanwhile keeps its windows
+    });
   }
 
   /** The last step: the tour is done, the next one of the chain is offered (our words, not Foundry's) */

@@ -1,6 +1,7 @@
 import { activeGmHere, mine, readyMainWindow } from "./helpers/main-window.mjs";
 import * as models from "./data/_module.mjs";
 import { registerHotkeys } from "./helpers/hotkeys.mjs";
+import { initKeyboardReach } from "./helpers/keyboard-reach.mjs";
 import { registerPerfCheck, runPerfCheck } from "./applications/perf-check.mjs";
 import { initQuickstartWorld } from "./helpers/quickstart-world.mjs";
 import { readyMacros, runMacro } from "./helpers/macros.mjs";
@@ -14,7 +15,12 @@ import { WastelandersTokenRuler } from "./canvas/token-ruler.mjs";
 import { initMapNotes, readyMapNotes } from "./canvas/map-notes.mjs";
 import { initBattleZones, readyBattleZones } from "./canvas/battle-zones.mjs";
 import { initCaravanMove } from "./canvas/caravan-move.mjs";
+import { initWeather } from "./canvas/weather.mjs";
+import { addWeatherTool } from "./applications/weather-panel.mjs";
 import { readyApplyDamage } from "./applications/apply-damage.mjs";
+import { initSfx, readySfx } from "./helpers/sfx.mjs";
+import { readyPending, renderPending } from "./applications/pending-attack.mjs";
+import { readyBattleHealth } from "./applications/battle-health.mjs";
 import { readyChemTarget } from "./applications/chem-target.mjs";
 import { readyGmRequests } from "./helpers/gm-request.mjs";
 import { WastelandersCharacterSheetV2 } from "./sheets/character-sheet-v2.mjs";
@@ -22,6 +28,7 @@ import { WastelandersCaravanSheetV2 } from "./sheets/caravan-sheet-v2.mjs";
 import { WastelandersEnemySheet } from "./sheets/enemy-sheet.mjs";
 import { WastelandersPlaceSheet } from "./sheets/place-sheet.mjs";
 import { renderMapDock } from "./applications/map-dock.mjs";
+import { endRowPlace } from "./helpers/end-row-place.mjs";
 import { WastelandersItemSheet } from "./sheets/item-sheet.mjs";
 import { WastelandersSpeciesBuilder } from "./sheets/species-builder.mjs";
 import { WastelandersDrugBuilder } from "./sheets/drug-builder.mjs";
@@ -43,6 +50,8 @@ import { BOOK } from "./rules/book.mjs";
 import { importCharactersFromFile } from "./applications/character-json.mjs";
 import { openTerminal, toggleTerminal } from "./applications/terminal.mjs";
 import { toggleGmMoves } from "./applications/gm-moves.mjs";
+import { mountEndRow } from "./applications/battle-panel.mjs";
+import { registerGmMoveAlert } from "./applications/gm-move-alert-ui.mjs";
 import { loadCatalogDescriptions } from "./applications/catalog-descriptions.mjs";
 import { ensureMapScene, ensureBattleScene } from "./helpers/default-scene.mjs";
 import { autoStartTour, ensureHelpJournal, registerSystemTours, registerTourEnricher } from "./tours/tours.mjs";
@@ -70,7 +79,9 @@ Hooks.once("init", async function () {
   // «Примітки» of «Мапа Пустки»: stickers drawn by the system (module/canvas/map-notes.mjs)
   initMapNotes();
   initBattleZones(); // after the stickers: the zones' Drawing class extends theirs
+  initKeyboardReach(); // V6: Tab reaches the tabs and rolls of the system's windows, Enter clicks them
   initCaravanMove(); // a caravan moved on a map spends its range (asks, or by the caravan's switch)
+  initSfx(); // the client setting «Звуки подій» (V4)
   game.wastelanders = {
     WastelandersActor,
     WastelandersItem,
@@ -255,7 +266,10 @@ Hooks.once("ready", () => {
   readyMapNotes();
   readyBattleZones();
   readyApplyDamage();
+  readySfx(); // event sounds from the chat cards (V4; author, 2026-11-21)
+  readyPending(); // «Уникнення шкоди» on an enemy's attack card (A1; author, 2026-11-20)
   readyChemTarget();
+  readyBattleHealth(); // «Аспекти поруч», «Медична допомога» on someone else (author, 2026-11-21)
   readyGmRequests();
   readyMainWindow(); // one window of a user does the shared work (helpers/main-window.mjs)
   readyMacros();
@@ -316,6 +330,8 @@ Hooks.on("preCreateChatMessage", preprocessChatMessage);
 
 // Render chat message hook
 Hooks.on("renderChatMessageHTML", renderChatMessage);
+// «Уникнення шкоди» rows on an enemy's attack card (A1): hooked at load, so the chat log rendered before «ready» has them too
+Hooks.on("renderChatMessageHTML", renderPending);
 
 // Compendium Packs (author, 2026-11-15): the item compendiums behind the sheets' lists and catalogues are hidden for everyone
 // (still read by the sheets and the .json import); the GM may show them back to themselves with the setting «showDataPacks»
@@ -360,7 +376,7 @@ function dockTerminal() {
     dock = document.createElement("div");
     dock.className = "wastelanders-terminal-dock";
     dock.innerHTML = `<button type="button" class="wastelanders-terminal-open"
-      aria-label="Термінал Доглядача"><i class="fa-solid fa-terminal"></i> Термінал Доглядача</button>`;
+      aria-label="Термінал Доглядача"><i class="fa-solid fa-terminal"></i> Термінал</button>`;
     const btn = dock.firstElementChild;
     btn.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); clearTimeout(btn._tip); game.tooltip.deactivate(); toggleTerminal(); });
     // its hint comes later than Foundry's usual 0.5 s (author, 2026-11-14): 1.5 s of hovering
@@ -374,9 +390,18 @@ function dockTerminal() {
     moves.type = "button";
     moves.className = "wastelanders-moves-open";
     moves.setAttribute("aria-expanded", "false");
-    moves.innerHTML = `<i class="fa-solid fa-fire"></i> Ходи Доглядача`;
+    // the plates say «Термінал» / «Ходи» (author, 2026-11-21: «прибрати слово Доглядача»; at 1366 px with the sidebar open
+    // «Ходи Доглядача» and the end row ran over «Битва»); the full names stay for screen readers and in the windows' titles
+    moves.setAttribute("aria-label", "Ходи Доглядача");
+    moves.innerHTML = `<i class="fa-solid fa-fire"></i> Ходи`;
     moves.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); toggleGmMoves(moves); });
     dock.append(moves);
+    // «Кінець сцени» / «Новий день» / «Кінець сесії» (author, 2026-11-21, mockup В): a second row under the plates, apart
+    // from «Ходи Доглядача» so it is not hit by a slip; battle-panel.mjs draws it
+    const end = document.createElement("div");
+    end.className = "wastelanders-end-row";
+    dock.append(end);
+    mountEndRow(end);
     col.append(dock);
   }
   const c = col.getBoundingClientRect();
@@ -386,9 +411,47 @@ function dockTerminal() {
   const edge = Math.max(r.right, expand?.width ? expand.right : 0);
   dock.style.left = `${Math.round(edge - c.left + 8)}px`;
   dock.style.top = `${Math.round(r.top - c.top)}px`;
+  placeEndRow();
 }
+
+/**
+ * The end buttons in the top row, right of «Ходи», when they fit there; under the plates only when there they would run over
+ * «Сцена» / «Битва» or the sidebar (author, 2026-11-21). Measured again when the panels move (resize, sidebar, a drag, the
+ * scene's kind) and when the row redraws (the session number widens it).
+ */
+function placeEndRow() {
+  const dock = document.querySelector("#ui-left-column-2 > .wastelanders-terminal-dock");
+  const btns = dock?.querySelector(".wastelanders-end-row .pust-end-btns");
+  if (!dock || !btns) return;
+  const p1 = dock.querySelector(".wastelanders-terminal-open")?.getBoundingClientRect();
+  const p2 = dock.querySelector(".wastelanders-moves-open")?.getBoundingClientRect();
+  if (!p1?.width || !p2?.width) return;
+  const ft = dock.querySelector(".wastelanders-end-row .pust-end-ft");
+  const b = btns.getBoundingClientRect();
+  const row = { width: Math.max(b.width, ft?.offsetWidth ?? 0), btnHeight: b.height, height: b.height + 4 + (ft?.offsetHeight ?? 0) };
+  const panels = [...document.querySelectorAll("#pust-mapdock .pust-md-unit, #sidebar")]
+    .filter((el) => el.offsetParent || el.id === "sidebar").map((el) => el.getBoundingClientRect());
+  const where = endRowPlace({ right: p2.right, top: Math.min(p1.top, p2.top), bottom: Math.max(p1.bottom, p2.bottom) }, row, panels);
+  dock.classList.toggle("pust-end-top", where === "top");
+}
+const placeEndRowSoon = foundry.utils.debounce(placeEndRow, 60);
+Hooks.on("collapseSidebar", () => setTimeout(placeEndRow, 450)); // after the sidebar's slide
+window.addEventListener("resize", placeEndRowSoon);
+document.addEventListener("pust-end-row", placeEndRowSoon);
+Hooks.once("ready", () => {
+  if (!game.user.isGM) return;
+  // the right panels move by their style (map-dock.mjs place / drag); the row redraws with the session number
+  const watch = () => {
+    const dockEl = document.getElementById("pust-mapdock");
+    if (!dockEl) return setTimeout(watch, 500);
+    new MutationObserver(placeEndRowSoon).observe(dockEl, { subtree: true, attributes: true, attributeFilter: ["style", "class", "hidden"] });
+  };
+  watch();
+});
 Hooks.on("renderSceneNavigation", () => requestAnimationFrame(dockTerminal));
 Hooks.once("ready", () => requestAnimationFrame(dockTerminal));
+// U4 (author, 2026-11-21): a check that asks for the GM's move whispers «Зроби хід проти …» and lights «Ходи Доглядача»
+registerGmMoveAlert();
 
 // «Лічильники»: the scene counters live on the viewed scene, so the GM's panel is redrawn when it changes or is switched
 Hooks.on("updateScene", (scene) => { if (scene.id === canvas?.scene?.id) import("./applications/game-counters.mjs").then((m) => m.refreshGameCounters()); });
@@ -424,6 +487,10 @@ document.addEventListener("click", (ev) => {
 
 // «Мапа Пустки» and «Кістки»: panels docked under Foundry's left buttons (author, 2026-11-14), placed again when they render
 Hooks.on("renderSceneControls", () => renderMapDock());
+// «Погода й час дня» (author, 2026-11-19): the GM's tool at the end of every group of the scene controls; the weather of
+// the scene's flag drawn on every client (docs/decisions/weather.md)
+Hooks.on("getSceneControlButtons", addWeatherTool);
+initWeather();
 Hooks.once("ready", () => renderMapDock());
 
 // A place is seen by players only while one of its tokens is visible (the HTML «Видимо гравцям»): visible → LIMITED, all hidden → NONE.

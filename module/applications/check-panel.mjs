@@ -11,10 +11,31 @@ import { ASHORT, compute } from "../rules/core.mjs";
 import { evaluate, runAction } from "./character-actions.mjs";
 import { isPublicMode, postChat } from "./chat.mjs";
 import { fateSnap, postFateIfChanged, postSupIfChanged, supSnap } from "./fate-card.mjs";
-import { attackMode, damageEffects, dieSides, dieTypes, isDamageEffect, partType, splitDiceParts, termTypes, typeChips, weaponDmgType, TYPE_EFFECTS } from "../rules/damage-types.mjs";
+import { attackMode, choiceEmpOnly, damageEffects, dieSides, dieTypes, isDamageEffect, partType, splitDiceParts, termTypes, typeChips, weaponDmgType, TYPE_EFFECTS } from "../rules/damage-types.mjs";
 import { atkIgnores, atkIgnoreN, applyParts } from "../rules/battle.mjs";
-import { sendDamage } from "./apply-damage.mjs";
+import { clearTargets, sendBlast, sendDamage, sendEffects, sendSplitDamage } from "./apply-damage.mjs";
+import { chipsLeft, directedHalf, isBlast, spendOne, DIRECTED } from "../rules/grenade-fail.mjs";
+import { keepTargets, presetKey, presetOfWeapon, routeOf, unfinished } from "../rules/check-route.mjs";
+import { clampShare, effectTargetIdle, evenSplit, splitBlock, splitLeft } from "../rules/damage-split.mjs";
+import { offer as fxOffer, effectOf, effectText, toggle as fxToggle, keep as fxKeep, hitFx } from "../rules/attack-effects.mjs";
+import { activeCover, isCoverText } from "../rules/cover.mjs";
+import { pendOf, answerPending, openRowOf } from "./pending-attack.mjs";
+import { rowTotal, rowDeal, rowClosed, rowText, ATTR_SHORT } from "../rules/dodge.mjs";
+import { checkPenalty, spendCheckStates } from "./states.mjs";
+import { nearbyFor, nearbyHtml, spendNearby, consqOffer, consqHtml, consqWrite, medOffer, medHtml, medPress, healGate } from "./battle-health.mjs";
+import { checkFlag } from "../rules/gm-move-alert.mjs";
 import { notify } from "../helpers/notify.mjs";
+import { reconcileAutoXp, xpAutoGiven } from "../rules/session-xp.mjs";
+import { dropRollXp, kickOffer, luckOffer } from "../rules/check-perks.mjs";
+import { PER, USE_BY_ID, isUsed, usePerk } from "../rules/perk-uses.mjs";
+import { perkCardHtml } from "./perk-card.mjs";
+
+/** The world's «ОД за невдачу нараховується само» (A10; on by default) */
+const autoXpOn = () => { try { return game.settings.get(game.system.id, "autoXp") !== false; } catch (_) { return true; } };
+
+/** The engine's messages in the panel (U7, author 2026-11-21): a refusal pops up; the rest is already said by the panel itself
+ *  («Додано в аркуш: 1 ОД»), the Fate card or the damage card, so it is dropped */
+const PANEL_TOAST = (msg, kind) => { if (kind === "bad") notify.warn(msg); };
 import { checkDiceGroups, damageDiceGroups, poisonSidesOf, rollFromDice, rollList, seriesGroups, waitDice } from "../helpers/dice-rolls.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -27,7 +48,31 @@ const STATES = new Map();
 const OPEN = new Map();
 
 /** Buttons whose result goes to chat */
-const CHAT_ON = new Set(["roll", "aspect", "modasp", "sitasp", "dmg", "dmgre"]);
+const CHAT_ON = new Set(["roll", "aspect", "modasp", "sitasp", "nearasp", "dmg", "dmgre", "luck"]);
+const WHY_SAID = new Map();
+/** П2 (author, 2026-11-22): the healing / repair checks, their patient chosen after the roll */
+const HEAL_TYPES = ["med", "repair", "treat"];
+/** «Без Припасів» ticked before the roll, by actor uuid (one roll; П2, answer 1: all three checks) */
+const HEAL_FREE = new Set();
+/** A press of the A6 / A7 blocks on its way, by actor uuid (Fable П-2: one application a roll) */
+const HX_BUSY = new Set();
+/** The block's choices (consequence, payment, name) of the current roll, by actor uuid (Fable П-6) */
+const HX_SEL = new Map();
+/** Rebuild the healing blocks of the open panels when the targets change (debounced: medOffer reads the target) */
+let hxRebuild = null;
+/**
+ * A8 (author, 2026-11-21): a rolled damage waiting to be split, by actor uuid — {time (the damage roll's), total, targets
+ * [{uuid, name}] fixed at the roll, shares, id, sent}. Kept through closing the panel, lost on F5 (then the GM deals it in
+ * «Битва»).
+ */
+const SPLIT = new Map();
+/** What the blocks of A6 / A7 did for this roll (П2: kept on the roll itself, `last.hx`; one press a roll) */
+const hxDone = (uuid, last) => String(last?.hx || "");
+/** Mark the saved roll at once, before anything is awaited (Fable П-1) */
+function markHx(uuid, last, text) {
+  const R = STATES.get(uuid);
+  if (R?.last && R.last.time === last.time) R.last.hx = text;
+}
 
 /**
  * The damage is rolled and dealt in one press (author, 2026-11-17): «Завдати шкоди» with the targets' count; with no
@@ -37,7 +82,13 @@ const NO_TARGETS = "Цілей не обрано. Познач ціль: T на�
 function syncDealButton(root) {
   // an attack with no targets says so already before its roll (author, 2026-11-18), until its damage is dealt
   const hint = root?.querySelector(".pust-tgthint");
-  if (hint) hint.hidden = !!game.user.targets.size || root.querySelector("select#r-type")?.value !== "attack" || !!root.querySelector(".rdmg .rdres");
+  if (hint) hint.hidden = !!game.user.targets.size || root.querySelector("select#r-type")?.value !== "attack" || !!root.querySelector(".rdmg .rdres")
+    || !!root.querySelector(".rdmg .pust-blast"); // П3 3.4: a grenade's failure needs no targets
+  // A8: «Розподілити між цілями» only while two targets or more are chosen
+  const sp = root?.querySelector("details.pust-split");
+  if (sp) sp.hidden = game.user.targets.size < 2;
+  const no = root?.querySelector(".pust-split-no");
+  if (no) no.hidden = game.user.targets.size < 2;
   const b = root?.querySelector('button[data-r="dmg"]');
   if (!b) return;
   const n = game.user.targets.size;
@@ -48,7 +99,16 @@ function syncDealButton(root) {
   if (c) c.textContent = n ? ` · цілей: ${n}` : "";
 }
 Hooks.on("targetToken", (user) => {
-  if (user === game.user) document.querySelectorAll(".pust-roller").forEach(syncDealButton);
+  if (user !== game.user) return;
+  document.querySelectorAll(".pust-roller").forEach(syncDealButton);
+  // П2: the patient is chosen after the roll — its block follows the targets
+  clearTimeout(hxRebuild);
+  hxRebuild = setTimeout(() => {
+    for (const app of [...OPEN.values(), DOCKED]) {
+      const last = app?.rendered ? STATES.get(app.actor?.uuid)?.last : null;
+      if (last && HEAL_TYPES.includes(last.type) && !last.hx && !HX_BUSY.has(app.actor.uuid)) app.render();
+    }
+  }, 150);
 });
 
 /**
@@ -108,17 +168,77 @@ function redrawPanels(actor) {
   }, 120));
 }
 Hooks.on("updateActor", (actor) => redrawPanels(actor));
+// an enemy's attack card changed (A1): the panels answering it, or open on an avoidance, show its new state
+// (and a card of its own, created with the record: a private attack or none to write on; reviewer, 2026-11-21)
+for (const h of ["updateChatMessage", "createChatMessage"]) Hooks.on(h, (m) => {
+  if (!pendOf(m)) return;
+  for (const app of [...OPEN.values(), DOCKED]) if (app?.rendered && app.actor?.isOwner) app.render();
+});
 for (const h of ["createItem", "updateItem", "deleteItem"]) Hooks.on(h, (item) => redrawPanels(item?.parent));
 
-export function openCheckPanel(actor, preset = {}) {
-  let app = OPEN.get(actor.uuid);
-  if (!app) {
-    app = new CheckPanel({ actor });
-    OPEN.set(actor.uuid, app);
+/** The pressed ready check of each character's panel (author, 2026-11-22, П1 1.3): «preset:<name>» / «xpreset:<name>» */
+const PICKED = new Map();
+/** The key of the ready check `r` / `v` (an index into the engine's list) */
+function pickedKey(L, r, v) {
+  const list = r === "preset" ? L.ROLL_PRESETS : r === "xpreset" ? L.extraPresets() : null;
+  return presetKey(r, list?.[+v]?.l);
+}
+
+/**
+ * Open «Зробити перевірку» (author, 2026-11-22, П1 1.5): a player's own character in the docked panel on the left (the map
+ * dock's «Зробити перевірку»), the GM and anyone else in the window. `btn` — the button pressed (the sheet's, the attack
+ * card's «Уникнути»): over an unfinished result (an attack's damage or effect not dealt) it turns into «Замінити?» of its own
+ * size for 3 s, and the second press replaces; opened without a button (a macro, a link) the panel says so in a line, and the
+ * same opening again within 3 s replaces. Returns the panel (the attack card binds its avoidance to it).
+ */
+export function openCheckPanel(actor, preset = {}, { btn = null } = {}) {
+  const dockBtn = document.querySelector("#pust-mapdock .pust-md-check");
+  const route = routeOf({ isGM: game.user.isGM, owned: ownCharacters().includes(actor), dockReady: !!dockBtn && !dockBtn.hidden });
+  let app;
+  if (route === "dock") {
+    dockActorId = actor.id;
+    if (!DOCKED?.rendered) { DOCKED = new DockedCheckPanel({ actor }); DOCKED.anchor = dockBtn.getBoundingClientRect(); }
+    else DOCKED.actor = actor;
+    app = DOCKED;
+  } else {
+    app = OPEN.get(actor.uuid);
+    if (!app) {
+      app = new CheckPanel({ actor });
+      OPEN.set(actor.uuid, app);
+    }
+  }
+  // anything chosen (the sheet's plain button too: its preset starts a new check) over an unfinished result asks first
+  if (Object.keys(preset).length && app.hasUnfinished() && !askReplace(btn, actor, preset)) {
+    if (btn?.tagName !== "BUTTON") app.replaceNote();
+    app.render({ force: true }).then(() => dockBtn?.classList.toggle("on", dockCheckOpen()));
+    return app;
   }
   app.preset(preset);
-  app.render({ force: true });
+  app.render({ force: true }).then(() => dockBtn?.classList.toggle("on", dockCheckOpen()));
   return app;
+}
+
+/** «Замінити?» (П1 1.5): false on the first press (the button turns, or the panel's line shows), true on the second within 3 s */
+const REPLACE_MS = 3000;
+let REPLACE = null;
+function askReplace(btn, actor, preset) {
+  const key = `${actor.uuid}|${JSON.stringify(preset)}`;
+  if (REPLACE && REPLACE.key === key && Date.now() - REPLACE.at < REPLACE_MS) { REPLACE.undo?.(); REPLACE = null; return true; }
+  REPLACE?.undo?.();
+  REPLACE = { key, at: Date.now(), undo: null };
+  // only a real button turns into «Замінити?» of its own size; a small link or icon has no room for the word
+  if (btn?.tagName === "BUTTON" && btn.isConnected) {
+    const r = btn.getBoundingClientRect(), html = btn.innerHTML, w = btn.style.width, h = btn.style.height;
+    btn.style.width = `${r.width}px`;
+    btn.style.height = `${r.height}px`;
+    btn.classList.add("pust-replace");
+    btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>Замінити?</span>`;
+    btn.title = "У перевірці є незавершений результат (шкоду чи ефект не застосовано). Натисни ще раз, щоб замінити його";
+    const undo = () => { clearTimeout(t); btn.classList.remove("pust-replace"); btn.innerHTML = html; btn.style.width = w; btn.style.height = h; btn.removeAttribute("title"); };
+    const t = setTimeout(() => { undo(); if (REPLACE?.key === key) REPLACE = null; }, REPLACE_MS);
+    REPLACE.undo = undo;
+  }
+  return false;
 }
 
 /**
@@ -158,6 +278,85 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     return `Зробити перевірку — ${this.actor.name}`;
   }
 
+  /**
+   * The enemy's attack this avoidance answers (A1; author, 2026-11-20): {msg, row} of its card (pending-attack.mjs). Set by
+   * the card's «Уникнути»; an avoidance rolled without it takes the character's newest waiting attack by itself.
+   */
+  #pend = null;
+  /** The row the last avoidance roll was sent to, and whether the GM's answer is still on its way (reviewer, 2026-11-21:
+   *  bound at the roll, never by comparing the player's clock with the card's) */
+  #sent = null;
+  #sending = false;
+  /** the verdict on its way to the GM (A1), for an ОД press that must wait for it (П3 3.3) */
+  #sendP = null;
+  bindPend(b) { this.#pend = b?.msg && b?.row ? { msg: b.msg, row: b.row } : null; return this; }
+  /** The bound attack and the verdict sent belong to the character shown: both go when the dock shows another one */
+  dropPend() { this.#pend = null; this.#sent = null; }
+  get pendMsgId() { return this.#pend?.msg ?? null; }
+
+  /** An attack's result whose damage or effect is still to be dealt (П1 1.5: a new check asks «Замінити?» first) */
+  hasUnfinished() {
+    const { L } = evaluate(this.actor);
+    const last = this.#load(L).last;
+    return unfinished(last, !!last && this.#fx.time === last.time && !!this.#fx.done, this.#blast(last));
+  }
+  /** П3 3.4: the result is a grenade's failure — it goes off in this character's zone */
+  #blast(last) { return isBlast(last, last ? attackMode(last.skillName, last.attr) : ""); }
+  /** «Спрямована дія»: this character's grenades deal it and its allies ½ */
+  #directed(st) { return compute(st).allPerks.includes(DIRECTED); }
+  /**
+   * «Спрямована дія» on an ordinary throw (author, 2026-11-22): the targets that are this character or a character (an ally, as
+   * «Кого прикриваєш» counts them) take ½; null when the attack is no grenade or there is no perk
+   */
+  #halfOf(last) {
+    if (!last || attackMode(last.skillName, last.attr) !== "explosive" || !this.#directed(evaluate(this.actor).st)) return null;
+    const self = this.#ownToken();
+    return (uuids) => directedHalf(uuids.map((u) => ({ uuid: u, type: fromUuidSync(u)?.actor?.type ?? "" })), self, true);
+  }
+  /** The line over «Інша перевірка» for 3 s: the check was opened over an unfinished result (a macro, a link) */
+  #replaceUntil = 0;
+  replaceNote() {
+    this.#replaceUntil = Date.now() + REPLACE_MS;
+    setTimeout(() => { if (this.rendered) this.render(); }, REPLACE_MS + 50);
+  }
+
+  /** The bound attack's record and row, while «Уникнення шкоди» is the check's type */
+  #pendNow(R, rebind = false) {
+    if (R.type !== "dodge") return null;
+    const bound = () => { const m = this.#pend ? game.messages.get(this.#pend.msg) : null; return { msg: m, pend: pendOf(m), row: pendOf(m)?.rows?.[this.#pend?.row] }; };
+    // none bound, or the bound one closed: the character's newest waiting attack — at a new roll always, on screen only when
+    // its card is newer than the closed one's (both cards' times come from the same place, unlike the player's roll time)
+    let b = bound();
+    // a row of another character (the dock switched characters) is never this one's (П3 live check, 2026-11-22)
+    if (b.row && b.row.actor !== this.actor.uuid) { this.#pend = null; b = bound(); }
+    const o = openRowOf(this.actor.uuid);
+    if (o && (!b.row || (rowClosed(b.row) && (rebind || (game.messages.get(o.msg)?.timestamp ?? 0) > (b.msg?.timestamp ?? 0))))) {
+      this.#pend = o; b = bound();
+    }
+    const { msg, pend, row } = b;
+    return row ? { pend, row, msg } : null;
+  }
+
+  /** The strip over the panel: who attacks, the damage, and after the roll the button that applies it */
+  #pendBar(R) {
+    const p = this.#pendNow(R);
+    if (!p) return "";
+    const { pend, row } = p;
+    const tot = rowTotal(pend, row);
+    const id = this.#pend?.row;
+    const what = `${esc(pend.srcName || "Ворог")} атакує: <b>${tot}</b> шкоди${pend.half ? " (½ з ефекту)" : ""}`;
+    let tail = "";
+    // a roll made after the attack that never reached the card (the GM didn't answer): sent again, not rolled again
+    const sent = R.last?.type === "dodge" && this.#sent?.msg === p.msg?.id && this.#sent?.row === id;
+    if (row.status === "wait" && sent && this.#sending) tail = `<span class="pust-pendbar-st">Кидок надіслано Доглядачу…</span>`;
+    else if (row.status === "wait" && sent) tail = `<button type="button" class="btn rust pust-pendbar-go" data-pend-send>Надіслати результат ще раз</button><span class="pust-pendbar-st">Доглядач ще не отримав твій кидок.</span>`;
+    else if (row.status === "wait") tail = `<span class="pust-pendbar-st">Кидай уникнення ${ATTR_SHORT[pend.attr] ?? "ВП"}.</span>`;
+    else if (row.status === "rolled") tail = `<button type="button" class="btn rust pust-pendbar-go" data-pend-apply>${esc(rowDeal(pend, row).label)}</button>`
+      + `<span class="pust-pendbar-st">Спершу можеш викликати аспект.</span>`;
+    else tail = `<span class="pust-pendbar-st">${esc(rowText(row, pend.attr))}</span>`;
+    return `<div class="pust-pendbar${rowClosed(row) ? " done" : ""}"><i class="fa-solid fa-shield-halved"></i><span>${what}</span>${tail}</div>`;
+  }
+
   /** The panel state R, loaded into a fresh logic instance */
   #load(L) {
     const saved = STATES.get(this.actor.uuid);
@@ -185,14 +384,145 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       L.applyTypeDefaults("attack");
       R.dmgKey = `w${p.weapon}`;
       R.dmgUser = true;
+      // the attack by the weapon's «Вид» (author, 2026-11-20): melee → СЛ + Герць, ranged → СПР + Стрільба; unknown kinds and
+      // psychic powers keep the attack's defaults
+      const kind = L.weaponKind({ key: R.dmgKey, w: st.weapons[+p.weapon] });
+      if (kind === "melee") { R.attr = "SL"; R.skill = "Герць"; }
+      else if (kind === "ranged") { R.attr = "SPR"; R.skill = "Стрільба"; }
+    }
+    // a grenade or explosive of «Інший мотлох» (author, 2026-11-20): СПР + Техніка, its damage chosen
+    if (p.other != null && st.other[+p.other]) {
+      R.type = "attack";
+      L.applyTypeDefaults("attack");
+      R.attr = "SPR"; R.skill = "Техніка";
+      R.dmgKey = `o${p.other}`;
+      R.dmgUser = true;
     }
     // a ready check (a hotbar macro; author, 2026-11-17): as a press of its button
     if (p.r) L.rollerClick({ tagName: "BUTTON", dataset: { r: p.r, v: String(p.v) } });
+    // the pressed ready check (П1 1.3): a ready check by itself, a weapon / grenade by its kind; an attribute or skill — none
+    if (Object.keys(p).length) {
+      const wi = p.weapon != null && st.weapons[+p.weapon] ? presetOfWeapon(L.weaponKind({ key: `w${p.weapon}`, w: st.weapons[+p.weapon] })) : null;
+      const k = p.r ? pickedKey(L, p.r, p.v) : wi != null ? pickedKey(L, "preset", wi) : p.other != null && st.other[+p.other] ? pickedKey(L, "preset", presetOfWeapon("grenade")) : null;
+      PICKED.set(this.actor.uuid, k);
+    }
     if (Object.keys(p).length) {
       R.last = null;
       R.am = {};
     }
     this.#save(L);
+  }
+
+  /**
+   * The attack's effects as toggles (A2; author, 2026-11-20; rules/attack-effects.mjs): in place of the engine's list, within
+   * the result's limits; «+2» / «+1d6» are the engine's own options (R.dmgOpt), the others live here a roll (`time`). The
+   * states and «ігноруєш броню» go with the damage; on 10–14 without the perk an effect replaces it («Застосувати ефект»).
+   */
+  #fx = { time: null, picks: [], one: "", done: "", ally: "" };
+  #fxOf = null;
+  #fxNow(L, st) {
+    const last = L.R.last;
+    if (!last || last.type !== "attack") return null;
+    const mode = attackMode(last.skillName, last.attr);
+    const of = fxOffer({ mode, verdict: last.verdict, perks: compute(st).allPerks });
+    if (this.#fx.time !== last.time) this.#fx = { time: last.time, picks: [], one: "", done: "", ally: "" };
+    // the engine's «+2» / «+1d6» as picks, in the order kept here
+    const opt = L.R.dmgOpt || {};
+    let picks = this.#fx.picks.filter((k) => (k === "plus2" ? opt.norm2 : k === "plus1d6" ? opt.crit : true));
+    if (opt.norm2 && !picks.includes("plus2")) picks.push("plus2");
+    if (opt.crit && !picks.includes("plus1d6")) picks.push("plus1d6");
+    picks = fxKeep(of, picks);
+    this.#fx.picks = picks;
+    return { of, mode, picks, last };
+  }
+
+  #effectsBlock(html, L, st) {
+    const f = this.#fxNow(L, st);
+    this.#fxOf = f;
+    if (!f) return html;
+    const { of, mode, picks, last } = f;
+    // the engine's own «+2» / «+1d6» toggles under the damage move into this list
+    html = html.replace(/<label class="tog"><input type="checkbox" id="dm-(?:norm2|crit)"[^>]*>[^<]*<\/label>/g, "");
+    if (!of.normal.length && !of.crit.length) return html.replace(/<details class="rfx"[^>]*>[\s\S]*?<\/details>/, "");
+    const done = !!last.dmg || !!this.#fx.done;
+    // 10–14 without the perk, the damage dealt: the damage was chosen, the effects never land (П3 3.2)
+    const struck = of.instead && !!last.dmg && !this.#fx.done;
+    const row = (e, tier) => {
+      const x = { ...e, tier }, on = !struck && picks.includes(e.key);
+      const tag = e.does === "cover" ? `<small class="pust-fx-tag">Посилення спільнику</small>` : e.does === "state" ? `<small class="pust-fx-tag">${e.all ? "застосується до всіх" : "застосується до цілі"}</small>`
+        : e.does === "ignore" ? `<small class="pust-fx-tag">з шкодою</small>`
+        : e.does === "text" ? `<small class="pust-fx-tag hand">руками</small>` : "";
+      return `<label class="tog pust-fxt${on ? " on" : ""}${struck ? " struck" : ""}"><input type="checkbox" data-fx="${e.key}"${on ? " checked" : ""}${done ? " disabled" : ""}> <span>${esc(effectText(L.ATK_FX, mode, x))}</span>${tag}</label>`;
+    };
+    const perkNotes = /<ul class="rperk">[\s\S]*?<\/ul>/.exec(html)?.[0] ?? "";
+    const limit = of.instead ? "Завдай шкоди або обери замість неї 1 звичайний ефект."
+      : last.verdict === 3 ? (of.slots.length > 1 ? "Обери до двох ефектів." : "Обери 1 критичний або звичайний ефект.")
+      : (of.slots.length > 1 ? "Обери до двох звичайних ефектів." : "Обери 1 звичайний ефект.");
+    // A8: a split waiting — its fixed targets; the effect's «ігноруєш броню» and the weapon's poison go to one of them too
+    // (author, 2026-11-21: «Обидва на ціль ефекту»)
+    const sp = this.#splitNow(last);
+    const targets = sp && !sp.sent ? sp.targets.map((t) => ({ uuid: t.uuid, name: t.name }))
+      : [...(game.user.targets ?? [])].filter((t) => t?.document).map((t) => ({ uuid: t.document.uuid, name: t.name }));
+    const stateOne = picks.some((k) => { const e = effectOf(of, k); return e?.does === "state" && !e.all; });
+    const ignoreOne = picks.some((k) => effectOf(of, k)?.does === "ignore");
+    const poisonOne = !!(last.poison && last.poisonRoll);
+    const splitOne = !!sp && !sp.sent && (ignoreOne || poisonOne);
+    const needOne = (stateOne || splitOne) && targets.length > 1;
+    const oneLabel = stateOne || (splitOne && ignoreOne) ? (splitOne && poisonOne ? "Ефект і отрута на:" : "Ефект на:") : "Отрута на:";
+    const one = needOne && !struck ? `<label class="pust-fx-one">${oneLabel} <select data-fx-one${done ? " disabled" : ""}>${targets.map((t) => `<option value="${esc(t.uuid)}"${t.uuid === this.#fx.one ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></label>` : "";
+    // «Прикриваєш спільника»: an ally of the scene (a character's token, not this one's)
+    let ally = "";
+    if (picks.includes("cover") && !struck) {
+      const own = new Set((canvas?.scene?.tokens ?? []).filter((t) => t.actor?.id === this.actor.id).map((t) => t.uuid));
+      const allies = (canvas?.scene?.tokens ?? []).filter((t) => t.actor?.type === "character" && !own.has(t.uuid) && !t.hidden);
+      if (!allies.some((t) => t.uuid === this.#fx.ally)) this.#fx.ally = allies[0]?.uuid ?? "";
+      ally = allies.length ? `<label class="pust-fx-one">Кого прикриваєш: <select data-fx-ally${done ? " disabled" : ""}>${allies.map((t) => `<option value="${t.uuid}"${t.uuid === this.#fx.ally ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></label>`
+        : `<p class="rhint">На сцені немає спільників: ефект буде лише рядком на картці.</p>`;
+    }
+    const applyFx = of.instead && picks.length && !done ? `<button type="button" class="btn rust pust-fx-apply" data-fx-apply><i class="fa-solid fa-bolt"></i>Застосувати ефект без шкоди</button>` : "";
+    const block = `<div class="rfx pust-fx"><h4>Ефекти: ${esc(L.ATK_FX[mode]?.n?.toLowerCase() ?? "")}</h4>${perkNotes}<p class="rhint">${esc(limit)}${struck ? " Обрано шкоду: ефект не діє." : done ? " Уже застосовано." : ""}</p>`
+      + (of.crit.length ? `<h5>Критичні</h5>${of.crit.map((e) => row(e, "crit")).join("")}` : "")
+      + (of.normal.length ? `<h5>Звичайні</h5>${of.normal.map((e) => row(e, "normal")).join("")}` : "")
+      + one + ally + applyFx + `</div>`;
+    return html.replace(/<details class="rfx"[^>]*>[\s\S]*?<\/details>/, block);
+  }
+
+  /** A toggle pressed: the picks within the limits; «+2» / «+1d6» through the engine's own options */
+  async #fxPick(key, on) {
+    const f = this.#fxOf;
+    if (!f) return;
+    const next = fxToggle(f.of, f.picks, key, on);
+    const want = { norm2: next.includes("plus2"), crit: next.includes("plus1d6") };
+    const { L } = evaluate(this.actor);
+    const R = this.#load(L);
+    this.#fx.picks = next;
+    for (const k of ["norm2", "crit"]) if (!!R.dmgOpt?.[k] !== want[k]) await this.#run("change", { tagName: "INPUT", dataset: { r: "dopt", k }, value: "", checked: want[k] });
+    this.#fx.picks = next;
+    this.render();
+  }
+
+  /** What the picks add to the hit: ignored armour, the states on the target(s), the text effects */
+  #fxData(effectOnly = false, uuids = null) {
+    const f = this.#fxOf;
+    // 10–14 without the perk: damage or an effect — the damage carries none
+    if (!f || !f.picks.length || (f.of.instead && !effectOnly)) return {};
+    // A8: a split hit's targets are the ones fixed at its roll, not the current T
+    const targets = uuids ?? [...(game.user.targets ?? [])].filter((t) => t?.document).map((t) => t.document.uuid);
+    const h = hitFx(f.of, f.picks, targets, this.#fx.one, this.#fx.ally);
+    const { L } = evaluate(this.actor);
+    const said = h.said.map((k) => effectText(L.ATK_FX, f.mode, effectOf(f.of, k))).filter(Boolean);
+    return { ...(h.ignoreArmor ? { ignoreArmor: true, ignoreN: 0 } : {}), ...(h.fx.length ? { fx: h.fx } : {}), ...(said.length ? { said } : {}), ...(h.cover ? { cover: h.cover } : {}) };
+  }
+
+  /** «Прикритий: …» on this character (П3 3.2, rules/cover.mjs): the oldest cover with its invoke, or null */
+  #cover() {
+    const c = activeCover(this.actor.system?.situational);
+    return c ? { ...c, byName: c.by } : null;
+  }
+
+  /** This character's token on the viewed scene (the effect's source), or "" */
+  #ownToken() {
+    return (canvas?.scene?.tokens ?? []).find((t) => t.actor?.id === this.actor.id)?.uuid ?? "";
   }
 
   async _prepareContext() {
@@ -219,6 +549,8 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       .replace(/<details class="rfx">/g, '<details class="rfx" open>')
       // every die knows its type, so CSS can draw its shape (d6 square, d8 diamond, d10 kite, d12 pentagon)
       .replace(/<span class="die([^"]*)"([^>]*)><b>([^<]*)<\/b><i>d(\d+)<\/i>/g, '<span class="die d$4$1"$2><b>$3</b><i>d$4</i>')
+      // «Прикритий: …» (П3 3.2) is spent only by an avoidance, never invoked as an ordinary aspect
+      .replace(/<button type="button" class="btn sm modasp" data-r="sitasp"[^>]*>«Прикритий: [^»]*»[\s\S]*?<\/button>/g, "")
       // invoking a situational aspect: «name», its free invokes as a green «+2» (as on the sheet), then «+1d10»
       .replace(/(data-r="sitasp"[^>]*>)«([^»]*)»\s*<svg class="xcross"[\s\S]*?<\/svg>(\d+): \+1d10/g,
         '$1<span class="rasp-name">$2</span><span class="rinv" title="Безкоштовних Посилень">+$3</span><span>+1d10</span>')
@@ -231,7 +563,80 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       // no «кидаєш 2d10…» line over the roll button; only the critical-success note stays, when there is one
       .replace(/<p class="rnote">(?:кидаєш|нейтралізують)[^<]*((?:<b>[^<]*<\/b>)*)<\/p>(?=<button type="button" class="btn rust rgo")/,
         (m, crit) => (crit ? `<p class="rnote">${crit.trim()}</p>` : ""));
-    return { html: this.#damageBlock(html, L, st) };
+    // the roar's −2 among the automatic conditions, ticked and locked (it goes with the next roll; #intent counts it)
+    const pen = checkPenalty(this.actor);
+    const penHtml = pen ? `<div class="ramods pust-ramods-state"><span class="rl">Стан</span><label class="tog" title="Аспект «${pen.aspect}»: −2 до цього кидка, після нього аспект зникне"><input type="checkbox" data-r="am" data-k="state-check" checked disabled> <span>«${pen.aspect}»: <b>−${-pen.n}</b></span></label></div>` : "";
+    const cov = R.type === "dodge" ? this.#cover() : null;
+    const covHtml = cov ? `<div class="ramods pust-ramods-state"><span class="rl">Прикриття</span><label class="tog" title="Аспект «${esc(cov.t)}»: Посилення до цього уникнення шкоди, після кидка аспект зникне"><input type="checkbox" checked disabled> <span>${esc(cov.byName || "Спільник")} прикриває: <b>Посилення</b></span></label></div>` : "";
+    // «Без Припасів» (П2, answer 1): the table lets this healing / repair go without paying; one roll
+    const freeHtml = HEAL_TYPES.includes(R.type) && !this.actor.pustTourDemo ? `<div class="ramods pust-ramods-state"><span class="rl">Плата</span><label class="tog" title="Доглядач дозволив без плати: кидок можливий без Припасів, після застосування нічого не списується"><input type="checkbox" data-hxfree${HEAL_FREE.has(this.actor.uuid) ? " checked" : ""}> <span>Без Припасів</span></label></div>` : "";
+    let withPen = penHtml || covHtml || freeHtml ? html.replace('<button type="button" class="btn rust rgo"', `${penHtml}${covHtml}${freeHtml}<button type="button" class="btn rust rgo"`) : html;
+    withPen = await this.#healthBlocks(withPen, L);
+    return { html: this.#pendBar(R) + this.#damageBlock(this.#effectsBlock(withPen, L, st), L, st) };
+  }
+
+  /**
+   * Battle and health (author, 2026-11-21; applications/battle-health.mjs): «Аспекти поруч» in the invoke row (A5), and under
+   * the verdict «Записати наслідок» (A6), «Медична допомога» / «Ремонт» / «Лікування наслідків» on the target (A7)
+   */
+  #near = [];
+  async #healthBlocks(html, L) {
+    const last = L.R.last;
+    this.#near = [];
+    if (!last) return html;
+    if (!this.actor.pustTourDemo) {
+      try { this.#near = await nearbyFor(this.actor); } catch (e) { console.warn(e); }
+    }
+    const can = !last.aspect && (last.B || 0) < 2 && last.verdict < 3 && !last.dmgDone && !last.xpGiven && !last.savGiven && !last.hx;
+    const chips = nearbyHtml(this.#near, can);
+    if (chips) html = html.replace(/(<div class="rasp">[\s\S]*?)(<label class="tog"><input type="checkbox" id="r-spend")/, (m, a, b) => `${a}${chips}${b}`);
+    const done = hxDone(this.actor.uuid, last);
+    // the result applied (П2, Fable П-4): the roll is frozen — no aspect invoked on it any more
+    if (done) {
+      html = html.replace(/(<div class="rasp">[\s\S]*?<\/label>)/, (m) => `${m.replace(/<button /g, "<button disabled ").replace(/<input /g, "<input disabled ")}<small>Результат уже застосовано: аспект викликати не можна.</small>`);
+    }
+    // the choices in the block survive its rebuild on a new target (Fable П-6)
+    const box = this.element?.querySelector?.(".pust-hx");
+    // kept by the roll, so a target without the field in between (none, a robot) doesn't lose them
+    const was = HX_SEL.get(this.actor.uuid);
+    const prev = was?.time === last.time ? was : {};
+    const pick = (q) => box?.querySelector(q)?.value ?? prev[q];
+    const sel = { slot: pick("[data-hx-slot]"), pay: pick("[data-hx-pay]"), name: pick("[data-hx-name]") };
+    HX_SEL.set(this.actor.uuid, { time: last.time, "[data-hx-slot]": sel.slot, "[data-hx-pay]": sel.pay, "[data-hx-name]": sel.name });
+    let block = "";
+    if (last.type === "consq") block = consqHtml(consqOffer(this.actor, last), done);
+    else if (["med", "repair", "treat"].includes(last.type)) {
+      const o = await medOffer(this.actor, last);
+      block = medHtml(o, done, { busy: HX_BUSY.has(this.actor.uuid), sel });
+      // a refusal said once a roll in the notifications too (author, 2026-11-21: a robot treated with «Медицина»)
+      const said = `${last.time}|${o?.patient?.uuid}`;
+      if (o?.why && o.patient && !done && WHY_SAID.get(this.actor.uuid) !== said) { WHY_SAID.set(this.actor.uuid, said); notify.warn(o.why); }
+    }
+    if (block) html = html.replace('<div class="rasp">', () => `${block}<div class="rasp">`);
+    return html;
+  }
+
+  /** A press in those blocks */
+  async #healthPress(el) {
+    const { L } = evaluate(this.actor);
+    const last = this.#load(L).last;
+    const uuid = this.actor.uuid;
+    if (!last || hxDone(uuid, last) || HX_BUSY.has(uuid)) return;
+    const kind = el.dataset.hx;
+    const box = el.closest(".pust-hx");
+    const name = box?.querySelector("[data-hx-name]")?.value ?? "";
+    const slot = box?.querySelector("[data-hx-slot]")?.value ?? "";
+    const pay = box?.querySelector("[data-hx-pay]")?.value ?? "";
+    HX_BUSY.add(uuid);
+    el.disabled = true;
+    let text = "";
+    try {
+      if (last.type === "consq") { text = await consqWrite(this.actor, last, kind, name); if (text) markHx(uuid, last, text); }
+      else text = await medPress(this.actor, last, kind, { slot, name, pay, applied: (t) => markHx(uuid, last, t) });
+    } finally { HX_BUSY.delete(uuid); el.disabled = false; }
+    // healing and repair: the targets go once the result is applied (П1 1.4 left them to П2)
+    if (text && HEAL_TYPES.includes(last.type)) clearTargets();
+    this.render();
   }
 
   /**
@@ -240,28 +645,147 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
    */
   /** What «Завдати цілям» sends: the damage shown in the panel now */
   #apply = null;
+  /** The damage with the chosen effects (A2): the weapon's own «ігнорує броню» stays */
+  #hitData() {
+    const d = this.#apply.data, fx = this.#fxData();
+    return { ...d, ...fx, ...(d.ignoreArmor ? { ignoreArmor: true, ignoreN: d.ignoreN } : {}) };
+  }
+
+  /** A8: the fold «Розподілити між цілями» open (mockup Б: open by itself; the user's fold kept while the panel is open) */
+  #splitOpen = true;
+  /** A8: «Завдати шкоди» was pressed with the fold open and two targets or more: the roll waits for the split */
+  #splitPress = false;
+  /** A8: can this attack's damage be split — "" (yes), "types" (damage of several types), "zone", "no" (not an attack) */
+  #splitFits(L, c, wt, last) {
+    if (!c || !last || last.type !== "attack") return "no";
+    const zone = !!(c.expl || c.w?.zone) || attackMode(last.skillName, last.attr) === "explosive";
+    let types = 1;
+    try { const p = L.parseDmg?.(c.d); if (p) types = new Set(termTypes(c, p, wt)).size; } catch (_) { /* unreadable: the engine says so */ }
+    return splitBlock({ targets: 2, zone, types });
+  }
+  /** A8: what goes only to the effect's target with a split hit — the poison, «ігноруєш броню», both — or "" */
+  #splitOneNeed() {
+    const f = this.#fxOf;
+    const last = f?.last ?? this.#load(evaluate(this.actor).L).last;
+    const ignore = !!f && f.picks.length > 0 && !f.of.instead && f.picks.some((k) => effectOf(f.of, k)?.does === "ignore");
+    const poison = !!(last?.poison && last?.poisonRoll);
+    return ignore && poison ? "Отрута й «ігноруєш броню» діють" : poison ? "Отрута діє" : ignore ? "«Ігноруєш броню» діє" : "";
+  }
+  /** A8: the effect's target of the split, as #splitSend sends it */
+  #splitOne(s) {
+    const uuids = s.targets.map((t) => t.uuid);
+    return uuids.includes(this.#fx.one) ? this.#fx.one : uuids[0];
+  }
+  /** A8: the split waiting for this damage roll, or null */
+  #splitNow(last) {
+    const s = SPLIT.get(this.actor.uuid);
+    return s && last?.dmg && s.time === last.dmg.time ? s : null;
+  }
+  /** A8: the roll is made, the split starts even (the remainder to the first), the targets fixed now */
+  #startSplit(dmg) {
+    const targets = [...(game.user.targets ?? [])].filter((t) => t?.document).map((t) => ({ uuid: t.document.uuid, name: t.name }));
+    const total = Math.max(0, Number(this.#apply?.data?.total) || 0);
+    SPLIT.set(this.actor.uuid, { time: dmg.time, total, targets, shares: evenSplit(total, targets.map((t) => t.uuid)), id: `${this.actor.uuid}:${dmg.time}`, sent: false });
+    if (this.#fx.one && !targets.some((t) => t.uuid === this.#fx.one)) this.#fx.one = "";
+  }
+  /** A8: the rows of the split (inserted into the damage block by _onRender) */
+  #splitRows(s) {
+    if (s.sent) return `<p class="rhint pust-split-done">Шкоду розподілено між цілями.</p>`;
+    const left = splitLeft(s.shares, s.total);
+    const any = Object.values(s.shares).some((v) => v > 0);
+    const rows = s.targets.map((t) => {
+      const v = s.shares[t.uuid] ?? 0;
+      return `<div class="pust-split-row"><span class="pust-split-name">${esc(t.name)}</span><span class="pust-split-inv">`
+        + `<button type="button" data-split-d="-1" data-d="-1" data-u="${esc(t.uuid)}" aria-label="Менше шкоди: ${esc(t.name)}"${v <= 0 ? " disabled" : ""}>−</button>`
+        + `<input type="text" class="pust-screen" data-split-v data-u="${esc(t.uuid)}" value="${v}" inputmode="numeric" aria-label="Шкода: ${esc(t.name)}">`
+        + `<button type="button" data-split-d="1" data-d="1" data-u="${esc(t.uuid)}" aria-label="Більше шкоди: ${esc(t.name)}"${left <= 0 ? " disabled" : ""}>+</button></span></div>`;
+    }).join("");
+    // the effect's target with a share of 0 would lose the poison / «ігноруєш броню»: said, and the damage waits (reviewer,
+    // author 2026-11-21)
+    const need = this.#splitOneNeed(), one = this.#splitOne(s);
+    const idle = !!need && effectTargetIdle(s.shares, one);
+    const oneName = s.targets.find((t) => t.uuid === one)?.name ?? "";
+    const warn = idle ? `<p class="pust-split-warn">${need} лише на ${esc(oneName)}, а ця ціль не отримує шкоди. Дай їй хоч 1 або обери вище іншу ціль ефекту.</p>` : "";
+    return `<div class="pust-split-box"><h5>Розподіл шкоди: ${s.total}</h5>${rows}`
+      + `<p class="pust-split-left${left < 0 ? " over" : ""}">${left < 0 ? `Розподілено більше, ніж випало: на ${-left}` : `Лишилося: ${left} із ${s.total}`}</p>${warn}`
+      + `<button type="button" class="btn rust" data-split-go${left < 0 || !any || idle ? " disabled" : ""}><i class="fa-solid fa-burst"></i>Завдати розподілену шкоду</button></div>`;
+  }
+  /** A8: redraw the rows in place (no render: the panel keeps its scroll and the other fields) */
+  #splitRedraw(root, s) {
+    const box = root.querySelector(".pust-split-box");
+    if (box) box.outerHTML = this.#splitRows(s);
+  }
+  /** A8: send the split — each target its share; the weapon's poison and the effect's «ігноруєш броню» on the effect's target */
+  async #splitSend(root, go) {
+    const s = SPLIT.get(this.actor.uuid);
+    if (!s || s.sent || go.disabled || !this.#apply) return;
+    go.disabled = true;
+    const uuids = s.targets.map((t) => t.uuid);
+    const { ignoreArmor: fxIgnore, ignoreN: _n, ...fx } = this.#fxData(false, uuids);
+    const d = this.#apply.data;
+    const one = uuids.includes(this.#fx.one) ? this.#fx.one : uuids[0];
+    const ok = await sendSplitDamage({ ...d, ...fx }, { targets: uuids, split: { shares: { ...s.shares }, one, fxIgnore: !!fxIgnore }, id: s.id, partial: this.#apply.partial, head: this.#apply.head, source: this.#ownToken() });
+    if (ok) { s.sent = true; clearTargets(); this.render(); } else go.disabled = false;
+  }
+
+  /** П3 3.4: the damage block of a grenade's failure before the throw (or after «Фух» wrote one off) */
+  #blastBlock(html, last, st, n) {
+    const fuh = compute(st).allPerks.includes("Фух");
+    const dir = this.#directed(st);
+    let say;
+    if (last.fuh) say = `<p class="rnote pust-blast">«Фух»: граната не вибухнула. ${esc(last.fuh)}</p>`;
+    else if (!n) say = `<p class="rhint pust-blast">Невдача: граната мала б вибухнути у твоїй зоні, але в мотлосі гранат не лишилося.</p>`;
+    else if (fuh) say = `<p class="rhint pust-blast">Невдача, але «Фух»: заряд не вибухає. Натисни на гранату, якою скористався, щоб списати її.</p>`;
+    else say = `<p class="rhint pust-blast">Невдача: граната вибухає у твоїй зоні. Натисни на гранату, якою скористався: шкоди зазнають усі в зоні, ти теж, без уникнення.${dir ? " «Спрямована дія»: тобі й союзникам лише половина." : ""}</p>`;
+    if (last.fuh || !n) html = html.replace(/<div class="rdmgsel[\s\S]*?<\/div>/, "");
+    // «Фух» throws nothing: no options of the damage
+    if (fuh || last.fuh) html = html.replace(/<div class="rdopts">[\s\S]*?<\/div>(?=<button)/, "").replace(/<ul class="rtraits">[\s\S]*?<\/ul>/, "");
+    return html
+      .replace(/<button type="button" class="btn rust" data-r="dmg">[\s\S]*?<\/button>(<p class="rhint pust-split-no"[\s\S]*?<\/p>|<details class="pust-split"[\s\S]*?<\/details>)?/, "")
+      .replace("<h4>Шкода</h4>", `<h4>Шкода</h4>${say}`);
+  }
 
   #damageBlock(html, L, st) {
     const last = L.R.last;
     const D = last?.dmg;
     this.#apply = null;
     const choices = L.dmgChoices(compute(st));
+    // П3 3.4 (author, 2026-11-22): a grenade's failure — counted on every render, so an aspect or «Щасливець» that lifts the
+    // result brings the ordinary block back; before the throw only the grenades left, a press throws (or, with «Фух», writes off)
+    const blast = !D && this.#blast(last);
+    const left = blast ? new Set(chipsLeft(choices).map((c) => c.key)) : null;
     const wt = weaponDmgType(choices.find((x) => x.key === (D ? D.key : L.R.dmgKey)));
     html = html.replace('<div class="rdmg">', `<div class="rdmg dt-${wt}">`);
     // the weapon for the damage as chips «name · damage» in their damage type's colours, not a list (author, 2026-11-17);
     // the chosen one (by default the weapon in hand, the sheet's defaultDmgKey) lit; a click works as the list's change
     html = html.replace(/<div class="rdmgsel"><select id="r-dmgw"[^>]*>([\s\S]*?)<\/select><\/div>/, (m, opts) => {
-      const chips = [...opts.matchAll(/<option value="([^"]*)"( selected)?>([\s\S]*?)<\/option>/g)].map(([, key, sel, label]) => {
+      const chips = [...opts.matchAll(/<option value="([^"]*)"( selected)?>([\s\S]*?)<\/option>/g)].filter(([, key]) => !left || left.has(key)).map(([, key, sel, label]) => {
+        if (left) sel = ""; // nothing lit: the press says which one was used
         const at = label.lastIndexOf(" · ");
         const name = at >= 0 ? label.slice(0, at) : label, dmg = at >= 0 ? label.slice(at + 3) : "";
         const dt = weaponDmgType(choices.find((x) => x.key === key));
-        return `<button type="button" class="pust-wchip dt-${dt}${sel ? " pust-pick" : ""}" data-r="dmgw" value="${key}" aria-pressed="${sel ? "true" : "false"}"><span>${name}</span>${dmg ? `<b>${dmg}</b>` : ""}</button>`;
+        return `<button type="button" class="pust-wchip dt-${dt}${sel ? " pust-pick" : ""}" ${left ? `data-blast="${key}"` : 'data-r="dmgw"'} value="${key}" aria-pressed="${sel ? "true" : "false"}"><span>${name}</span>${dmg ? `<b>${dmg}</b>` : ""}</button>`;
       });
-      return `<div class="rdmgsel pust-wchips" role="group" aria-label="Зброя для кидка шкоди">${chips.join("")}</div>`;
+      return chips.length ? `<div class="rdmgsel pust-wchips" role="group" aria-label="${left ? "Граната, якою скористався" : "Зброя для кидка шкоди"}">${chips.join("")}</div>` : "";
     });
+    if (blast) return this.#blastBlock(html, last, st, left.size);
     // one press rolls the damage and deals it to the targets (author, 2026-11-17); just a roll lives on the gear card's crosshair
     html = html.replace(/(<button type="button" class="btn rust" data-r="dmg">[\s\S]*?)Кинути шкоду([^<]*)<\/button>/,
       (m, head, dice) => `${head}Завдати шкоди${dice}<span class="pust-tgtn"></span></button>`);
+    // A8 (author, 2026-11-21, mockup Б): «Розподілити між цілями» under the button, open by itself (the wiki's rule for an
+    // attack on several); folded, every target takes the full damage as before. Not for a weapon that hits the whole zone,
+    // nor for damage of several types (Fable's verdict)
+    const why = D ? "no" : this.#splitFits(L, choices.find((x) => x.key === L.R.dmgKey), wt, last);
+    // damage of several types: no fold, a line says why (reviewer, author 2026-11-21)
+    if (why === "types") {
+      const no = `<p class="rhint pust-split-no"${game.user.targets.size < 2 ? " hidden" : ""}>Розподілити між цілями не вийде: у цієї шкоди кілька типів, тож кожна ціль отримає її повністю.</p>`;
+      html = html.replace(/(<button type="button" class="btn rust" data-r="dmg">[\s\S]*?<\/button>)/, `$1${no}`);
+    }
+    if (why === "") {
+      const fold = `<details class="pust-split"${this.#splitOpen ? " open" : ""}${game.user.targets.size < 2 ? " hidden" : ""}><summary>Розподілити між цілями</summary>`
+        + `<p class="rhint">Шкоду буде кинуто, але не завдано: розподіли її між цілями на власний розсуд. Згорни, щоб кожна ціль отримала повну шкоду.</p></details>`;
+      html = html.replace(/(<button type="button" class="btn rust" data-r="dmg">[\s\S]*?<\/button>)/, `$1${fold}`);
+    }
     // «Бойові рефлекси: перекинути» would reroll a damage already dealt: not offered here (the gear card's roll has it)
     html = html.replace(/<button type="button" class="btn sm" data-r="dmgre">[\s\S]*?<\/button>/, "");
     if (!D) return html;
@@ -283,7 +807,7 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     // for those who take ½ on a partial success (the tracker's «Частковий успіх», set by the verdict itself)
     const partial = last.verdict === 1;
     this.#apply = {
-      data: damageData({ total: L.dmgTotal(last, compute(st)).total, wt, fx, poison: last.poison && last.poisonRoll ? last.poisonRoll : null }),
+      data: damageData({ total: L.dmgTotal(last, compute(st)).total, wt, fx, poison: last.poison && last.poisonRoll ? last.poisonRoll : null, emp: choiceEmpOnly(choice) }),
       partial, head: D.name,
     };
     const applyBtn = ""; // dealt by the roll itself (author, 2026-11-17): no «Завдати цілям» after it
@@ -361,34 +885,153 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     if (asp && after) after.after(asp);
     const inv = asp?.querySelector(':scope > button[data-r="aspect"]');
     if (inv && !inv.querySelector("i")) inv.insertAdjacentHTML("afterbegin", '<i class="fa-solid fa-wand-magic-sparkles"></i>');
+    // «Без Припасів» (П2): kept for the next roll of this character's panel
+    root.addEventListener("change", (ev) => {
+      const t = ev.target.closest?.("[data-hxfree]");
+      if (!t) return;
+      if (t.checked) HEAL_FREE.add(this.actor.uuid); else HEAL_FREE.delete(this.actor.uuid);
+    });
     root.addEventListener("click", async (ev) => {
+      const fa = ev.target.closest("[data-fx-apply]");
+      if (fa) {
+        ev.preventDefault();
+        if (fa.disabled) return;
+        if (!game.user.targets.size) return notify.warn(NO_TARGETS);
+        fa.disabled = true;
+        const ok = await sendEffects(this.#fxData(true), { head: `${this.actor.name}: ефект атаки`, source: this.#ownToken() });
+        if (ok) { this.#fx.done = "applied"; this.render(); } else fa.disabled = false;
+        return;
+      }
+      const ps = ev.target.closest("[data-pend-send]");
+      if (ps) {
+        ev.preventDefault();
+        if (ps.disabled || !this.#sent) return;
+        ps.disabled = true;
+        const { L } = evaluate(this.actor);
+        const v = this.#load(L).last?.verdict;
+        if (Number.isInteger(v)) await answerPending(this.#sent.msg, this.#sent.row, { op: "rolled", verdict: v });
+        ps.disabled = false;
+        return;
+      }
+      const hx = ev.target.closest("[data-hx]");
+      if (hx) { ev.preventDefault(); if (!hx.disabled) this.#healthPress(hx); return; }
+      const nb = ev.target.closest("[data-near]");
+      if (nb) {
+        ev.preventDefault();
+        const item = this.#near[+nb.dataset.near];
+        if (!item || nb.disabled) return;
+        nb.disabled = true;
+        // the free invoke is spent first (the GM writes what the user doesn't own); only then the die (Fable, 2026-11-21)
+        if (await spendNearby(item)) this.#run("click", { tagName: "BUTTON", dataset: { r: "nearasp" }, src: { label: `аспекту «${item.name}» (${item.where})`, use: () => {}, msg: `Аспект «${item.name}» (${item.where}): безкоштовне Посилення використано.` } });
+        else nb.disabled = false;
+        return;
+      }
+      const pa = ev.target.closest("[data-pend-apply]");
+      if (pa) {
+        ev.preventDefault();
+        if (pa.disabled || !this.#pend) return;
+        pa.disabled = true;
+        await answerPending(this.#pend.msg, this.#pend.row, { op: "apply" });
+        return;
+      }
+      // «Щасливець: +1 ступінь», «Бісова штуковина!: перекинути»
+      const pk = ev.target.closest("[data-perkre]");
+      if (pk) {
+        ev.preventDefault();
+        if (pk.disabled) return;
+        pk.disabled = true;
+        const id = pk.dataset.perkre;
+        await this.#run("click", { tagName: "BUTTON", dataset: id === "kick" ? { r: "roll", perkre: "kick" } : { r: "luck", perkre: "lucky" } });
+        return;
+      }
+      // A8: the split's −/+ and «Завдати розподілену шкоду»
+      const sd = ev.target.closest("[data-split-d]");
+      if (sd) {
+        ev.preventDefault();
+        const s = SPLIT.get(this.actor.uuid);
+        if (!s || s.sent || sd.disabled) return;
+        const u = sd.dataset.u, step = Number(sd.dataset.splitD) || 0;
+        if (step > 0 && splitLeft(s.shares, s.total) <= 0) return;
+        s.shares[u] = clampShare((s.shares[u] ?? 0) + step, s.total);
+        this.#splitRedraw(root, s);
+        return;
+      }
+      const sg = ev.target.closest("[data-split-go]");
+      if (sg) { ev.preventDefault(); this.#splitSend(root, sg); return; }
       const ap = ev.target.closest("[data-apply]");
       if (ap) {
         ev.preventDefault();
         if (!this.#apply || ap.disabled) return;
         ap.disabled = true;
-        try { await sendDamage(this.#apply.data, { partial: this.#apply.partial, head: this.#apply.head }); } finally { ap.disabled = false; }
+        try { await sendDamage(this.#hitData(), { partial: this.#apply.partial, head: this.#apply.head, source: this.#ownToken() }); } finally { ap.disabled = false; }
+        return;
+      }
+      // П3 3.4: a grenade's failure — the chip used is thrown in this character's zone (no targets needed), or with «Фух» only
+      // written off
+      const bl = ev.target.closest("[data-blast]");
+      if (bl) {
+        ev.preventDefault();
+        if (bl.disabled) return;
+        root.querySelectorAll("[data-blast]").forEach((x) => { x.disabled = true; });
+        await this.#blastPress(bl.dataset.blast);
         return;
       }
       const b = ev.target.closest("[data-r]");
       if (!b || b.tagName === "SELECT" || b.tagName === "INPUT" || b.disabled) return;
       ev.preventDefault();
+      if (b.classList.contains("pust-skchip") || b.classList.contains("pust-stdb")) PICKED.delete(this.actor.uuid);
       if (b.classList.contains("pust-wchip")) { if (!b.classList.contains("pust-pick")) this.#run("change", b); return; } // the weapon chips stand for the list
       if (b.classList.contains("pust-skchip")) { if (!b.classList.contains("pust-pick")) this.#run("change", b); return; } // the skill chips too
       // «Стандартні дії» stand for the list «Вид перевірки»: the same change; the pressed one again → «Звичайна перевірка»
       if (b.classList.contains("pust-stdb")) { this.#run("change", { tagName: "SELECT", dataset: { r: "type" }, value: b.classList.contains("on") ? "gen" : b.value }); return; }
+      // the pressed ready check (П1 1.3): a ready check presses itself; a hand-picked attribute, skill or type lets it go
+      if (["preset", "xpreset"].includes(b.dataset.r)) PICKED.set(this.actor.uuid, pickedKey(evaluate(this.actor).L, b.dataset.r, b.dataset.v));
+      else if (["attr", "skill", "type"].includes(b.dataset.r)) PICKED.delete(this.actor.uuid);
       if (b.dataset.r === "roll") this.#setupOpen = false; // a new result: the set-up folds again
       if (b.dataset.r === "dmg" && !game.user.targets.size) return notify.warn(NO_TARGETS);
+      // A8: the fold open and two targets or more — this roll waits for the split
+      if (b.dataset.r === "dmg") this.#splitPress = !!root.querySelector("details.pust-split[open]:not([hidden])") && game.user.targets.size >= 2;
       this.#run("click", b);
     });
     this.#fastLayout(root);
     syncChatMode(this.element);
     syncDealButton(root);
+    // 10–14: the effect applied instead of the damage — no damage after it (A2; the wiki: «завдай шкоди або обери ефект»)
+    if (this.#fx.done) root.querySelectorAll('button[data-r="dmg"]').forEach((x) => { x.disabled = true; x.title = "Замість шкоди вже обрано ефект"; });
     // the damage is dealt with its roll: the options over it (Психо, the effect, the crit) are set before it, then locked
     // and so is the weapon (author, 2026-11-17)
-    if (root.querySelector(".rdmg .rdres")) root.querySelectorAll(".rdmg .rdopts input, .rdmg .rdopts select, .rdmg .pust-wchip").forEach((i) => { i.disabled = true; i.title = "Шкоду вже кинуто й завдано"; });
+    const { L: Ln } = evaluate(this.actor);
+    const lastNow = this.#load(Ln).last, spl = this.#splitNow(lastNow);
+    if (root.querySelector(".rdmg .rdres")) root.querySelectorAll(".rdmg .rdopts input, .rdmg .rdopts select, .rdmg .pust-wchip").forEach((i) => { i.disabled = true; i.title = spl && !spl.sent ? "Шкоду вже кинуто: розподіли її між цілями нижче" : "Шкоду вже кинуто й завдано"; });
+    // A8: the split's rows under the rolled damage; a split left behind by a new roll is said once, nothing dealt
+    if (spl) root.querySelector(".rdmg")?.insertAdjacentHTML("beforeend", this.#splitRows(spl));
+    else {
+      const old = SPLIT.get(this.actor.uuid);
+      if (old && !old.sent && lastNow?.dmg?.time !== old.time) { SPLIT.delete(this.actor.uuid); notify.warn("Розподілену шкоду не завдано: новий кидок скасував розподіл."); }
+    }
+    root.addEventListener("toggle", (ev) => { if (ev.target.matches?.("details.pust-split")) this.#splitOpen = ev.target.open; }, true);
     root.addEventListener("change", (ev) => {
+      const fx = ev.target.closest("input[data-fx]");
+      if (fx) { this.#fxPick(fx.dataset.fx, fx.checked); return; }
+      const al = ev.target.closest("select[data-fx-ally]");
+      if (al) { this.#fx.ally = al.value; return; }
+      const one = ev.target.closest("select[data-fx-one]");
+      if (one) {
+        this.#fx.one = one.value;
+        // A8: a split waiting — its rows say again whether the effect's target gets damage
+        const s = SPLIT.get(this.actor.uuid);
+        if (s && !s.sent) this.#splitRedraw(root, s);
+        return;
+      }
+      // A8: a share typed by hand
+      const sv = ev.target.closest("input[data-split-v]");
+      if (sv) {
+        const s = SPLIT.get(this.actor.uuid);
+        if (s && !s.sent) { s.shares[sv.dataset.u] = clampShare(sv.value, s.total); this.#splitRedraw(root, s); }
+        return;
+      }
       const t = ev.target.closest("[data-r]");
+      if (t && ["attr", "skill", "type"].includes(t.dataset.r)) PICKED.delete(this.actor.uuid);
       if (t) this.#run("change", t);
     });
   }
@@ -420,6 +1063,16 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       if (first) first.insertAdjacentHTML("beforebegin", row);
       else typeGrp.insertAdjacentHTML("beforebegin", row);
     }
+    // the pressed ready check (author, 2026-11-22, П1 1.3): a steel plate with amber text, as in «Стандартні дії»
+    const pk = PICKED.get(this.actor.uuid);
+    if (pk) {
+      const { L: kL } = evaluate(this.actor);
+      root.querySelectorAll('button[data-r="preset"], button[data-r="xpreset"]').forEach((b) => {
+        const on = pickedKey(kL, b.dataset.r, b.dataset.v) === pk;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", String(on));
+      });
+    }
     // the ready check's hint (R.hint, right before the attributes) goes with «Вид перевірки»; the other notes (.rhint of
     // poison, chems, «Воно саме виходить») stay with the automatic conditions
     const th = root.querySelector(":scope > .rgrp:has(.rats)")?.previousElementSibling;
@@ -442,38 +1095,51 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       const bar = document.createElement("div");
       bar.className = "pust-rgo-bar";
       go.before(bar);
-      bar.innerHTML = `<div class="pust-intent"><b>${esc(this.#intent(root))}</b><small class="pust-tgthint" hidden>${esc(NO_TARGETS)}</small></div>`;
+      const note = Date.now() < this.#replaceUntil
+        ? `<small class="pust-replace-note" role="status"><i class="fa-solid fa-triangle-exclamation"></i> Шкоду чи ефект атаки ще не застосовано. Відкрий цю перевірку ще раз протягом 3 секунд, щоб замінити результат.</small>` : "";
+      bar.innerHTML = `<div class="pust-intent"><b>${esc(this.#intent(root))}</b><small class="pust-tgthint" hidden>${esc(NO_TARGETS)}</small>${note}</div>`;
       bar.append(go);
     }
     // after a roll: the set-up folds (not in the tour's example, whose steps show the set-up)
     const res = root.querySelector(":scope > .rres");
-    if (res && !this.actor.pustTourDemo && !this.element.classList.contains("pust-demo-check")) {
+    // the tour's example folds too (author, 2026-11-22, П1 1.6: it showed the old look); its set-up steps use the stage «setup»
+    if (res && !this.actor.pustTourDemo) {
       root.classList.toggle("pust-folded", !this.#setupOpen);
-      // folded, the button rolls the same check again, with the same Посилення / Послаблення / modifier (author, 2026-11-18)
+      // folded (author, 2026-11-22, П1 1.1): no rolling the same check again — the strip has «Інша перевірка» in place of
+      // «Кинути перевірку» (narrow, rust): it opens the set-up with Посилення / Послаблення / Модифікатор from 0; only
+      // «Бісова штуковина!» rerolls («перекинути»). The fold line keeps only what was rolled
       if (!this.#setupOpen && go) {
-        const txt = [...go.childNodes].find((n) => n.nodeType === Node.TEXT_NODE && /Кинути перевірку/.test(n.textContent));
-        if (txt) txt.textContent = "Повторити перевірку";
-        go.title = "Кинути ту саму перевірку ще раз, з тими самими Посиленнями, Послабленнями й модифікатором";
-      }
-      // the fold line: the check type as its own plate, then what is rolled, then «Інша перевірка» as a button
-      // (playtest 2026-11-18, item 3: the type more visible, «змінити» → «Інша перевірка», set apart)
-      const { type, rest } = this.#intentParts(root);
-      const f = document.createElement("button");
-      f.type = "button";
-      f.className = "pust-fold";
-      f.setAttribute("aria-expanded", String(this.#setupOpen));
-      f.innerHTML = `<span>${type ? `<em class="pust-fold-type">${esc(type)}</em>` : ""}${esc(rest)}</span>`
-        + `<b>${this.#setupOpen ? "сховати" : "Інша перевірка"} <i class="fa-solid fa-chevron-${this.#setupOpen ? "up" : "down"}"></i></b>`;
-      f.title = this.#setupOpen ? "Сховати налаштування перевірки" : "Інша перевірка: атрибут, навичка, вид перевірки; Посилення, Послаблення й модифікатор знову з нуля";
-      f.addEventListener("click", () => {
-        this.#setupOpen = !this.#setupOpen;
-        // «Інша перевірка» starts the counters from 0; «Повторити перевірку» keeps them (author, 2026-11-18)
-        if (this.#setupOpen) {
+        go.hidden = true;
+        // «Щасливець» and «Бісова штуковина!» (author, 2026-11-21, mockup 3): small buttons left of it, while the perk is unused
+        const { st: pst, L: pL } = evaluate(this.actor);
+        const plast = this.#load(pL).last, perks = compute(pst).allPerks || [], pc = pst.chem || {};
+        const btn = (id, html, tip) => `<button type="button" class="btn sm pust-perkre" data-perkre="${id}" title="${esc(tip)}">${html}</button>`;
+        const perkBtns = (luckOffer(plast, perks, isUsed(USE_BY_ID.lucky, pc))
+          ? btn("lucky", "Щасливець<br>+1 ступінь", "Щасливець, раз за сесію: підвищити результат цієї перевірки на один ступінь. ОД за невдачу тоді не буде.") : "")
+          + (kickOffer(plast, perks, isUsed(USE_BY_ID.kick, pc))
+            ? btn("kick", "Бісова штуковина!<br>перекинути", "Бісова штуковина!, раз за сцену: повністю перекинути цю перевірку зламу замка чи комп'ютера (гучно). Рахується лише новий кидок: ОД за цей забирається.") : "");
+        const other = `<button type="button" class="btn sm pust-other" title="Інша перевірка: атрибут, навичка, вид перевірки; Посилення, Послаблення й модифікатор знову з нуля"><i class="fa-solid fa-rotate"></i>Інша перевірка</button>`;
+        go.insertAdjacentHTML("beforebegin", perkBtns + other);
+        go.parentElement.querySelector(".pust-other").addEventListener("click", () => {
+          this.#setupOpen = true;
           const R = STATES.get(this.actor.uuid);
           if (R) Object.assign(R, { boost: 0, pen: 0, mod: 0 });
-        }
-        this.render();
-      });
+          this.render();
+        });
+      }
+      // the fold line: the check type as its own plate, then what is rolled; «сховати» only while the set-up is open
+      // (author, 2026-11-22, П1 answer 4: back to the result without a roll)
+      const { type, rest } = this.#intentParts(root);
+      const f = document.createElement(this.#setupOpen ? "button" : "div");
+      f.className = "pust-fold";
+      f.innerHTML = `<span>${type ? `<em class="pust-fold-type">${esc(type)}</em>` : ""}${esc(rest)}</span>`
+        + (this.#setupOpen ? `<b>сховати <i class="fa-solid fa-chevron-up"></i></b>` : "");
+      if (this.#setupOpen) {
+        f.type = "button";
+        f.setAttribute("aria-expanded", "true");
+        f.title = "Сховати налаштування перевірки й повернутися до результату";
+        f.addEventListener("click", () => { this.#setupOpen = false; this.render(); });
+      }
       root.querySelector(":scope > .rwho")?.after(f);
     }
   }
@@ -514,16 +1180,88 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     const key = el.dataset.r;
     // a plain copy of what the handlers read from the element
     const node = { tagName: el.tagName, dataset: { ...el.dataset }, value: el.value, checked: el.checked };
+    // healing and repair need something to pay with before the roll (wiki «Відновлення ОЗ…»); the patient is chosen and the
+    // payment taken only when the result is applied (П2, author 2026-11-22); «Без Припасів» lets it go without
+    const healFree = HEAL_FREE.has(this.actor.uuid);
+    if (kind === "click" && key === "roll") {
+      const { L } = evaluate(this.actor);
+      const why = healGate(this.actor, this.#load(L).type, healFree);
+      if (why) return notify.warn(why);
+    }
     let out;
     const fdWas = fateSnap(this.actor); // an aspect invoked with a Fate token posts a card (author, 2026-11-15)
     const supWas = supSnap(this.actor); // a Припас spent by a check («Автоматний псих»…) too
+    // the roar's «−2 до наступної перевірки» (author, 2026-11-20): counted in this roll, then its aspect goes; the engine isn't
+    // touched — the −2 rides on R.mod for the roll only and is shown among the automatic conditions
+    const pen = kind === "click" && key === "roll" ? checkPenalty(this.actor) : null;
+    let penUsed = false;
+    // «Прикриваєш спільника» (A2): +1 Посилення on this character's next avoidance in the round it was given, then it goes
+    const cover = kind === "click" && key === "roll" ? this.#cover() : null;
+    // «Щасливець» / «Бісова штуковина!»: the perk's mark and card (perk-uses.mjs), the replaced roll's ОД gone
+    const perkId = kind === "click" ? el.dataset?.perkre || "" : "";
+    let perkRes = null;
+    if (kind === "click" && ["aspect", "modasp", "sitasp", "nearasp", "luck"].includes(key) || perkId) {
+      const { L } = evaluate(this.actor);
+      if (this.#load(L).last?.hx) { notify.warn("Результат уже застосовано: змінити його не можна."); return this.render(); }
+      if (key === "sitasp" && isCoverText(this.actor.system?.situational?.[+el.dataset?.v]?.name)) { notify.warn("Прикриття діє лише на уникнення шкоди."); return this.render(); }
+    }
     await runAction(this.actor, (st, L) => {
       const R = this.#load(L);
+      const t0 = R.last?.time;
+      if (perkId) {
+        const ok = perkId === "kick" ? kickOffer(R.last, compute(st).allPerks) : luckOffer(R.last, compute(st).allPerks);
+        perkRes = ok ? usePerk(st, L, perkId) : { ok: false, msg: "Цей перк тут не діє." };
+        if (!perkRes.ok) { notify.warn(perkRes.msg); out = null; return; }
+        if (perkId === "kick") dropRollXp(st, R.last); // only the new roll's ОД count (author, 2026-11-21)
+      }
+      if (pen) R.mod = (+R.mod || 0) + pen.n;
+      const coverOn = cover && R.type === "dodge";
+      if (coverOn) R.boost = (+R.boost || 0) + 1;
       // the damage as it stands (to post the new result when an option changes it: Психо, effect, crit…)
       const dmgNow = () => (R.last?.dmg && R.last.dmg.key === R.dmgKey ? JSON.stringify(L.dmgTotal(R.last, compute(st))) : null);
       const before = { last: clone(R.last), dmg: dmgNow() };
-      if (kind === "click") L.rollerClick(node);
+      // «Мастак-ремонтник»: +1 to «Ремонт» (wiki «Перки»), named among the automatic conditions as the roar's −2 is
+      const fixer = kind === "click" && key === "roll" && R.type === "repair" && compute(st).allPerks.includes("Мастак-ремонтник");
+      if (fixer) R.mod = (+R.mod || 0) + 1;
+      // A10: an ОД button of a roll whose ОД the panel already added does nothing; the button shows only when it did not
+      // (a roll from before «ОД за невдачу» was turned on, a tour's demo): then it adds the ОД as before (reviewer, 2026-11-21)
+      const xpBtn = kind === "click" && key === "xp" && xpAutoGiven(R.last, node?.dataset?.k);
+      if (kind === "click" && key === "nearasp") L.invokeAspect(el.src); // «Аспекти поруч»: the invoke already spent
+      else if (xpBtn) { /* already added */ }
+      else if (kind === "click") L.rollerClick(node);
       else L.rollerChange(node);
+      // the ОД this roll gives, again after every action (an aspect that turns a failure takes it back; tours never)
+      // only a new roll or one that already got its ОД (an old roll from before the setting was on stays as it was)
+      if (autoXpOn() && !this.actor.pustTourDemo && R.last && (R.last.time !== t0 || R.last.xpAuto || perkId === "lucky")) reconcileAutoXp(st, R.last, compute(st).allPerks);
+      if (perkId === "lucky" && R.last?.luckUp) R.last.autoList = [...(R.last.autoList || []), "Щасливець: +1 ступінь"];
+      if (fixer) {
+        R.mod = (+R.mod || 0) - 1;
+        if (R.last && R.last.time !== t0) { R.last.mod -= 1; R.last.autoFlat = (R.last.autoFlat || 0) + 1; R.last.autoList = [...(R.last.autoList || []), "Мастак-ремонтник +1"]; }
+      }
+      // П2: nothing is paid with the roll; «Без Припасів» rides on the new roll (one roll)
+      if (kind === "click" && key === "roll" && R.last && R.last.time !== t0 && HEAL_TYPES.includes(R.last.type)) {
+        if (healFree) R.last.free = true;
+        HEAL_FREE.delete(this.actor.uuid);
+      }
+      if (coverOn) {
+        R.boost = (+R.boost || 0) - 1;
+        if (R.last && R.last.time !== t0) {
+          // the cover's one invoke is spent: its aspect goes with this roll (the oldest, as #cover showed it)
+          const c = activeCover(st.sit);
+          if (c) st.sit.splice(c.i, 1);
+          R.last.autoList = [...(R.last.autoList || []), `Посилення: «${cover.t}», аспект знято`];
+        }
+      }
+      if (pen) {
+        R.mod = (+R.mod || 0) - pen.n;
+        if (R.last && R.last.time !== t0) {
+          // the same total; the −2 is named as a condition, not a bare «мод.»
+          R.last.mod -= pen.n;
+          R.last.autoFlat = (R.last.autoFlat || 0) + pen.n;
+          R.last.autoList = [...(R.last.autoList || []), `«${pen.aspect}» −${-pen.n}, аспект знято`];
+          penUsed = true;
+        }
+      }
       this.#save(L);
       const dmgChoice = R.last?.dmg ? L.dmgChoices(compute(st)).find((x) => x.key === R.last.dmg.key) : null;
       const dmgType = weaponDmgType(dmgChoice);
@@ -531,24 +1269,91 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       const after = dmgNow();
       out = { before, R: clone(L.R), dmgTotal: R.last?.dmg ? L.dmgTotal(R.last, compute(st)) : null, dmgType, dmgFx, dmgChoice, verdicts: L.VERDICTS, types: L.CHECK_TYPES,
         dmgChanged: !!(before.dmg && after && before.dmg !== after && before.last?.dmg?.time === R.last.dmg.time) };
-    });
+    }, { toast: PANEL_TOAST });
+    if (perkId && !perkRes?.ok) return this.render();
+    if (perkRes?.ok) await postChat({ speaker: ChatMessage.getSpeaker({ actor: this.actor }), content: perkCardHtml(this.actor.name, perkRes, PER[USE_BY_ID[perkId]?.per]?.cls || "free") });
     await postFateIfChanged(this.actor, fdWas);
     await postSupIfChanged(this.actor, supWas);
+    if (penUsed) await spendCheckStates(this.actor);
+    // the targets go once the result no longer needs them (author, 2026-11-22, П1 1.4, answer А): a plain check or an avoidance
+    // at once, an attack on a failure (its damage or effect clears them as before); healing and repair keep theirs (П2)
+    if (kind === "click" && ["roll", "aspect", "modasp", "sitasp", "nearasp", "luck"].includes(key) && out?.R?.last
+      && !keepTargets(out.R.last, this.#fx.time === out.R.last.time && !!this.#fx.done, this.#blast(out.R.last))) clearTargets();
     this.#toResult = kind === "click" && key === "roll"; // «Кинути перевірку»: the result comes into view
+    // an avoidance answering an enemy's attack (A1): the row is chosen now, before the render shows the new roll
+    const nl = out.R.last, ol = out.before.last;
+    const dodged = nl?.type === "dodge" && (nl.time !== ol?.time || nl.verdict !== ol?.verdict);
+    const fresh = dodged && nl.time !== ol?.time; // a new roll (not an aspect invoked on the last one) may answer a newer attack
+    const target = dodged ? this.#pendNow(out.R, fresh) : null;
+    if (target?.row && !rowClosed(target.row)) { this.#sent = { ...this.#pend, time: nl.time }; this.#sending = true; }
     const deal = kind === "click" && key === "dmg";
     if (deal) await this.render(); // the damage to deal (#apply) is made by the render
     else this.render();
     const msg = kind === "click" && CHAT_ON.has(key) ? await this.#post(key, out) : null;
     if (deal) await waitDice(msg); // the damage is dealt once the 3D dice have landed (author, 2026-11-19)
+    // an avoidance answering an enemy's attack (A1): its verdict goes to the card once the dice have landed; an aspect invoked
+    // after it sends the new one (15+ closes the row by itself, author 2026-11-20)
+    if (this.#sending && this.#sent) {
+      const to = this.#sent;
+      this.#sendP = (async () => {
+        try { await waitDice(msg); await answerPending(to.msg, to.row, { op: "rolled", verdict: nl.verdict }); }
+        finally { this.#sending = false; if (this.rendered) this.render(); }
+      })();
+      await this.#sendP;
+    }
+    // П3 3.3 (author, 2026-11-22): with «ОД за невдачу нараховується само» off, the ОД button of a failed avoidance accepts
+    // the failure — the waiting attack's full damage lands, as «Отримати повну шкоду» would
+    if (kind === "click" && key === "xp" && !autoXpOn() && node?.dataset?.k !== "sav" && nl?.type === "dodge" && nl.verdict === 0 && this.#sent?.time === nl.time) {
+      const to = this.#sent;
+      if (this.#sendP) await this.#sendP.catch(() => {});
+      await answerPending(to.msg, to.row, { op: "apply" });
+      if (this.rendered) this.render();
+    }
     // «Завдати шкоди»: the rolled damage goes to the targets at once (author, 2026-11-17)
-    if (deal && this.#apply && out.R.last?.dmg) await sendDamage(this.#apply.data, { partial: this.#apply.partial, head: this.#apply.head });
+    // A8: with the fold open the roll waits for the split (one type only: a hit of several types is dealt in full, as before)
+    // П3 3.4: a grenade's failure goes off in this character's zone (the GM finds who is there), not on the targets
+    if (deal && this.#apply && out.R.last?.dmg && this.#blast(out.R.last)) {
+      const { st: s2 } = evaluate(this.actor);
+      await sendBlast(this.#apply.data, { actor: this.actor.uuid, source: this.#ownToken(), head: this.#apply.head, directed: this.#directed(s2) });
+    } else if (deal && this.#apply && out.R.last?.dmg && this.#splitPress && !this.#apply.data.parts) { this.#splitPress = false; this.#startSplit(out.R.last.dmg); this.render(); }
+    else if (deal && this.#apply && out.R.last?.dmg) {
+      // the fold was open, but the rolled damage came out of several types: dealt in full, and said so (reviewer, 2026-11-21)
+      if (this.#splitPress) notify.warn("Шкода вийшла кількох типів, тож розподілити її не вийде: кожна ціль отримує її повністю.");
+      this.#splitPress = false; await sendDamage(this.#hitData(), { partial: this.#apply.partial, head: this.#apply.head, source: this.#ownToken(), half: this.#halfOf(out.R.last) }); }
     // an option changed the damage already rolled (Психо, effect, crit, robot…): the new result goes to chat too
     else if (out.dmgChanged) await this.#chatDamage(out.R.last, out.dmgTotal, false, out.dmgType, true, out.dmgFx, out.dmgChoice, out.before.last?.dmg?.extra ?? null);
   }
 
+  /** П3 3.4: the grenade `key` used on a failure: «Фух» writes it off; otherwise the engine throws it (roll, written off) */
+  async #blastPress(key) {
+    const { st, L } = evaluate(this.actor);
+    const last = this.#load(L).last;
+    if (!this.#blast(last) || last.dmg || last.fuh) return this.render();
+    if (compute(st).allPerks.includes("Фух")) {
+      let said = "";
+      await runAction(this.actor, (st2, L2) => {
+        const R = this.#load(L2);
+        if (!R.last || R.last.dmg || R.last.fuh) return;
+        const c = L2.dmgChoices(compute(st2)).find((x) => x.key === key);
+        if (!c?.o) return;
+        const r = spendOne(c.o);
+        if (!r.ok) { notify.warn(r.msg); return; }
+        if (r.remove) { const i = st2.other.indexOf(c.o); if (i >= 0) st2.other.splice(i, 1); } else c.o.q = r.q;
+        R.last.fuh = r.msg; R.last.dmgDone = true; said = r.msg;
+        this.#save(L2);
+      });
+      if (said) await this.#chat(`<h4><i class="fa-solid fa-bomb"></i> «Фух»: граната не вибухнула</h4><p>${esc(said)}</p>`);
+      return this.render();
+    }
+    this.#splitPress = false;
+    await this.#run("change", { tagName: "BUTTON", dataset: { r: "dmgw" }, value: key });
+    await this.#run("click", { tagName: "BUTTON", dataset: { r: "dmg" } });
+  }
+
   async #post(key, { before, R, dmgTotal, dmgType, dmgFx, dmgChoice, verdicts, types }) {
     const L = R.last;
-    if (["roll", "aspect", "modasp", "sitasp"].includes(key) && L) {
+    if (key === "luck" && L) return this.#chatCheck(L, verdicts, types, false, before.last, "Щасливець");
+    if (["roll", "aspect", "modasp", "sitasp", "nearasp"].includes(key) && L) {
       if (key !== "roll" && JSON.stringify(L) === JSON.stringify(before.last)) return; // nothing invoked
       return this.#chatCheck(L, verdicts, types, key !== "roll", before.last);
     }
@@ -557,15 +1362,16 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /* ---------- chat ---------- */
 
-  #chat(content, rolls = null) {
+  #chat(content, rolls = null, flags = null) {
     return postChat({
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
       content: `<div class="pust-chat">${content}</div>`,
+      ...(flags ? { flags: { [game.system.id]: flags } } : {}),
     }, { dice: true, rolls });
   }
 
   /** `before`: R.last before the press (an aspect: only its new die is thrown in 3D) */
-  #chatCheck(last, verdicts, types, aspect, before = null) {
+  #chatCheck(last, verdicts, types, aspect, before = null, why = "") {
     const T = types[last.type];
     // as in the panel: counted — lit, replaced by the skill or aspect die — dimmed, dropped by Посилення / Послаблення — crossed out
     const chosen = new Set((last.slots || []).filter((s) => s.src === "base").map((s) => s.i));
@@ -584,13 +1390,17 @@ class CheckPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     const ranges = ["≤9", "10–14", `15–${ci.cursed ? "…" : ci.t - 1}`, ...(ci.cursed ? [] : [`${ci.t}+`])];
     const lit = ranges.map((r, i) => `<span class="${i === v ? `hit v${v}` : ""}">${r}</span>`).join("");
     return this.#chat(
-      `<h4>${esc(T?.n || "Перевірка")}: ${esc(ASHORT[last.attr])}${last.skillName ? ` + ${esc(last.skillName)}` : ""}${aspect ? " — виклик аспекту" : ""}</h4>`
+      `<h4>${esc(T?.n || "Перевірка")}: ${esc(ASHORT[last.attr])}${last.skillName ? ` + ${esc(last.skillName)}` : ""}${aspect ? " — виклик аспекту" : why ? ` — ${esc(why)}` : ""}</h4>`
       + `<div class="pust-cres v${v}">`
       + `<b class="rvhead">${esc(verdicts[v])}</b>`
       + `<div class="rverd"><b class="rtot">${last.total}</b><span class="rranges">${lit}</span></div>`
       + `<p class="pust-cbreak">${dice}${skill}${asp}${boost} · ${mods}</p>`
-      + (T?.d?.[v] ? `<p class="rdesc">${esc(T.d[v])}</p>` : "") + `</div>`,
-      rollList(rollFromDice(aspect ? checkDiceGroups(last, before) : checkDiceGroups(last))),
+      + (T?.d?.[v] ? `<p class="rdesc">${esc(T.d[v])}</p>` : "")
+      // A10: the ОД the panel added by itself («ОД за невдачу»)
+      + ((last.xpAuto?.fail || 0) + (last.xpAuto?.sav || 0) ? `<p class="pust-cxp"><i class="fa-solid fa-medal"></i> +${(last.xpAuto.fail || 0) + (last.xpAuto.sav || 0)} ОД в аркуш</p>` : "") + `</div>`,
+      why ? null : rollList(rollFromDice(aspect ? checkDiceGroups(last, before) : checkDiceGroups(last))),
+      // U4 (author, 2026-11-21): the GM's side reads it — «Зроби хід проти X» when the result asks for a move
+      { check: checkFlag({ actor: this.actor.uuid, name: this.actor.name, type: last.type, typeName: T?.n || "Перевірка", verdict: v, verdictName: verdicts[v], total: last.total, time: last.time, text: T?.d?.[v] ?? "" }) },
     );
   }
 
@@ -694,6 +1504,7 @@ class DockedCheckPanel extends CheckPanel {
       if (!a) return;
       dockActorId = a.id;
       this.actor = a;
+      this.dropPend(); // the other character's waiting attack is not this one's (П3 live check, 2026-11-22)
       this.render();
     });
     requestAnimationFrame(() => this.stick());
@@ -753,11 +1564,12 @@ class DockedCheckPanel extends CheckPanel {
  * What «Завдати цілям» needs (module/applications/apply-damage.mjs): the total, its type, armour ignored — for a
  * character's weapon read from its effect lines (not the damage type's own line: the type is counted by the rules already)
  */
-export function damageData({ total, wt, fx = [], poison = null }) {
+export function damageData({ total, wt, fx = [], poison = null, emp = false }) {
   const own = fx.filter((x) => !Object.values(TYPE_EFFECTS).includes(x));
   return {
     total: Math.max(0, Number(total) || 0), type: wt, ignoreArmor: own.some((x) => atkIgnores(x)), ignoreN: Math.max(0, ...own.map((x) => atkIgnoreN(x))),
     poison: poison?.sum ?? 0,
+    ...(emp ? { empOnly: true } : {}),
   };
 }
 
@@ -870,7 +1682,7 @@ class DemoCheckPanel extends CheckPanel {
 let DEMO = null;
 const DEMO_STATES = {};
 
-/** Open (or bring to "roll" / "dmg") the example panel for `actor`; null closes it */
+/** Open (or bring to "setup" / "roll" / "dmg") the example panel for `actor`; null closes it */
 export async function setCheckDemo(actor, stage = "roll") {
   if (!actor) { await DEMO?.close({ animate: false }); DEMO = null; return null; }
   if (!DEMO_STATES.roll || DEMO_STATES.src !== actor) {
@@ -889,6 +1701,8 @@ export async function setCheckDemo(actor, stage = "roll") {
       if (/class="rres v2"/.test(L.renderRoller())) break;
     }
     DEMO_STATES.roll = clone(L.R);
+    DEMO_STATES.setup = { ...clone(L.R), last: null }; // the same attack before its roll (П1 1.6)
+    PICKED.set(DEMO_STATES.actor.uuid, pickedKey(L, "preset", 0)); // its ready check pressed (П1 1.3)
     L.rollerClick({ tagName: "BUTTON", dataset: { r: "dmg" } });
     DEMO_STATES.dmg = clone(L.R);
   }

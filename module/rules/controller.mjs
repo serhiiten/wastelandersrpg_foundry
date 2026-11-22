@@ -14,6 +14,8 @@ import { speciesToX } from "./designer.mjs";
 import { usePowerCell } from "./power-cell.mjs";
 import { CONS_PRICE, consPlan, healPlan, supPlan } from "./char-services.mjs";
 import { chemReset, freePerk, usePerk } from "./perk-uses.mjs";
+import { sceneEndHealth } from "./battle-health.mjs";
+import { isCoverText } from "./cover.mjs";
 import { GRANTS, GRANT_FEATS, SKILL_IMPS, grantTarget, lastingCaps, startPicks, stepSkill } from "./skill-sources.mjs";
 import {
   AKEYS, BUILTIN_CAT, CLAW_WEAPON_MSG, FEAT, LVL, PERK, PRESETS, SKILLS, SPECIES,
@@ -480,7 +482,19 @@ export function createController(st, L, { toast = () => {}, rng, cat } = {}) {
         st[data.l].splice(+data.i, 1);
         return true;
       }
-      case "cat-add": return addCatalog(data.id);
+      // Foundry only (author, 2026-11-21; A13): «Купити за N(к)» — the catalogue's price off the caps, then «Додати»
+      case "cat-add": {
+        if (String(data.pay) !== "1") return addCatalog(data.id);
+        const e = catalogAll(gunsOn(st)).find((x) => x.id === data.id);
+        const price = Math.max(0, parseInt(e?.price, 10) || 0);
+        const caps = parseInt(st.caps, 10) || 0;
+        if (!e || !price) return refuse("У цієї речі немає ціни.");
+        if (price > caps) return refuse(`Не вистачає кришок: треба ${price}(к), є ${caps}(к).`);
+        if (!addCatalog(data.id)) return false;
+        st.caps = caps - price;
+        toast(`Куплено за ${price}(к): ${e.n}. Кришок лишилося ${st.caps}.`);
+        return true;
+      }
       case "preset": {
         const p = PRESETS[+data.i];
         if (p) addPreset(p);
@@ -613,6 +627,7 @@ export function createController(st, L, { toast = () => {}, rng, cat } = {}) {
       }
       case "sit-inv": {
         const x = (st.sit || [])[+data.i];
+        if (x && isCoverText(x.t)) return false; // «Прикритий: …» keeps its one invoke (П3 3.2)
         if (x) x.inv = Math.max(0, (x.inv || 0) + +data.d);
         return true;
       }
@@ -656,7 +671,8 @@ export function createController(st, L, { toast = () => {}, rng, cat } = {}) {
       }
       case "perk-free": return freePerk(st, data.id);
       // «Скинути лічильники»: the perks' marks and «Друге дихання» go too (author, 2026-11-18)
-      case "chem-reset": return chemReset(st, L) ? true : false;
+      // the session's failures of «Старанний учень» too (A10): session 1 again must not bring old ones back
+      case "chem-reset": delete st.medDay; if (st.chem && "studFails" in st.chem) delete st.chem.studFails; return chemReset(st, L) ? true : false; // the day's help mark too (A7)
       case "addiction-add": {
         // chem-add-new with the substance name passed in
         const v = String(data.name || "").trim();
@@ -667,8 +683,19 @@ export function createController(st, L, { toast = () => {}, rng, cat } = {}) {
         c.addictions.push({ drug: key, incurable: false, since: c.session, lastUse: c.session });
         return true;
       }
+      // the scene's end on the sheet (author, 2026-11-21; rules/battle-health.mjs): the engine's, then the free invokes, 19+
+      // of «Отримання наслідків» and the doomed, as the group's end does
+      case "chem-scene": case "chem-day": case "chem-session": {
+        L.chemAct(a, { dataset: data });
+        sceneEndHealth(st, L, compute(st));
+        return true;
+      }
+      // the doomed (A6, author 2026-11-21): the adrenaline still works — the table decides — but says so
+      case "ko-adren":
+        if (st.ko?.doomed) toast("Персонаж приречений: за правилами адреналін на приречених не діє. Вирішує стіл.", "bad");
+        return L.chemAct(a, { dataset: data }) ? true : refuse("Невідома дія: " + a);
       default:
-        // drugs, rest, scene / day / session, knock-out choices, treatment (chem.js)
+        // drugs, rest, knock-out choices, treatment (chem.js)
         return L.chemAct(a, { dataset: data }) ? true : refuse("Невідома дія: " + a);
     }
   }

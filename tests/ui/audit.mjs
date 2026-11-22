@@ -6,6 +6,7 @@
  *   const { runAudit } = await import(`/systems/${game.system.id}/tests/ui/audit.mjs?${Date.now()}`);
  *   await runAudit();               // every scenario; returns { failures, report } and logs a table
  *   await runAudit(["dock"]);       // only some
+ *   A browser window below 1366×768 (SCREEN_FLOOR) is not checked: { failures: 0, tooSmall: "why" } (author, 2026-11-21).
  *
  * The rules come from the author's decisions on the UI (CLAUDE.md, memory «UI symmetry check», «Number field style»):
  *   – nothing is cut: no text runs out of its box (buttons, labels, chips, names); no raw i18n keys on screen;
@@ -145,22 +146,7 @@ class Audit {
 
   /** Readable: contrast ≥ 3:1 with the nearest opaque background, font ≥ 10 px */
   readable(root, sel = "button, label, span, b, small, p, li, h3, h4, input") {
-    const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
-    // «rgb(…)» / «rgba(…)», or «color(srgb r g b / a)» (what color-mix() computes to) with 0…1 channels
-    const rgba = (s) => {
-      const n = (String(s).match(/[\d.]+/g) || [0, 0, 0, 0]).map(Number);
-      if (/^color\(srgb/.test(s)) return [n[0] * 255, n[1] * 255, n[2] * 255, n[3] ?? 1];
-      return n;
-    };
-    const bgOf = (el) => {
-      for (let e = el; e; e = e.parentElement) {
-        const cs = getComputedStyle(e);
-        if (cs.backgroundImage && cs.backgroundImage !== "none") return null; // a gradient or texture: can't judge
-        const c = rgba(cs.backgroundColor);
-        if ((c[3] ?? 1) >= 0.9) return c;
-      }
-      return null;
-    };
+    this.access(root);
     const bad = [], small = [];
     for (const el of root.querySelectorAll(sel)) {
       if (!shown(el) || !(el.innerText || el.value || "").trim() || el.closest(".pust-audit-skip")) continue;
@@ -169,8 +155,7 @@ class Audit {
       if (parseFloat(cs.opacity) < 0.6) continue;
       const bg = bgOf(el);
       if (!bg) continue;
-      const fg = rgba(cs.color), a = lum(fg), b = lum(bg);
-      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      const ratio = contrast(rgba(cs.color), bg);
       if (ratio < 3) bad.push(`${name(el)} ${ratio.toFixed(1)}:1`);
     }
     this.ok("шрифт не менший за 10 px", !small.length, small.slice(0, 5).join("; "));
@@ -335,8 +320,94 @@ class Audit {
     return this.ok(label, !bad.length, bad.slice(0, 6).join("; "));
   }
 
+  /* ---------- V6 (2026-11-21): text ≥ 12 px, click targets ≥ 24 × 24 px, a visible keyboard focus ---------- */
+
+  /** The three V6 limits on everything under `root`. Each finding is collected once per element in `this.v6`
+   *  (window → rule → element → size). A rule fails only where `V6.enforce` says so; the exceptions the author kept are
+   *  `V6.exempt` (selector → why); until then the findings are warnings (`warn: true`, ok) so the audit doesn't fail. */
+  access(root, where = "") {
+    if (!root?.isConnected) return;
+    const win = where || winOf(root);
+    const seen = (this._v6seen ??= new WeakMap());
+    const found = { font: [], target: [], focus: [] };
+    const add = (rule, el, detail) => {
+      let s = seen.get(el); if (!s) seen.set(el, (s = new Set()));
+      if (s.has(rule)) return;
+      s.add(rule);
+      found[rule].push(`${name(el)} ${detail}`);
+      (this.v6 ??= []).push({ scenario: this.scenario, window: win, rule, el: name(el), sel: selOf(el), detail });
+    };
+    const exempt = (el, rule) => V6.exempt.find((x) => x.rules.includes(rule) && el.closest(x.sel));
+    const cs = styleCache();
+    // 1. text: every element with text of its own (and fields with a value)
+    for (const el of root.querySelectorAll("*")) {
+      if (el.closest(".pust-audit-skip, option, svg") || !shown(el)) continue;
+      const s = cs(el);
+      if (parseFloat(s.opacity) === 0) continue;
+      const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) || (el.matches("input:not([type=checkbox],[type=radio],[type=hidden],[type=range],[type=color]), textarea, select") && (el.value ?? "").trim());
+      if (!own) continue;
+      const fs = parseFloat(s.fontSize);
+      if (fs > 0 && fs < V6.font - 0.01 && !exempt(el, "font")) add("font", el, `${+fs.toFixed(2)} px`);
+    }
+    // 2. click targets: controls the hand presses (an inline link inside running text is exempt, as in WCAG 2.5.8)
+    const targets = [...root.querySelectorAll(TARGET)].filter((el) => shown(el) && !el.closest(".pust-audit-skip, .window-resizable-handle") && !el.parentElement?.closest(TARGET)
+      && !(el.matches("a") && el.parentElement?.closest("p, li") && cs(el).display.startsWith("inline")));
+    for (const el of targets) {
+      // a checkbox inside its <label> is pressed through the label
+      const hit = el.matches("input[type=checkbox], input[type=radio]") && el.closest("label") ? el.closest("label") : el;
+      const r = R(hit);
+      if ((r.width < V6.target - 0.5 || r.height < V6.target - 0.5) && !exempt(el, "target")) {
+        // WCAG's spacing exception: a 24 px circle round its centre touches no other target
+        const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+        const room = targets.every((o) => { if (o === el || o.contains(el) || el.contains(o)) return true; const q = R(o); const dx = Math.max(q.left - cx, 0, cx - q.right), dy = Math.max(q.top - cy, 0, cy - q.bottom); return dx * dx + dy * dy >= (V6.target / 2) ** 2; });
+        add("target", el, `${Math.round(r.width)}×${Math.round(r.height)}${room ? " (є простір довкола)" : ""}`);
+      }
+    }
+    // 3. keyboard focus: a control reached by Tab changes its look (outline, shadow, border, background or colour)
+    const before = document.activeElement;
+    const look = (s) => [s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0 ? `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor}` : "", s.boxShadow, s.borderTopColor, s.borderBottomColor, s.backgroundColor, s.backgroundImage, s.color, s.textDecorationLine].join("|");
+    for (const el of targets) {
+      if (!el.matches(FOCUSABLE) || el.disabled || exempt(el, "focus")) continue;
+      const hit = el.matches("input[type=checkbox], input[type=radio]") && el.closest("label") ? el.closest("label") : null;
+      // no transition while measuring: right after focus a transition still shows the old shadow (2026-11-21, enemy card)
+      const tr = el.style.getPropertyValue("transition"), trP = el.style.getPropertyPriority("transition");
+      el.style.setProperty("transition", "none", "important");
+      const own0 = look(getComputedStyle(el)), was = own0 + (hit ? look(getComputedStyle(hit)) : "");
+      try { el.focus({ preventScroll: true, focusVisible: true }); } catch { el.style.setProperty("transition", tr, trP); continue; }
+      if (document.activeElement !== el) { el.style.setProperty("transition", tr, trP); continue; }
+      const fv = el.matches(":focus-visible");
+      const fs = getComputedStyle(el), own1 = look(fs), now = own1 + (hit ? look(getComputedStyle(hit)) : "");
+      // only the outline changed: its colour has to show against the background
+      const b0 = own0.split("|"), b1 = own1.split("|");
+      const ring = b1[0] && b1.slice(1).join("|") === b0.slice(1).join("|") ? fs.outlineColor : null;
+      el.blur();
+      if (tr) el.style.setProperty("transition", tr, trP); else el.style.removeProperty("transition");
+      if (!fv) { add("focus", el, "браузер не дав :focus-visible (натисни клавішу в сторінці перед аудитом)"); continue; }
+      if (now === was) { add("focus", el, "фокус не видно"); continue; }
+      // the ring is seen only if it stands out from what lies round it (WCAG 1.4.11: 3:1)
+      if (ring) {
+        const bg = bgOf(el.parentElement);
+        const c = bg && contrast(rgba(ring), bg);
+        if (c && c < 3) add("focus", el, `рамка фокуса ледь видна (${c.toFixed(1)}:1 до тла)`);
+      }
+    }
+    // a control the mouse presses but Tab never reaches (a div / span with an action, no tabindex)
+    for (const el of targets) if (!el.matches(FOCUSABLE) && el.matches("[data-action], [role=button]") && !exempt(el, "focus")) add("focus", el, "клавіатура не досягає (немає tabindex)");
+    try { before?.focus?.({ preventScroll: true }); } catch { /* the old focus is gone */ }
+    const t = where ? ` (${where})` : "";
+    const res = (rule, label) => {
+      const list = found[rule], fail = V6.enforce[rule];
+      if (!list.length) return; // a pass says nothing: the same window is measured many times
+      this.results.push({ scenario: this.scenario, rule: `${label}${t}`, ok: !list.length || !fail, warn: !!list.length && !fail, detail: list.length ? `${list.length}: ${list.slice(0, 5).join("; ")}` : "" });
+    };
+    res("font", `V6: текст не дрібніший за ${V6.font} px`);
+    res("target", `V6: ціль кліку не менша за ${V6.target}×${V6.target} px`);
+    res("focus", "V6: видимий фокус клавіатури");
+  }
+
   /** The three layout rules and the text rule at once */
   layout(root, where = "") {
+    this.access(root, where);
     const t = where ? ` (${where})` : "";
     this.noSpill(root, `елементи не вилазять за свій блок${t}`);
     this.noOverlap(root, `елементи не налазять одне на одного${t}`);
@@ -346,6 +417,61 @@ class Audit {
     this.noCut(root, "button, label, span, b, small, h1, h2, h3, h4, a, .pust-chip, li");
   }
 }
+
+/* ---------- colours ---------- */
+const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+const contrast = (x, y) => { const a = lum(x), b = lum(y); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+// «rgb(…)» / «rgba(…)», or «color(srgb r g b / a)» (what color-mix() computes to) with 0…1 channels
+const rgba = (s) => {
+  const n = (String(s).match(/[\d.]+/g) || [0, 0, 0, 0]).map(Number);
+  if (/^color\(srgb/.test(s)) return [n[0] * 255, n[1] * 255, n[2] * 255, n[3] ?? 1];
+  return n;
+};
+/** The nearest opaque background colour, or null under a gradient or texture (can't judge) */
+const bgOf = (el) => {
+  for (let e = el; e; e = e.parentElement) {
+    const cs = getComputedStyle(e);
+    if (cs.backgroundImage && cs.backgroundImage !== "none") return null;
+    const c = rgba(cs.backgroundColor);
+    if ((c[3] ?? 1) >= 0.9) return c;
+  }
+  return null;
+};
+
+/* ---------- V6 limits (2026-11-21) ---------- */
+/** The limits, whether each fails the audit yet (the author's decision decides), and the exceptions he kept */
+const V6 = {
+  font: 12, target: 24,
+  // the author's decision (Asking, 2026-11-21): all three limits fail the audit; the dense places keep their buttons
+  enforce: { font: true, target: true, focus: true },
+  exempt: [
+    // the dense places the author laid out to the pixel on 17–18.11: text 12 px there too, the buttons keep their size
+    { sel: ".pust-compact", rules: ["target"], why: "компактні аркуші 460 px: кнопки як є (author, 2026-11-21)" },
+    { sel: ".pust-qpips, .pust-pips", rules: ["target"], why: "набої й запас ходу: ряди крапок (author, 2026-11-21)" },
+    { sel: ".pust-imp-ctrl", rules: ["target"], why: "квадратики рівнів покращень каравану (author, 2026-11-21)" },
+    { sel: ".pust-sitchip, .pust-sinv, .pust-en-inv, .pust-en-chip, .pust-bz-inv, .pust-bz-chip, .pust-place-chip", rules: ["target"], why: "−/+ і × на чипах аспектів (author, 2026-11-21)" },
+    // Foundry's own controls, not the system's
+    { sel: ".window-header", rules: ["target", "focus"], why: "кнопки заголовка вікна Foundry" },
+    { sel: ".message-metadata", rules: ["target", "focus"], why: "× видалення повідомлення, Foundry" },
+    { sel: "menu, .editor-menu", rules: ["target", "focus"], why: "панель редактора тексту Foundry (ProseMirror)" },
+  ],
+};
+const TARGET = "button, a[href], summary, select, [role=button], [data-action], input[type=checkbox], input[type=radio], input[type=range], .pust-chip[data-action]";
+const FOCUSABLE = "button, a[href], summary, select, input, [tabindex]:not([tabindex='-1'])";
+/** The window an element is in: its title, or the panel's id / class */
+const winOf = (el) => {
+  const app = el.closest(".application, .app, .window-app, #pust-mapdock, #pust-check-dock, #chat, #sidebar, .pust-bz-edit");
+  if (!app) return el.id || String(el.className).split(" ")[0] || el.tagName.toLowerCase();
+  const title = app.querySelector(":scope > .window-header .window-title, :scope > header .window-title")?.innerText?.trim();
+  return title || app.id || String(app.className).split(" ").filter(Boolean).slice(0, 2).join(".");
+};
+/** A short CSS path to find the element in the code: tag.class of it and of two ancestors */
+const selOf = (el) => {
+  const one = (e) => e.tagName.toLowerCase() + [...e.classList].filter((c) => !/^(active|open|on|hover)$/.test(c)).slice(0, 2).map((c) => "." + c).join("");
+  const out = [];
+  for (let e = el, i = 0; e && i < 3 && e !== document.body; e = e.parentElement, i++) out.unshift(one(e));
+  return out.join(" > ");
+};
 
 /* ---------- layout helpers ---------- */
 /** The nearest ancestor that scrolls (overflow auto / scroll), or null */
@@ -425,8 +551,9 @@ const SCENARIOS = {
     a.noRawKeys(dock);
     if (map && !map.classList.contains("folded")) {
       a.column([...map.querySelectorAll(":scope > .pust-md-panel")], { gap: 6, label: "панелі «Мапа Пустки»" });
-      const btns = [...map.querySelectorAll(".pust-md-map [data-mapdock]")];
+      const btns = [...map.querySelectorAll(".pust-md-map [data-mapdock]:not(.pust-md-layer)")]; // the layer pills are a row of their own below (author, 2026-11-22)
       if (btns.length) a.row(btns, { equalWidth: true, label: "кнопки «Мапи Пустки» в один ряд" });
+      a.row([...map.querySelectorAll(".pust-md-map .pust-md-layer")], { equalWidth: true, label: "шари «Мапи Пустки»: «Фракції» і «Шляхи» одної ширини" });
     }
     // default places (author, 2026-11-14): «Мапа Пустки» on the left, «Лічильники» under it, «Кістки» under them (6 px);
     // «Битва» top right next to the sidebar, «Лічильники» and «Кістки» then on the left by themselves
@@ -538,6 +665,17 @@ const SCENARIOS = {
     if (!was) { await mod.toggleDockCheck(unit.getBoundingClientRect()); await sleep(400); }
   },
 
+  /** Chat cards (V6, 2026-11-21): the last 30 messages of the chat tab, read only — text size, targets, focus */
+  async chatCards(a) {
+    if (ui.sidebar?.tabGroups?.primary !== "chat") { ui.sidebar?.changeTab?.("chat", "primary"); await sleep(400); }
+    const log = document.querySelector("#chat .chat-log, #chat-log");
+    if (!log || !shown(log)) return a.skip("картки чату", "чат не видно");
+    const msgs = [...log.querySelectorAll(".chat-message")].slice(-30);
+    if (!msgs.length) return a.skip("картки чату", "чат порожній");
+    for (const m of msgs) { m.scrollIntoView({ block: "nearest" }); a.access(m, "картки чату"); }
+    log.scrollTop = log.scrollHeight;
+  },
+
   /** The Actors directory's header buttons */
   async actorsHeader(a) {
     const h = document.querySelector("#actors .header-actions");
@@ -637,13 +775,153 @@ const SCENARIOS = {
 
   /** «Зробити перевірку» open after a hit: the weapon chips and «Кинути й завдати» (author, 2026-11-17; nothing is rolled here) */
   async checkPanel(a) {
+    // the row under a result: «Щасливець» / «Бісова штуковина!» left of «Інша перевірка» (author, 2026-11-21, mockup 3;
+    // at 460 px it overflowed once: the paper button rule overrode their size); П1 2026-11-22: the roll button hidden there
+    const bar = document.querySelector(".pust-roller.pust-folded .pust-rgo-bar");
+    if (bar) {
+      const btns = [...bar.querySelectorAll("button")].filter((b) => !b.hidden);
+      a.ok("під результатом «Інша перевірка», а не «Кинути перевірку»", !!bar.querySelector(".pust-other") && !btns.some((b) => b.matches(".rgo")));
+      // П1 1.2: the hint on the left stays left of the buttons
+      const hint = bar.querySelector(".pust-intent"), first = btns[0];
+      if (hint && first && R(hint).width) a.ok("текст ліворуч не заходить під кнопки", R(hint).right <= R(first).left + 1 && hint.scrollWidth <= hint.clientWidth + 1, `${Math.round(R(hint).right)} / ${Math.round(R(first).left)}`);
+      a.onScreen(btns);
+      a.noCut(bar, "button");
+      a.readable(bar, "button");
+      a.layout(bar);
+      const hs = btns.map((b) => Math.round(R(b).height));
+      a.ok("кнопки під результатом однієї висоти", new Set(hs).size === 1, hs.join("/"));
+      const br = R(bar);
+      a.ok("кнопки під результатом у межах ряду", btns.every((b) => R(b).left >= br.left - 1 && R(b).right <= br.right + 1), `${Math.round(br.width)} px`);
+      const perks = [...bar.querySelectorAll(".pust-perkre")];
+      if (perks.length) a.ok("текст кнопок перків уміщається", perks.every((b) => b.scrollHeight <= b.clientHeight + 2 && b.scrollWidth <= b.clientWidth + 1),
+        perks.map((b) => `${b.scrollWidth}×${b.scrollHeight} у ${b.clientWidth}×${b.clientHeight}`).join(", "));
+    }
     const el = document.querySelector(".pust-roller .rdmg");
-    if (!el) return a.skip("блок «Шкода» у перевірці", "відкрий «Зробити перевірку» й влуч атакою");
+    if (!el) return bar ? undefined : a.skip("блок «Шкода» у перевірці", "відкрий «Зробити перевірку» й влуч атакою");
     el.scrollIntoView({ block: "nearest" }); // the panel scrolls inside: bring the block into view first
     await sleep(200);
     a.onScreen([el]);
     a.noCut(el, "button, span, b");
     a.readable(el, "button, span, b");
+    // A8 (author, 2026-11-21): the split's rows under a damage roll that waits for them — the layout rules too
+    const box = el.querySelector(".pust-split-box");
+    if (box) { box.scrollIntoView({ block: "nearest" }); await sleep(200); a.layout(box); a.readable(box, "button, span, b, h5, p"); }
+  },
+
+  /** «Погода й час дня» (author, 2026-11-19; module/applications/weather-panel.mjs): the GM's popover opened beside its tool,
+   *  read at its one width, closed again if it was closed; nothing is chosen */
+  async weather(a) {
+    if (!game.user.isGM) return a.skip("погода й час дня", "лише Доглядач");
+    const btn = document.querySelector('#scene-controls-tools [data-tool="pustWeather"]');
+    a.ok("кнопка «Погода й час дня» остання в групі", btn && !btn.closest("li")?.nextElementSibling, name(btn));
+    const P = await import(`/systems/${game.system.id}/module/applications/weather-panel.mjs`);
+    const was = !!foundry.applications.instances.get("pust-weather")?.rendered;
+    if (!was) { await P.toggleWeatherPanel(true); await sleep(900); }
+    const app = foundry.applications.instances.get("pust-weather");
+    try {
+      const el = app.element;
+      a.onScreen([el]);
+      a.noCut(el, "button, span, h3, h4, p");
+      a.noRawKeys(el);
+      a.readable(el, "button, span, h3, h4, p");
+      const rows = [".pust-wx-grid", ".pust-wx-times"].flatMap((g) => [...el.querySelectorAll(g)].map((x) => [...x.children].map((c) => Math.round(R(c).height))));
+      a.ok("картки одного блока однакової висоти", rows.every((r) => new Set(r).size === 1), rows.map((r) => [...new Set(r)].join("/")).join(" · "));
+      a.scenario = `погода й час дня, ${Math.round(R(el).width)} px`; // a popover of one width
+      a.layout(el);
+      const btnR = btn && R(btn), elR = R(el);
+      a.ok("віконце поруч із кнопкою", !btnR || (elR.left >= btnR.right - PX && elR.left - btnR.right <= 16), btnR ? `кнопка ${Math.round(btnR.right)}, віконце ${Math.round(elR.left)}` : "");
+    } finally { if (!was) await app.close(); }
+  },
+
+  /** «Кінець сцени» / «Новий день» / «Кінець сесії» in the GM's top dock (author, 2026-11-21, mockup В): a second row under
+   *  the plates, left-aligned with them, nothing cut or covered (the right panels, the sidebar), and each button keeps its size
+   *  when it turns red with «Точно?» (the class is set and taken off here; nothing is pressed or ended). Run it at 1366 px,
+   *  the screen floor, too */
+  async endRow(a) {
+    if (!game.user.isGM) return a.skip("ряд кінця сцени", "лише Доглядач");
+    const row = document.querySelector(".wastelanders-terminal-dock > .wastelanders-end-row");
+    if (!row || !shown(row.querySelector(".pust-end-box"))) return a.skip("ряд кінця сцени", "немає верхнього доку");
+    const btns = [...row.querySelectorAll(".pust-end-btn")];
+    const plate = document.querySelector(".wastelanders-terminal-open"), moves = document.querySelector(".wastelanders-moves-open");
+    a.ok("три кнопки", btns.length === 3, String(btns.length));
+    a.row(btns, { label: "кнопки кінця сцени" }); // as wide as their text (author, 2026-11-21), one row and one height
+    const dock = row.closest(".wastelanders-terminal-dock"), top = dock.classList.contains("pust-end-top");
+    const ftEl = row.querySelector(".pust-end-ft");
+    // the strip shows only on hover / keyboard focus (author, 2026-11-21): hidden now (the audit's pointer is elsewhere)
+    const forced = document.body.classList.contains("pust-end-show");
+    if (!forced && !row.matches(":hover") && !row.contains(document.activeElement)) a.ok("смужка схована без курсора", getComputedStyle(ftEl).visibility === "hidden", getComputedStyle(ftEl).visibility);
+    document.body.classList.add("pust-end-show"); // measured shown
+    try {
+      const box = R(row.querySelector(".pust-end-box")), strip = R(ftEl);
+      const all = { left: box.left, top: box.top, right: Math.max(box.right, strip.right), bottom: strip.bottom };
+      // in the top row right of «Ходи» when it fits there, else under the plates (author, 2026-11-21)
+      if (top) {
+        a.ok("угорі: праворуч від «Ходи», 8 px", Math.abs(box.left - R(moves).right - 8) <= 1.5, `${Math.round(box.left)} / ${Math.round(R(moves).right)}`);
+        a.ok("угорі: посередині ряду плашок", Math.abs((box.top + box.bottom) / 2 - (R(plate).top + R(plate).bottom) / 2) <= 1.5, `${Math.round(box.top)}–${Math.round(box.bottom)} / ${Math.round(R(plate).top)}–${Math.round(R(plate).bottom)}`);
+      } else {
+        a.ok("знизу: ліворуч у лінію з «Термінал»", Math.abs(box.left - R(plate).left) <= 1.5, `${Math.round(box.left)} / ${Math.round(R(plate).left)}`);
+        a.ok("знизу: під плашками", box.top >= Math.max(R(plate).bottom, R(moves).bottom) - PX, `${Math.round(box.top)} / ${Math.round(R(plate).bottom)}`);
+      }
+      // the right place: below only when the top row would run over a panel
+      const { endRowPlace } = await import(`/systems/${game.system.id}/module/helpers/end-row-place.mjs`);
+      const panelsR = [...document.querySelectorAll("#pust-mapdock .pust-md-unit, #sidebar")].filter(shown).map(R);
+      const bb = R(row.querySelector(".pust-end-btns"));
+      const want = endRowPlace({ right: R(moves).right, top: R(plate).top, bottom: R(plate).bottom }, { width: all.right - all.left, btnHeight: bb.height, height: all.bottom - all.top }, panelsR);
+      a.ok("ряд угорі, коли там є місце; знизу лише коли угорі налазить на панель", want === (top ? "top" : "below"), `${top ? "угорі" : "знизу"}, мало б ${want === "top" ? "угорі" : "знизу"}`);
+      a.ok("смужка під кнопками, не вужча за них", Math.abs(strip.left - R(btns[0]).left) <= PX && strip.right >= R(btns[2]).right - PX && strip.top >= bb.bottom - PX, `${Math.round(strip.left)}–${Math.round(strip.right)}, ${Math.round(strip.top)}`);
+      a.onScreen([row.querySelector(".pust-end-box"), ftEl]);
+      a.noCut(row, "button, label, span, b");
+      a.noRawKeys(row);
+      a.readable(row, "span, b, label");
+      a.noOverlap(row);
+      // nothing of Foundry's or ours on the right covers it, the strip included (the «Битва» / «Сцена» panel, the sidebar)
+      var hit = (r) => [...document.querySelectorAll("#pust-mapdock .pust-md-unit, #pust-mapdock .pust-md-panel, #sidebar")].filter(shown)
+        .filter((p) => { const q = R(p); return q.left < r.right - PX && q.right > r.left + PX && q.top < r.bottom - PX && q.bottom > r.top + PX; }).map(name);
+      // narrower than 1366 px the right panel may lie under it: runAudit checks nothing there (SCREEN_FLOOR)
+      const covered = hit(all);
+      a.ok("не перетинається з панелями праворуч", !covered.length, covered.join("; "));
+    } finally { if (!forced) document.body.classList.remove("pust-end-show"); }
+    // the plates above it too (2026-11-21: «Ходи Доглядача» ran over «Битва» at 1366 px with the sidebar open)
+    const platesHit = [plate, moves].filter(shown).flatMap((p) => hit(R(p)));
+    a.ok("плашки «Термінал» і «Ходи» не перетинаються з панелями праворуч", !platesHit.length, platesHit.join("; "));
+    // one colour rule for both plates (author, 2026-11-21): red while closed, black while open (the class `.on`)
+    const tone = (p) => { const c = (getComputedStyle(p).backgroundColor.match(/\d+/g) ?? []).map(Number); return c[0] > 120 && c[0] > 2 * c[1] ? "red" : c[0] < 40 && c[1] < 40 && c[2] < 40 ? "black" : `rgb(${c.slice(0, 3)})`; };
+    for (const p of [plate, moves].filter(shown)) a.ok(`«${p.innerText.trim()}»: ${p.classList.contains("on") ? "відкрито — чорна" : "закрито — червона"}`, tone(p) === (p.classList.contains("on") ? "black" : "red"), tone(p));
+    // both states of each button: one size, the red label fits
+    const was = btns.map((b) => b.classList.contains("armed"));
+    try {
+      for (const b of btns) {
+        b.classList.remove("armed");
+        const r0 = R(b);
+        b.classList.add("armed");
+        const r1 = R(b);
+        a.ok(`«${b.querySelector(".pust-end-l span").textContent}»: той самий розмір із «Точно?»`, Math.abs(r0.width - r1.width) <= 0.5 && Math.abs(r0.height - r1.height) <= 0.5 && Math.abs(r0.left - r1.left) <= 0.5 && Math.abs(r0.top - r1.top) <= 0.5,
+          `${r0.width.toFixed(1)}×${r0.height.toFixed(1)} → ${r1.width.toFixed(1)}×${r1.height.toFixed(1)}`);
+        a.ok(`«${b.querySelector(".pust-end-l span").textContent}»: «Точно?» видно й не обрізано`, shown(b.querySelector(".pust-end-w")) && b.querySelector(".pust-end-w").scrollWidth <= b.querySelector(".pust-end-w").clientWidth + 1, "");
+        a.ok(`«${b.querySelector(".pust-end-l span").textContent}»: напис і число вміщаються`, b.querySelector(".pust-end-l").scrollWidth <= b.querySelector(".pust-end-l").clientWidth + 1, `${b.querySelector(".pust-end-l").scrollWidth} / ${b.querySelector(".pust-end-l").clientWidth}`);
+        b.classList.remove("armed");
+      }
+    } finally { btns.forEach((b, i) => b.classList.toggle("armed", was[i])); }
+  },
+
+  /** «Кінець сесії: ОД» (A10, author 2026-11-21; module/applications/session-xp.mjs): opened if it was closed, read at its
+   *  narrowest (460) and usual width, closed again; nothing is ticked or ended */
+  async sessionXp(a) {
+    if (!game.user.isGM) return a.skip("кінець сесії: ОД", "лише Доглядач");
+    const P = await import(`/systems/${game.system.id}/module/applications/session-xp.mjs`);
+    const was = !!foundry.applications.instances.get("pust-session-xp")?.rendered;
+    if (!was) { await P.openSessionXp({}); await sleep(700); }
+    const app = foundry.applications.instances.get("pust-session-xp");
+    try {
+      const el = app.element;
+      a.onScreen([el]);
+      a.noCut(el, "button, label, h3, span, b, i, p");
+      a.noRawKeys(el);
+      a.readable(el, "button, label, h3, span, b, i, p");
+      const btns = [...el.querySelectorAll(".pust-sx-btns > button")].map((b) => Math.round(R(b).height));
+      a.ok("кнопки внизу однакової висоти", new Set(btns).size === 1, btns.join("/"));
+      await layoutAt(a, app, "кінець сесії: ОД");
+    } finally { if (!was) await app.close(); }
   },
 
   /** «Новий супротивник» (Create Actor → Супротивник, module/applications/enemy-create.mjs), when it is open */
@@ -898,7 +1176,15 @@ const SCENARIOS = {
         const src = steps[i], sel = src.selector;
         if (!wantStep(t.id, src.id)) continue;
         try { await tour.progress(i); } catch (err) { a.ok(`${t.id}.${src.id}: крок показано`, false, String(err).slice(0, 160)); continue; }
-        await sleep(200);
+        // the step settles: a sheet opened for it cuts its content, a fold scrolls into view, and the tour redraws the step
+        // where its element now is (every 250 ms; a re-rendered sheet settles its height up to ~0.6 s later). Measured at 200 ms these were flaky (2026-11-21: en-details, gm-char.perks,
+        // gm-battle.zone between runs), so wait until the highlight stands still, at most 1.5 s
+        { let was = "", same = 0;
+          for (let k = 0; k < 15 && same < 2; k++) {
+            await sleep(100);
+            const now = tour.fadeElement?.style.cssText ?? "-";
+            same = now === was && k >= 6 ? same + 1 : 0; was = now;
+          } }
         // a hidden page draws no tooltip and runs no animation frames: nothing it shows can be judged
         if (document.hidden) { a.skip(`${t.id}.${src.id}`, "сторінка прихована (вкладка не на виду) — прогнати ще раз"); continue; }
         // in the middle = the element wasn't found; «aside» = found, but the card had no room beside it
@@ -924,7 +1210,15 @@ const SCENARIOS = {
           const target = tour.targetElement?.classList?.contains("pust-tour-proxy") ? tour.targetElement : parts[0]; // a `union` step lights a box over all its parts
           const fade = tour.fadeElement, pad = foundry.nue.Tour.HIGHLIGHT_PADDING / 2;
           if (target && fade) {
-            const e = target.getBoundingClientRect(), f = fade.getBoundingClientRect();
+            // the part the element's scrolling windows show (pust-tour's visibleBox): a fold taller than its sheet is lit to the
+            // sheet's edge (2026-11-21); a window hanging past the screen still fails «у вікні»
+            const { visibleBox } = await import(`/systems/${game.system.id}/module/tours/pust-tour.mjs`);
+            // the highlight's own box from its style: Foundry moves it with a 0.3 s transition, and a pane that draws no frames
+            // (hidden) keeps returning the transition's first value (2026-11-21)
+            const fs = fade.style, fr = fade.getBoundingClientRect();
+            const f = fs.width ? { left: parseFloat(fs.left), top: parseFloat(fs.top), width: parseFloat(fs.width), height: parseFloat(fs.height) } : fr;
+            f.right = f.left + f.width; f.bottom = f.top + f.height;
+            const e = visibleBox(target);
             const off = Math.max(Math.abs(f.left + pad - e.left), Math.abs(f.top + pad - e.top), Math.abs(f.right - pad - e.right), Math.abs(f.bottom - pad - e.bottom));
             a.ok(`${t.id}.${src.id}: підсвітка на елементі й свого розміру`, off <= 2,
               `підсвітка ${Math.round(f.left + pad)},${Math.round(f.top + pad)} ${Math.round(f.width - 2 * pad)}×${Math.round(f.height - 2 * pad)}, елемент ${Math.round(e.left)},${Math.round(e.top)} ${Math.round(e.width)}×${Math.round(e.height)}`);
@@ -954,8 +1248,26 @@ const SCENARIOS = {
   },
 };
 
-/** Run the scenarios (all, or the named ones); logs a table and returns { failures, report } */
-export async function runAudit(only = null, { extra = {} } = {}) {
+/**
+ * The screen floor (author, 2026-11-21; docs/ui-rules.md §4): Foundry's own minimum screen, 1366×768
+ * (`ClientIssues.#MIN_SCREEN_RESOLUTION`). A browser window below it is not checked: overlaps and cuts seen only there are
+ * not failures, so the audit runs nothing and says the window is too small.
+ */
+export const SCREEN_FLOOR = Object.freeze({ width: 1366, height: 768 });
+/** null when a window of w×h may be audited, else why not */
+export function belowFloor(w, h, floor = SCREEN_FLOOR) {
+  if (w >= floor.width && h >= floor.height) return null;
+  return `вікно ${w}×${h} замале: аудит перевіряє лише від ${floor.width}×${floor.height} (найменший екран Foundry); нічого не перевірено`;
+}
+
+/** Run the scenarios (all, or the named ones); logs a table and returns { failures, report }; below the screen floor
+ *  `{ failures: 0, tooSmall: "why", report: [] }` (`floor` only to try the rule on another size) */
+export async function runAudit(only = null, { extra = {}, floor = SCREEN_FLOOR } = {}) {
+  const small = belowFloor(innerWidth, innerHeight, floor);
+  if (small) {
+    console.warn(`Пустельники | аудит: ${small}`);
+    return { failures: 0, warnings: 0, tooSmall: small, checked: 0, report: [], v6: [] };
+  }
   const all = { ...SCENARIOS, ...extra };
   const a = new Audit();
   for (const [key, fn] of Object.entries(all)) {
@@ -964,9 +1276,9 @@ export async function runAudit(only = null, { extra = {} } = {}) {
     try { await fn(a); } catch (err) { a.ok("сценарій без помилок", false, String(err?.stack || err).slice(0, 300)); }
   }
   const failures = a.results.filter((r) => !r.ok);
-  console.table(a.results.map((r) => ({ "": r.ok ? (r.skipped ? "–" : "✓") : "✗", сценарій: r.scenario, правило: r.rule, деталі: r.detail })));
-  return { failures: failures.length, report: a.results };
+  console.table(a.results.map((r) => ({ "": r.ok ? (r.skipped ? "–" : r.warn ? "⚠" : "✓") : "✗", сценарій: r.scenario, правило: r.rule, деталі: r.detail })));
+  return { failures: failures.length, warnings: a.results.filter((r) => r.warn).length, tooSmall: null, checked: a.results.length, report: a.results, v6: a.v6 ?? [] };
 }
 
 /** For scenarios added by other modules of the audit (battle map, enemy sheet) */
-export { Audit, SCENARIOS, R, shown, sleep };
+export { Audit, SCENARIOS, R, shown, sleep, V6 };

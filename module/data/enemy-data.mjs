@@ -22,6 +22,8 @@ export default class EnemyData extends foundry.abstract.TypeDataModel {
       flags: new f.SchemaField({
         electricVuln: new f.BooleanField(), halfPartial: new f.BooleanField(), noKnockdown: new f.BooleanField(),
         noStun: new f.BooleanField(), noDisarm: new f.BooleanField(), kamikaze: new f.BooleanField(), psyVuln: new f.BooleanField(),
+        // «Неживий» (author, 2026-11-20): null — by the book's name (rules/states.mjs enemyNonliving), true / false — the GM's tick
+        nonliving: new f.BooleanField({ nullable: true, initial: null }),
       }),
       attacks: new f.ArrayField(new f.SchemaField({
         name: new f.StringField({ initial: "" }), dice: new f.StringField({ initial: "" }), type: new f.StringField({ initial: "phys" }),
@@ -29,7 +31,7 @@ export default class EnemyData extends foundry.abstract.TypeDataModel {
       })),
       baseAspects: new f.ArrayField(aspect()),
       aspects: new f.ArrayField(aspect()),
-      moves: new f.ArrayField(new f.SchemaField({ n: new f.StringField({ initial: "" }), t: new f.StringField({ initial: "" }), used: new f.BooleanField() })),
+      moves: new f.ArrayField(new f.SchemaField({ n: new f.StringField({ initial: "" }), t: new f.StringField({ initial: "" }), used: new f.BooleanField(), spent: new f.NumberField({ initial: 0, min: 0, integer: true }) })),
       notes: new f.StringField({ initial: "" }),
       reveal: new f.BooleanField(),
       orig: new f.ObjectField({ required: false, nullable: true, initial: null }),

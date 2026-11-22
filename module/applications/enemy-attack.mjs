@@ -6,21 +6,24 @@
  * attack's dice into its damage panel; here the roll is made right away.
  */
 import { postDamageCard } from "./check-panel.mjs";
-import { attackDice } from "../rules/enemy-model.mjs";
+import { attackDice, bonusFrom, andList } from "../rules/enemy-model.mjs";
+import { attackStates } from "../rules/move-spec.mjs";
 import { diceLabel, attackExtra, attackHit } from "../rules/battle.mjs";
-import { TYPE_EFFECTS } from "../rules/damage-types.mjs";
+import { TYPE_EFFECTS, empOnly } from "../rules/damage-types.mjs";
 
 export { chatType, battleType } from "../rules/battle.mjs";
 import { chatType } from "../rules/battle.mjs";
 import { notify } from "../helpers/notify.mjs";
 import { waitDice } from "../helpers/dice-rolls.mjs";
 
-export async function rollEnemyAttack(actor, i, { token = null } = {}) {
+export async function rollEnemyAttack(actor, i, { token = null, plus = "" } = {}) {
   const sys = actor.system;
+  const buffs = actor.getFlag?.(game.system.id, "buffs") ?? null; // «Ave!», «Децимація» (move-spec.mjs buffList)
   const a = sys.attacks?.[i];
   if (!a) return null;
   if (a.ammoMax > 0 && a.ammo <= 0) return notify.warn(`«${a.name}»: заряди скінчилися.`);
-  const dice = attackDice(sys, i) || a.dice;
+  // `plus`: a die on top, «+1d6» of «Прицільний постріл» (author, 2026-11-20)
+  const dice = (attackDice(sys, i, buffs) || a.dice) + (plus ? `+${plus}` : "");
   let roll;
   try { roll = await new Roll(String(dice).replace(/^d/i, "1d")).evaluate(); }
   catch (_) { return notify.warn(`Не вдалося розібрати кістки атаки «${a.name}»: ${dice}`); }
@@ -30,8 +33,13 @@ export async function rollEnemyAttack(actor, i, { token = null } = {}) {
   else if (a.ignoreN > 0) fx.push(`Ігнорує ${a.ignoreN} броні.`);
   if (TYPE_EFFECTS[wt]) fx.push(TYPE_EFFECTS[wt]);
   if (/зон[іиу]/i.test(a.note)) fx.push("Влучає по всіх в одній зоні.");
-  const bonus = dice !== a.dice ? dice.slice(a.dice.length) : "";
-  if (bonus) fx.push(`${bonus} шкоди: ${sys.flags?.kamikaze ? "Камікадзе" : ""}${sys.flags?.kamikaze && bonus === "+4" ? " і " : ""}${bonus === "+4" || !sys.flags?.kamikaze ? "Психо" : ""}.`);
+  const own = attackDice(sys, i, buffs) || a.dice;
+  const bonus = own !== a.dice ? own.slice(a.dice.length) : "";
+  if (bonus) fx.push(`${bonus} шкоди: ${andList(bonusFrom(sys, i, buffs))}.`);
+  if (plus) fx.push(`+${plus} шкоди: вибраний ефект.`);
+  // «під час атаки самознищується» (Бум-око; author, 2026-11-20): the attack is its last
+  const boom = /самознищу/i.test(a.note ?? "");
+  if (boom) fx.push("Під час атаки самознищується.");
   // the charge left isn't written on the chat card (author, 2026-11-15): players mustn't count the enemy's ammo
   if (a.ammoMax > 0) {
     const attacks = sys.attacks.map((x, k) => (k === i ? { ...x, ammo: Math.max(0, x.ammo - 1) } : x));
@@ -53,7 +61,11 @@ export async function rollEnemyAttack(actor, i, { token = null } = {}) {
     parts: hit.card, fx,
     speaker: token ? ChatMessage.getSpeaker({ token }) : null, rolls: exRoll ? [roll, exRoll] : [roll],
   });
+  if (boom && Number(sys.hp?.value) > 0) await actor.update({ "system.hp.value": 0 });
   await waitDice(msg); // «Завдати цілям» deals the damage once the 3D dice have landed (author, 2026-11-19)
-  const data = { total, dice: hit.dice, type: wt, ignoreArmor: !!a.ignoreArmor, ignoreN: a.ignoreN || 0, ...(hit.parts ? { parts: hit.parts } : {}) };
-  return { total, head: `${token?.name || actor.name}: ${a.name}`, data };
+  // the states of the note («підпалює ціль», «спричиняє кровотечу»): on those it wounds (apply-damage.mjs; author, 2026-11-20)
+  const onHit = attackStates(a.note);
+  const data = { total, dice: hit.dice, type: wt, ignoreArmor: !!a.ignoreArmor, ignoreN: a.ignoreN || 0, ...(hit.parts ? { parts: hit.parts } : {}), ...(onHit.length ? { onHit } : {}), ...(empOnly(a.name, a.note) ? { empOnly: true } : {}) };
+  // `msg`: the attack's card, where the waiting targets' avoidance goes (pending-attack.mjs; author, 2026-11-20)
+  return { total, head: `${token?.name || actor.name}: ${a.name}`, data, msg };
 }

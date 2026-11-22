@@ -88,6 +88,8 @@ const FORBIDDEN = [
   ["[Пп]апк[а-яіїєґ]*", "тека"],
   ["[Оо]чк[а-яіїєґ]* життя", "очки здоров'я (ОЗ)"],
 ];
+// «карта» for playing cards, where the sources have it (the terminal's travel events and the «Мапа Пустки» aspects)
+const PLAYING_CARDS = /(грають|гри|програв) [ув] карти|[Вв]орожка з картами|картах Таро|по одній карті|витягне карту/;
 // a made-up attribute name is caught where it names an attribute (the maps and pairs below): «спритність» and
 // «передбачливість» are ordinary words elsewhere
 // attribute codes mapped to a name in the code: { SL: "…", SPR: '…' } — the name must be the wiki's full or short one
@@ -109,6 +111,30 @@ for (const f of files) {
   for (const [re, instead] of FORBIDDEN) {
     for (const m of text.matchAll(word(re))) ok(false, `${where(rel, text, m.index)}: «${m[0]}» — write «${instead}»`);
   }
+  // «мапа», never «карта», for a map (author, 2026-11-21): playing cards keep «карти» (the phrases below); «картка» is
+  // another word and doesn't match
+  for (const m of text.matchAll(word("[Кк]арт(?:а|и|і|у|ою|ам|ами|ах)"))) {
+    const around = text.slice(Math.max(0, m.index - 30), m.index + m[0].length + 10);
+    if (!PLAYING_CARDS.test(around)) ok(false, `${where(rel, text, m.index)}: «${m[0]}» — write «мапа» (for playing cards, add the phrase to PLAYING_CARDS)`);
+  }
+  // «кубик» in what Foundry shows (author, 2026-11-20, F8 of Fable's analysis): the wiki says «кістка». Only the system's own
+  // files and not their comments: the HTML tools keep their word, and the code's notes may name the HTML sheet's «Просто кубики»
+  if (!rel.startsWith("..") && !rel.startsWith("tests/")) {
+    text.split("\n").forEach((line, i) => {
+      if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;
+      const code = line.replace(/\s\/\/\s.*$/, "");
+      for (const m of code.matchAll(word("[Кк]убик[а-яіїєґ]*"))) ok(false, `${rel}:${i + 1}: «${m[0]}» — write «кістка»`);
+    });
+  }
+}
+
+/* ---------- the states enemies' moves put on (author, 2026-11-20: the wiki's words he proofread, always masculine) ---------- */
+{
+  const { STATE_ASPECTS } = await import("../module/rules/states.mjs");
+  const { QUICK_ASPECTS } = await import("../module/rules/battle.mjs");
+  const APPROVED = ["Збитий з ніг", "Приголомшений", "Без зброї", "Палає", "Захоплений", "Отруєний", "Кровотеча", "Засліплений", "На прицілі", "−2 до фізичної броні", "−2 до наступної перевірки", "Притиснутий вогнем"];
+  ok(JSON.stringify(STATE_ASPECTS) === JSON.stringify(APPROVED), `states' aspects = the author's list: ${JSON.stringify(STATE_ASPECTS)}`);
+  for (const [, t] of QUICK_ASPECTS) ok(STATE_ASPECTS.includes(t), `quick aspect «${t}» is a state's aspect`);
 }
 
 console.log(failures ? `FAIL (${failures})` : `OK (${checks} checks, ${files.length} files)`);

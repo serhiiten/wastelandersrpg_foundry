@@ -7,15 +7,17 @@
 import { addHelpButton } from "../tours/help-button.mjs";
 import { generatorRecord } from "../applications/terminal-battle.mjs";
 import {
-  CAT_GUIDE, CAT_LABEL, DICE_RE, normDice, QUICK_ASPECTS, psyMoveIdx, buildAttackPresets, buildMovePresets, atkType, atkIgnoreN, atkIgnores, atkAmmoEx, moveHeal, zoneOfPoint,
+  CAT_GUIDE, CAT_LABEL, DICE_RE, normDice, QUICK_ASPECTS, buildAttackPresets, buildMovePresets, atkType, atkIgnoreN, atkIgnores, atkAmmoEx,
 } from "../rules/battle.mjs";
 import { CATS, resetToBook } from "../rules/enemy-model.mjs";
 import { createTerminal } from "../rules/terminal.mjs";
-import { postChat } from "../applications/chat.mjs";
 import { postEnemyCard } from "../applications/enemy-chat.mjs";
 import { rollEnemyAttack } from "../applications/enemy-attack.mjs";
-import { sendDamage, chosenTokens, warnNoTargets } from "../applications/apply-damage.mjs";
+import { applyDamage, chosenTokens, clearTargets, sendDamage, warnNoTargets } from "../applications/apply-damage.mjs";
+import { splitWaiting, postPending } from "../applications/pending-attack.mjs";
 import { enemyView, diceTextHtml } from "./enemy-view.mjs";
+import { useMove, freeMove, attackWithMenu } from "../applications/enemy-move.mjs";
+import { enemyNames } from "../rules/target-profile.mjs";
 import { postDamageCard, postExprRoll } from "../applications/check-panel.mjs";
 import { chatType } from "../rules/battle.mjs";
 import { notify } from "../helpers/notify.mjs";
@@ -27,23 +29,10 @@ const { ActorSheetV2 } = foundry.applications.sheets;
 let terminal = null;
 const T = () => (terminal ??= createTerminal({ toast: () => {}, icon: () => "" }));
 const CONFIRM_MS = 3000;
-const esc = (s) => foundry.utils.escapeHTML(String(s ?? ""));
 const int = (v, d = 0) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : d; };
 /** An enemy's maximum HP at most (stress test, 2026-11-17; the book's largest is far below) */
 const HP_MAX = 999;
 const clone = (list) => (list ?? []).map((x) => ({ ...x }));
-
-/** A number or a dice expression («5», «2d6+1», «к6») rolled with Foundry's Roll; null when it is not one */
-async function rollExpr(raw) {
-  const t = String(raw ?? "").trim().replace(/\s+/g, "").replace(/к/gi, "d");
-  if (!t) return null;
-  const expr = t.replace(/(^|[+\-])d/gi, "$11d");
-  if (!/^[+\-]?(\d*d\d+|\d+)([+\-](\d*d\d+|\d+))*$/i.test(expr) || !Roll.validate(expr)) return null;
-  const roll = new Roll(expr);
-  await roll.evaluate({ allowInteractive: false }); // async: Foundry 14 refuses evaluateSync for dice (playtest 2026-11-18)
-  const dice = roll.dice.reduce((a, d) => a + d.number, 0);
-  return { total: Math.max(0, roll.total), dice, text: dice ? `${expr} = ${roll.total}` : String(roll.total), expr };
-}
 
 /** The user plays a character with the perk «Спостережливість» (their Player Character, or any character they own) */
 function observantUser() {
@@ -77,6 +66,8 @@ export class WastelandersEnemySheet extends HandlebarsApplicationMixin(ActorShee
       rmAtk: WastelandersEnemySheet.#onRmAtk,
       addMove: WastelandersEnemySheet.#onAddMove,
       rmMove: WastelandersEnemySheet.#onRmMove,
+      useMove: WastelandersEnemySheet.#onUseMove,
+      freeMove: WastelandersEnemySheet.#onFreeMove,
       resetBook: WastelandersEnemySheet.#onResetBook,
       toChat: WastelandersEnemySheet.#onToChat,
     },
@@ -114,7 +105,7 @@ export class WastelandersEnemySheet extends HandlebarsApplicationMixin(ActorShee
     const editable = this.isEditable;
     const gm = game.user.isGM;
     const edit = this.#ui.edit && editable;
-    const v = enemyView(s, { editable, gm });
+    const v = enemyView(s, { editable, gm, lastHit: doc.getFlag(game.system.id, "lastHit") ?? null, buffs: doc.getFlag(game.system.id, "buffs") ?? null, names: enemyNames(doc) });
     Object.assign(context, {
       v, editable, gm, edit, ui: this.#ui, limited: !doc.isOwner,
       // «Спостережливість» (author, 2026-11-17; wiki: «ти завжди знаєш точну кількість ОЗ супротивників і чим вони озброєні»):
@@ -182,7 +173,6 @@ export class WastelandersEnemySheet extends HandlebarsApplicationMixin(ActorShee
     });
     on("textarea[name='notes']", "change", (el) => this.document.update({ "system.notes": el.value }));
     on("select[name='cat']", "change", (el) => this.document.update({ "system.cat": el.value }));
-    on("[data-used]", "change", (el) => this.#setUsed(int(el.dataset.used), el.checked));
     on("[data-af]", "change", (el) => this.#editAttack(int(el.dataset.i), el.dataset.af, el.value));
     on("[data-bf]", "change", (el) => {
       const list = clone(this.document.system.baseAspects);
@@ -271,10 +261,8 @@ export class WastelandersEnemySheet extends HandlebarsApplicationMixin(ActorShee
       return warnNoTargets();
     }
     target.disabled = true;
-    try {
-      const r = await rollEnemyAttack(this.document, i, { token: this.token });
-      if (r?.data) await sendDamage(r.data, { head: r.head });
-    } finally { target.disabled = false; }
+    // the effect menu of «Прицільний постріл» & Co. opens under the button (enemy-move.mjs attackWithMenu; author, 2026-11-20)
+    try { await attackWithMenu(this.document, i, { token: this.token, anchor: target }); } finally { target.disabled = false; }
   }
 
   /* ---------- dice in the moves' and notes' text (author, 2026-11-14) ---------- */
@@ -299,7 +287,14 @@ export class WastelandersEnemySheet extends HandlebarsApplicationMixin(ActorShee
     try {
       const msg = await postDamageCard(this.document, { head: `${name}: ${src} (${expr})`, wt, total, parts: [{ l: expr, v: String(total), t: wt }], speaker: ChatMessage.getSpeaker({ actor: this.document, token: this.token }), rolls: [roll] });
       await waitDice(msg); // the damage is dealt once the 3D dice have landed (author, 2026-11-19)
-      await sendDamage({ total, dice, type: wt, ignoreArmor: target.dataset.ia === "1", ignoreN: Number(target.dataset.in) || 0 }, { head: `${name}: ${src}` });
+      // the players' characters wait for their avoidance on this card (A1; author, 2026-11-20), the others are hit at once
+      const data = { total, dice, type: wt, ignoreArmor: target.dataset.ia === "1", ignoreN: Number(target.dataset.in) || 0 };
+      const source = this.token?.uuid ?? "", head = `${name}: ${src}`;
+      if (!game.user.isGM) { await sendDamage(data, { head, source }); return; } // only the GM keeps the waiting record (reviewer, 2026-11-21)
+      const { wait, now } = await splitWaiting(chosenTokens());
+      if (now.length) await applyDamage(now, data, { head, source });
+      if (wait.length) await postPending(msg, { hits: [{ data, head }], targets: wait, source, srcName: name });
+      clearTargets();
     } finally { target.disabled = false; }
   }
 
@@ -369,78 +364,22 @@ export class WastelandersEnemySheet extends HandlebarsApplicationMixin(ActorShee
     await this.document.update({ "system.moves": clone(this.document.system.moves).filter((_, k) => k !== i) });
   }
 
-  /** «використано»: a healing move heals this enemy (and, when it heals the group, the others of its battle zone) */
-  async #setUsed(i, checked) {
-    const doc = this.document;
-    const moves = clone(doc.system.moves);
-    const mv = moves[i];
-    if (!mv) return;
-    mv.used = checked;
-    const upd = { "system.moves": moves };
-    const lines = [];
-    const h = checked ? moveHeal(mv.t) : null;
-    if (h) {
-      const heal = async (actor, name) => {
-        const r = await rollExpr(h.expr);
-        const hp = actor.system.hp;
-        const now = Math.min(hp.max, hp.value + (r?.total ?? 0));
-        return { now, line: now > hp.value ? `${esc(name)} +${now - hp.value}${r?.dice ? ` (${esc(r.text)})` : ""}` : "" };
-      };
-      if (!(h.group && h.others)) {
-        const own = await heal(doc, doc.name);
-        upd["system.hp.value"] = own.now;
-        if (own.line) lines.push(own.line);
-      }
-      if (h.group) {
-        for (const t of this.#zoneMates()) {
-          const res = await heal(t.actor, t.name);
-          if (res.now > t.actor.system.hp.value) await t.actor.update({ "system.hp.value": res.now });
-          if (res.line) lines.push(res.line);
-        }
-      }
-    }
-    await doc.update(upd);
-    if (h) {
-      await postChat({
-        // a healing move (author, 2026-11-15: a card of its own, the healing green)
-        content: `<div class="pust-chat pust-encard heal"><div class="pust-encard-hd"><i class="fa-solid fa-kit-medical"></i><span><b>${esc(doc.name)}</b> використовує «${esc(mv.n)}»</span></div>`
-          + `<p>${lines.length ? lines.map(esc).join(", ") : "ОЗ уже повні"}</p></div>`,
-        speaker: ChatMessage.getSpeaker({ actor: doc, token: this.token }),
-      });
-    } else if (i === psyMoveIdx(doc.system)) {
-      await postChat({
-        // Психо on / off (author, 2026-11-15: a card of its own — the chem's red while it acts, grey when it wears off)
-        content: `<div class="pust-chat pust-encard ${checked ? "psycho" : "psycho-off"}"><div class="pust-encard-hd"><i class="fa-solid fa-syringe"></i><span><b>${esc(doc.name)}</b> ${checked ? "під Психо" : "більше не під Психо"}</span></div>`
-          + `<p>${checked ? "+2 шкоди атаками до кінця сцени." : "Атаки знову без +2 шкоди."}</p></div>`,
-        speaker: ChatMessage.getSpeaker({ actor: doc, token: this.token }),
-      });
-    }
+  /** «Використати» (author, 2026-11-19): the move spent and applied (applications/enemy-move.mjs, also «Огляд битви») */
+  static async #onUseMove(event, target) {
+    if (this.document.pustTourDemo) return; // the tour's example: nothing posted
+    target.disabled = true;
+    try { await useMove(this.document, int(target.dataset.i), { token: this.token }); } finally { target.disabled = false; }
+  }
+
+  /** «↺ Зняти позначку»: every use comes back, the effect applied stays */
+  static async #onFreeMove(event, target) {
+    await freeMove(this.document, int(target.dataset.i));
   }
 
   /** «В чат» (author, 2026-11-16): the whole card for everyone — the players may learn all about an enemy in play */
   static async #onToChat() {
     if (this.document.pustTourDemo) return; // the tour's example: nothing posted
     await postEnemyCard(this.document);
-  }
-
-  /** The other living enemies in this token's battle zone (zones are Drawings flagged `battleZone`) */
-  #zoneMates() {
-    const scene = this.token?.parent ?? canvas.scene;
-    const tok = this.token ?? scene?.tokens.find((t) => t.actorId === this.document.id);
-    if (!scene || !tok) return [];
-    const sys = game.system.id;
-    const zones = scene.drawings.filter((d) => d.flags?.[sys]?.battleZone)
-      .map((d) => ({ id: d.id, x: d.x, y: d.y, w: d.shape.width, h: d.shape.height }));
-    const size = scene.grid.size;
-    const centre = (t) => t.object?.center ?? { x: t.x + (t.width * size) / 2, y: t.y + (t.height * size) / 2 };
-    const c = centre(tok);
-    const zone = zoneOfPoint(zones, c.x, c.y);
-    if (!zone) return [];
-    return scene.tokens.filter((t) => {
-      if (!t.actor || t.actor.type !== "enemy" || t.actor === this.document || t.id === tok.id || t.actor.system.hp.value <= 0) return false;
-      const p = centre(t);
-      return zoneOfPoint(zones, p.x, p.y)?.id === zone.id;
-    });
   }
 
   /* ---------- defence ---------- */

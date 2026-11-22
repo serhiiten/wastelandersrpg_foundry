@@ -11,7 +11,7 @@
  */
 import { IMPS } from "./caravan.mjs";
 import { createCaravanLogic } from "./caravan-logic.mjs";
-import { cleanDefOv, defOvCount } from "./caravan-defence.mjs";
+import { cleanDefOv } from "./caravan-defence.mjs";
 import { UNNAMED } from "./character-adapter.mjs";
 
 const clone = (o) => (o == null ? o : JSON.parse(JSON.stringify(o)));
@@ -36,6 +36,8 @@ const MAPPED = new Set(["companyName", "luck", "karma", "karmaAspect", "reputati
 export function stateToCaravan(S0) {
   const L = createCaravanLogic({ S: null });
   const S = L.normalize(clone(S0));
+  // Foundry only (A3, 2026-11-21): «ще не куплено» of a cargo row; normalize() of the shared rules keeps only the HTML keys
+  (S0?.cargo || []).forEach((r, k) => { if (r?.unpaid && S.cargo[k]) S.cargo[k].unpaid = true; });
   const D = L.derived(S);
   const system = {
     karmicAspect: S.karmaAspect || "",
@@ -145,8 +147,9 @@ export function caravanToState(actor, { withIds = false } = {}) {
       S.cargo.push({ kind: "pass", price: "", qty: "1", note: "", ...e, name: rowText(e.name, it.name) });
     }
   }
-  // the HTML sheet's «Далека доставка» for the whole caravan becomes the tick of every cargo row
-  if (S.longHaul) {
+  // the HTML sheet's «Далека доставка» for the whole caravan becomes the tick of every cargo row — only when no row has its
+  // own tick (the HTML sheet writes longHaul beside the rows' ticks since stage 3 of the backport, 2026-11-19)
+  if (S.longHaul && !S.cargo.some((r) => r.far)) {
     S.cargo.forEach((r) => { if (r.kind !== "pass") r.far = true; });
     S.longHaul = false;
   }
@@ -154,20 +157,25 @@ export function caravanToState(actor, { withIds = false } = {}) {
 }
 
 /**
- * S → the HTML caravan sheet's state (its .json): the bonuses become the sheet's absolute max HP / armour (the rules' value
- * + bonus, only when a bonus is set, so the HTML sheet shows the same numbers). The defences have no place there: `defOv`
- * is written only when one is set (the HTML sheet ignores the key; Foundry reads it back on import).
+ * S → the HTML caravan sheet's state (its .json). Since stage 3 of the backport (2026-11-19) the HTML sheet has the same
+ * bonuses and defences: the file carries `hpBonus`, `armorBonus`, `psiArmor`, `defOv`, and beside them the old keys for an
+ * older HTML sheet — `hpMaxOverride` / `armorOverride` as the absolute max HP / armour (null when the bonus is 0) and
+ * `longHaul` on when any cargo row is far. A reader takes an old key over the bonus when they disagree (`normalize`).
  */
 export function caravanHtmlState(S0) {
   const L = createCaravanLogic({ S: null });
   const S = clone(S0);
   const D = L.derived(S);
-  const out = { ...S, hpMaxOverride: int(S.hpBonus) ? D.maxHP : null, armorOverride: int(S.armorBonus) ? D.armor : null };
-  delete out.hpBonus;
-  delete out.armorBonus;
-  if (!int(S.psiArmor)) delete out.psiArmor; // Foundry only (the HTML sheet has no psychic armour)
-  if (!defOvCount(S.defOv)) delete out.defOv;
-  return out;
+  return {
+    ...S,
+    hpBonus: int(S.hpBonus),
+    armorBonus: int(S.armorBonus),
+    psiArmor: Math.max(0, int(S.psiArmor)),
+    defOv: cleanDefOv(S.defOv),
+    hpMaxOverride: int(S.hpBonus) ? D.maxHP : null,
+    armorOverride: int(S.armorBonus) ? D.armor : null,
+    longHaul: (S.cargo || []).some((r) => r.kind !== "pass" && r.far),
+  };
 }
 
 /**
@@ -180,6 +188,28 @@ export function rowSale(r) {
   const v = Math.max(0, int(r.price)) * Math.max(0, int(r.qty, 1));
   if (r.kind === "pass") return v;
   return Math.ceil(v * (r.far ? (r.hurt ? 1.5 : 2) : r.hurt ? 1.25 : 1.5));
+}
+
+/** What a row is, for «Продати» (A3): the button carries it, and a row that no longer matches (sold by a double click or by
+ *  another user, the rows moved up) is not sold in its place */
+export const rowKey = (r) => [r.kind || "cargo", r.name || "", int(r.price), int(r.qty, 1), r.far ? 1 : 0, r.hurt ? 1 : 0].join("|");
+
+/** What a cargo row costs to buy: price × quantity (an empty quantity is 1) */
+export const rowCost = (r) => Math.max(0, int(r.price)) * Math.max(0, int(r.qty, 1));
+
+/**
+ * Foundry only (author, 2026-11-21; A3): what «Продати» sells. One row ({ i }) — a cargo row bought (not `unpaid`) or a
+ * passenger's fare; the whole list ({ all: true }) — every cargo row bought, no passengers. Rows worth 0 are left alone.
+ * @returns {{ rows: {i, name, pass, qty, price, far, hurt, sum}[], total: number }}
+ */
+export function salePlan(S, { i = -1, all = false } = {}) {
+  const rows = [];
+  (S.cargo || []).forEach((r, k) => {
+    if (all ? r.kind === "pass" || r.unpaid : k !== i || (r.kind !== "pass" && r.unpaid)) return;
+    const sum = rowSale(r);
+    if (sum > 0) rows.push({ i: k, name: r.name || "", pass: r.kind === "pass", qty: Math.max(0, int(r.qty, 1)), price: Math.max(0, int(r.price)), far: !!r.far, hurt: !!r.hurt, sum });
+  });
+  return { rows, total: rows.reduce((t, r) => t + r.sum, 0) };
 }
 
 /** Item types the caravan sheet manages */

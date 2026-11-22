@@ -39,8 +39,8 @@ ok(V.hpLevel(3, 0).pct === 0, "no max, no percent");
 // quick aspects and their locks
 ok(v.quick.length === 3, "three quick aspects");
 const down = v.quick.find((q) => q.key === "down");
-ok(down.locked && down.help === "Не можна збити з ніг", `knockdown locked: ${JSON.stringify(down)}`);
-ok(!v.quick.find((q) => q.key === "stunned").locked && !v.quick.find((q) => q.key === "disarmed").locked, "others open");
+ok(down.imm === "не можна збити з ніг" && down.help === "Імунітет: не можна збити з ніг" && !("locked" in down), `knockdown: immune, red, not locked (П3 3.5): ${JSON.stringify(down)}`);
+ok(!v.quick.find((q) => q.key === "stunned").imm && !v.quick.find((q) => q.key === "disarmed").imm, "others plain");
 const sys2 = { ...sys, aspects: [{ t: "Збитий з ніг", inv: 0 }] };
 ok(!V.enemyView(sys2).quick.some((q) => q.key === "down"), "a quick aspect already on the card is not offered again");
 
@@ -68,12 +68,17 @@ ok(vp.attacks[0].plus === 4 && vp.attacks[0].dice === "2d6+4" && vp.attacks[0].p
 vp = V.enemyView({ ...sys, flags: { ...sys.flags, kamikaze: true } });
 ok(vp.attacks[0].plus === 2 && vp.attacks[0].plusTitle === "Камікадзе: +2 шкоди", "kamikaze alone");
 
-// once per scene / session, heal moves
-ok(v.moves[0].once && v.moves[0].psy, "the Психо move is once-only");
-ok(v.moves[1].once && !v.moves[1].psy && v.moves[1].heal === "1d6+4" && !v.moves[1].healGroup, `self heal move: ${JSON.stringify(v.moves[1])}`);
-ok(v.moves[2].once && v.moves[2].heal === "3" && v.moves[2].healGroup, `group heal move: ${JSON.stringify(v.moves[2])}`);
-ok(!v.moves[3].once && !v.moves[3].heal, "an ordinary move");
-ok(V.onceMove("Раз за сесію ...") && V.onceMove("раз за сцену") && !V.onceMove("щось інше") && V.onceMove("x", true), "onceMove");
+// the moves as buttons (author, 2026-11-19; mockup А): the limit chip, «Використати», what it does
+ok(v.moves[0].psy && v.moves[0].button && v.moves[0].lim === "раз за сцену", `the Психо move is a button: ${JSON.stringify(v.moves[0])}`);
+ok(v.moves[1].button && !v.moves[1].psy && v.moves[1].cls === "session" && v.moves[1].hint.startsWith("Ворог відновлює собі 1d6+4 ОЗ"), `self heal move: ${JSON.stringify(v.moves[1])}`);
+ok(v.moves[2].button && v.moves[2].hint.startsWith("Свої на сцені відновлюють по 3 ОЗ"), `group heal move: ${JSON.stringify(v.moves[2])}`);
+ok(!v.moves[3].button, "an ordinary move: no button");
+ok(v.moves[1].off, "not editable: the button is off");
+const ve = V.enemyView({ ...sys, moves: [{ n: "Порошок", t: "двічі за сцену відновлює собі або союзникові 3 ОЗ.", used: false, spent: 1 }, { n: "Захисний протокол", t: "раз за сцену ігнорує шкоду, яку йому щойно завдали." }] }, { editable: true, lastHit: null });
+ok(ve.moves[0].lim === "2 за сцену" && ve.moves[0].pips.map((p) => p.on).join() === "true,false" && !ve.moves[0].used && !ve.moves[0].off, `2 a scene, one spent: ${JSON.stringify(ve.moves[0])}`);
+ok(ve.moves[1].off && /Нема що скасовувати/.test(ve.moves[1].offWhy), "undo with no hit: off");
+const vu = V.enemyView({ ...sys, hp: { value: 4, max: 12 }, moves: [{ n: "Захисний протокол", t: "раз за сцену ігнорує шкоду, яку йому щойно завдали.", used: true }] }, { editable: true, lastHit: { before: 9, after: 4 } });
+ok(vu.moves[0].used && vu.moves[0].off && vu.moves[0].back === "повернеться після «Кінця сцени»", "used (the old tick): off, comes back after the scene");
 
 // defence editor (GM only)
 ok(V.enemyView(sys, { gm: false }).defence.length === 0, "no defence rows for players");
@@ -122,6 +127,25 @@ ok(V.enemyView({ ...sys, hp: { value: 0, max: 12 } }).state.label === "Вибу�
   ok(V.attackTip(s.attacks[2]) === "+3 кислотою · ближній бій", `acid tip: «${V.attackTip(s.attacks[2])}»`);
   ok(V.attackTip(s.attacks[3]) === "бій на відстані", `plain tip: «${V.attackTip(s.attacks[3])}»`);
   ok(V.attackTip({ name: "Пси-удар", type: "psychic", note: "психічної шкоди, ігнорує фізичну броню" }) === "ігнорує фізичну броню", "psychic tip without its type words");
+}
+
+{
+  // a «лишається живим» move spent this scene is shown as such (author, 2026-11-20); a fresh one and a bonus move are not
+  const t = "раз за сцену, якщо отримана шкода мала б знизити ОЗ самиці до 0, вона натомість лишається живою з 10 ОЗ.";
+  const sys = { hp: { value: 10, max: 45 }, moves: [] };
+  const fresh = V.moveView({ n: "Неймовірна живучість", t }, 0, sys, { editable: true });
+  const spent = V.moveView({ n: "Неймовірна живучість", t, spent: 1, used: true }, 0, sys, { editable: true });
+  ok(!fresh.button && !fresh.gone, "a fresh survive move is a quiet line");
+  ok(!spent.button && spent.gone && /Кінця сцени/.test(spent.back), `a spent survive move is gone: ${JSON.stringify(spent)}`);
+}
+
+{ // «змінено»: an unset flag the book's copy lacks is no edit; a set one is
+  const flags = { noStun: false, psyVuln: false };
+  const base = { hp: { max: 6 }, armor: 2, psiArmor: 0, def: { rad: "normal" }, attacks: [], baseAspects: [], moves: [], notes: "" };
+  const orig = { hp: 6, armor: 2, psiArmor: 0, def: { rad: "normal" }, flags, attacks: [], baseAspects: [], moves: [], notes: "" };
+  ok(!V.differsFromBook({ ...base, flags: { ...flags, nonliving: null }, orig }), "a null flag missing from the book's copy is not «змінено»");
+  ok(V.differsFromBook({ ...base, flags: { ...flags, nonliving: true }, orig }), "a set «Неживий» is «змінено»");
+  ok(V.differsFromBook({ ...base, flags: { ...flags, noStun: true }, orig }), "a changed flag is «змінено»");
 }
 
 if (failures) { console.log(`${failures} failure(s)`); process.exit(1); }

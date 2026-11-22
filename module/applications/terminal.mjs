@@ -14,9 +14,11 @@ import { concreteKinds, namePicks } from "../rules/enemy-kinds.mjs";
 import { postChat } from "./chat.mjs";
 import { postTerminalRoll } from "./check-panel.mjs";
 import { luckCaravan } from "./map-dice.mjs";
+import { caravanLuck } from "./party-luck.mjs";
 import {
-  TABLE_CARDS, battleChat, battleJournal, blankTerminal, buildTerminalView, caseChat, caseJournal, runTable, tableChat, travelChat,
+  TABLE_CARDS, battleChat, battleJournal, blankTerminal, buildTerminalView, caseChat, caseJournal, placeSpecialReroll, runTable, tableChat, travelChat,
 } from "./terminal-view.mjs";
+import { rerollSpecial, specialLeft } from "../rules/travel-special.mjs";
 import { notify } from "../helpers/notify.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -65,9 +67,14 @@ export async function startBattle() {
   // its background by the battle's place first, while nobody views it: one redraw (author, 2026-11-18)
   const { syncBattleBackground } = await import("../helpers/battle-background.mjs");
   await syncBattleBackground(scene, OPEN.T.battle.BT?.BT_SCENE?.place || sharedGet("place"));
+  // its weather by the battle's hazard («Авто-погода», author, 2026-11-19), before the players come
+  await (await import("../canvas/weather.mjs")).syncHazardWeather(scene, OPEN.T.battle.BT?.BT_SCENE?.hazard || sharedGet("hazard"));
   if (canvas?.scene?.id !== scene.id) {
     const ready = new Promise((r) => Hooks.once("canvasReady", r));
-    await scene.activate();
+    // an active scene isn't activated again by Foundry, so no canvasReady came and «Почати бій» hung (2026-11-19, the
+    // battle map active while the GM viewed «Мапа Пустки»): then it is only viewed, as «Перейти на бойову мапу» does
+    if (scene.active) await scene.view();
+    else await scene.activate();
     await ready;
   } else if (!scene.active) await scene.activate();
   await createBattle(OPEN.T, OPEN.st, "place");
@@ -146,6 +153,11 @@ class TerminalApp extends HandlebarsApplicationMixin(ApplicationV2) {
       travelGen: TerminalApp.#on((app) => { Object.assign(app.st.travel, app.T.travel.generate(app.st.travel.type, app.st.travel.luck)); travelToScene(app.st.travel.main, app.st.travel.additional); }),
       travelKinds: TerminalApp.#on((app, t) => app.#travelKinds(+t.dataset.i)),
       travelBattle: TerminalApp.#on((app, t) => app.#travelBattle(+t.dataset.i)),
+      travelSpecial: TerminalApp.#on((app) => {
+        const html = rerollSpecial(app.st.travel.main, app.T.travel.specials());
+        if (!html) return false;
+        app.st.travel.main = html;
+      }),
       travelFight: TerminalApp.#on((app, t) => { startTravelBattle(clone(app.st.travel), +t.dataset.i); return false; }),
       battleFight: TerminalApp.#on(() => { startBattle(); return false; }),
       caseBattle: TerminalApp.#on((app) => app.#caseBattle()),
@@ -371,7 +383,7 @@ class TerminalApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const t = this.st.travel;
     let luckCar = null;
     if (car) {
-      const l = parseInt(car.system.luck, 10) || 0;
+      const l = caravanLuck(car);
       const v = Math.max(-2, Math.min(2, l));
       const from = `${car.id}:${l}`;
       if (t.luckFrom !== from) { t.luck = v; t.luckFrom = from; }
@@ -412,6 +424,10 @@ class TerminalApp extends HandlebarsApplicationMixin(ApplicationV2) {
         + `<button type="button" class="pust-term-go pust-tvb-fight" data-action="travelFight" data-i="${i}" title="Перейти на бойову мапу, активувати її (гравці теж перейдуть) і розставити супротивників цієї битви по зонах"><i class="fa-solid fa-flag"></i> Почати бій</button>`
         + `<span class="pust-sub">${span.classList.contains("tvb-rnd") ? "Склад супротивників кинеться за правилами генератора битв." : "Кількість супротивників кинеться за описом битви."} Місце піде у вкладку «Битви».</span>`;
       sec.append(btns);
+    });
+    // «Особлива зустріч»: «Перекинути» (F5, author 2026-11-20)
+    root.querySelectorAll(".pust-travel .special-encounter").forEach((sec) => {
+      placeSpecialReroll(sec, specialLeft(this.st.travel.main, this.T.travel.specials()), 'data-action="travelSpecial"');
     });
     // selects and checkboxes of the tabs
     root.querySelectorAll("[data-k]").forEach((el) => el.addEventListener("change", () => {

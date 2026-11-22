@@ -4,7 +4,7 @@
  * the portrait, the GM switch, the enriched description.
  */
 import {
-  diceInText, diceLabel, noteWithoutType, CAT_LABEL, QUICK_ASPECTS, DEF_FIELDS, R3, R4, DMG_TYPES, profileTags, tagHelp, moveHeal, psyMoveIdx, DICE_RE,
+  diceInText, diceLabel, noteWithoutType, CAT_LABEL, QUICK_ASPECTS, DEF_FIELDS, R3, R4, DMG_TYPES, profileTags, tagHelp, psyMoveIdx, DICE_RE,
   attackExtra,
 } from "../rules/battle.mjs";
 
@@ -32,7 +32,9 @@ export function attackTip(a) {
   const ex = attackExtra(a?.note);
   return [ex ? `+${ex.label}` : "", attackNote(a)].filter(Boolean).join(" · ");
 }
-import { profileOf, attackDice, normCat, bookCopy } from "../rules/enemy-model.mjs";
+import { moveSpec, moveMarks, limitLabel, canUndo, attackMenu } from "../rules/move-spec.mjs";
+import { enemyNonliving, aspectImmune } from "../rules/states.mjs";
+import { profileOf, attackDice, bonusFrom, andList, normCat, bookCopy } from "../rules/enemy-model.mjs";
 
 const escH = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -89,11 +91,6 @@ const TAG_ICON = {
 };
 
 /** Quick aspects locked by a flag: [aspect key] → [flag, tooltip] */
-const QUICK_LOCK = {
-  down: ["noKnockdown", "Не можна збити з ніг"],
-  stunned: ["noStun", "Не можна приголомшити"],
-  disarmed: ["noDisarm", "Не можна обеззброїти"],
-};
 
 /** The HP bar class: dead (0), low (≤ 33 %), mid (≤ 66 %), ok */
 export function hpLevel(value, max) {
@@ -119,9 +116,29 @@ export function hpState(value, max) {
   return { key, ...HP_STATES[key] };
 }
 
-/** A move that can be used once («раз за сцену / за сесію») or is the Психо move */
-export function onceMove(text, isPsy = false) {
-  return !!isPsy || /раз за (сцену|сесію)/i.test(String(text || ""));
+/**
+ * A move on the card (author, 2026-11-19; mockup А: like the compact sheet's perks): the limit chip («раз за сцену», «2 за
+ * сцену» with pips, «без ліміту»), «Використати» with what it does as its tooltip (move-spec.mjs; not a line under the
+ * text: author, 2026-11-20); a used one greyed,
+ * «Використано · повернеться після «Кінця сцени»» and «↺ Зняти позначку». A move that acts by itself or is never automated
+ * is a quiet line without a button; a «лишається живим» move that already saved the enemy this scene (`gone`) is struck
+ * through with «Витрачено» and «↺ Зняти позначку» (author, 2026-11-20). `o.lastHit`: the enemy's last hit (undo works only while it is there).
+ */
+export function moveView(m, i, sys, o = {}) {
+  const spec = moveSpec(m, sys, i);
+  const mk = moveMarks(m, spec);
+  const undo = spec.effects.some((e) => e.kind === "undo");
+  const noHit = undo && !canUndo(o.lastHit, sys.hp?.value);
+  const off = !o.editable || mk.blocked || noHit;
+  const back = spec.per === "session" ? "повернеться після «Кінця сесії»" : "повернеться після «Кінця сцени»";
+  return {
+    i, n: m.n, t: m.t, level: spec.level, button: spec.button, psy: spec.effects.some((e) => e.kind === "psycho"),
+    hint: spec.hint, lim: limitLabel(spec), cls: !spec.uses ? "free" : spec.per === "session" ? "session" : "scene",
+    pips: spec.uses > 1 ? Array.from({ length: spec.uses }, (_, k) => ({ on: k < mk.left })) : null,
+    used: mk.used, spent: mk.spent, again: spec.again, back, off,
+    gone: !spec.button && mk.used && spec.effects.some((e) => e.kind === "survive"), limited: spec.uses > 0,
+    offWhy: mk.blocked ? `Уже використано: ${back}` : noHit ? "Нема що скасовувати: ворогові щойно не завдавали шкоди" : "",
+  };
 }
 
 /** The damage type's short name: «Лазерна (ігнорує 1 броні)» → «Лазерна» */
@@ -137,7 +154,13 @@ const stable = (v) => JSON.stringify(v, (_, x) => (x && typeof x === "object" &&
 /** Does the card differ from the book (attacks, aspects, moves, notes, defence, max HP)? */
 export function differsFromBook(sys) {
   if (!sys.orig) return false;
-  const bare = (o) => ({ ...o, attacks: (o.attacks ?? []).map(({ ammo, ...a }) => a) }); // spent ammo is play, not an edit
+  // spent ammo is play, not an edit; an unset flag (null, e.g. «Неживий» added to the data model after the book's copy
+  // was made) is the same as a missing one, or every enemy reads «змінено»
+  const bare = (o) => ({
+    ...o,
+    flags: Object.fromEntries(Object.entries(o.flags ?? {}).filter(([, v]) => v != null)),
+    attacks: (o.attacks ?? []).map(({ ammo, ...a }) => a),
+  });
   return stable(bare(bookCopy(sys))) !== stable(bare(sys.orig));
 }
 
@@ -151,13 +174,15 @@ export function defPath(f) {
 const defOf = (sys, f) => (f === "armor" ? sys.armor : f === "psyArmor" ? sys.psiArmor : ["phys", "energy", "fire", "rad", "poison", "psy"].includes(f) ? sys.def?.[f] : !!sys.flags?.[f]);
 
 /** The defence editor's rows: {f, label, kind, value, options?, path} (+ the extra «отримує психічну шкоду» flag) */
-export function defenceRows(sys) {
+export function defenceRows(sys, names = []) {
   const rows = DEF_FIELDS.map(([f, label, kind]) => {
     const row = { f, label, kind, path: defPath(f), value: defOf(sys, f), num: kind === "num", chk: kind === "chk", sel: kind === "r3" || kind === "r4" };
     if (row.sel) row.options = Object.entries(kind === "r4" ? R4 : R3).map(([v, l]) => ({ v, l, sel: v === row.value }));
     return row;
   });
   rows.push({ f: "psyVuln", label: "Отримує психічну шкоду", kind: "chk", path: defPath("psyVuln"), value: !!sys.flags?.psyVuln, num: false, chk: true, sel: false });
+  // «Неживий» (author, 2026-11-20): ticked by the book when the GM never set it (rules/states.mjs enemyNonliving)
+  rows.push({ f: "nonliving", label: "Неживий", kind: "chk", path: defPath("nonliving"), value: enemyNonliving(sys.flags?.nonliving ?? null, names, sys), num: false, chk: true, sel: false });
   return rows;
 }
 
@@ -173,39 +198,37 @@ export function enemyView(sys, o = {}) {
   const state = hpState(hp.value, hp.max);
   const tags = profileTags(profile).map(([icon, text]) => ({ icon: TAG_ICON[icon] ?? "fa-circle", text, help: tagHelp(text) }));
   const aspects = sys.aspects ?? [];
+  // immunities (author, 2026-11-22, П3 3.5): a quick aspect is never locked; one its bearer is immune to is red, with the reason
+  const immProf = { ...profile, nonliving: enemyNonliving(sys.flags?.nonliving ?? null, o.names ?? [], sys) };
   const quick = QUICK_ASPECTS.filter(([, label]) => !aspects.some((a) => a.t === label)).map(([key, label]) => {
-    const lock = QUICK_LOCK[key];
-    const locked = !!(lock && profile[lock[0]]);
-    return { key, label, locked, help: locked ? lock[1] : `Накласти аспект «${label}»` };
+    const imm = aspectImmune(label, immProf);
+    return { key, label, imm, help: imm ? `Імунітет: ${imm}` : `Накласти аспект «${label}»` };
   });
   const psyIdx = psyMoveIdx(sys);
   const psycho = !!profile.psycho;
   const attacks = (sys.attacks ?? []).map((a, i) => {
-    const dice = attackDice(sys, i) || a.dice;
+    const dice = attackDice(sys, i, o.buffs) || a.dice;
     const plus = dice !== a.dice && dice.startsWith(a.dice) ? Number(dice.slice(a.dice.length)) || 0 : 0;
-    const who = psycho && sys.flags?.kamikaze ? "Психо й Камікадзе" : psycho ? "Психо" : "Камікадзе";
+    const who = andList(bonusFrom(sys, i, o.buffs));
     const ammo = a.ammoMax > 0;
     return {
       i, name: a.name, dice, diceText: diceLabel(dice), base: diceLabel(a.dice), plus, plusText: plus ? `+${plus}` : "", plusTitle: plus ? `${who}: +${plus} шкоди` : "",
       type: a.type, typeOpts: typeOptions(a.type), ammoMax: a.ammoMax || 0, typeLabel: typeLabel(a.type), tcls: typeClass(a.type), noteRaw: a.note,
       extra: attackExtraView(a.note), note: attackNote(a),
       ammo: ammo ? { max: a.ammoMax, value: a.ammo, empty: a.ammo <= 0, pips: Array.from({ length: a.ammoMax }, (_, k) => ({ n: k + 1, on: k < a.ammo })) } : null,
+      menu: !!attackMenu(sys, a), // «Прицільний постріл» & Co.: «Завдати цілям ▾» opens the effects (author, 2026-11-20)
       dead: ammo && a.ammo <= 0, ignoreArmor: !!a.ignoreArmor, ignoreN: a.ignoreN || 0, diceOk: DICE_RE.test(String(a.dice).trim()),
     };
   });
-  const moves = (sys.moves ?? []).map((m, i) => {
-    const psy = i === psyIdx;
-    const heal = moveHeal(m.t);
-    return { i, n: m.n, t: m.t, tHtml: moveTextHtml(m.t, m.n, !!o.editable), used: !!m.used, psy, once: onceMove(m.t, psy), heal: heal ? heal.expr : "", healGroup: !!heal?.group };
-  });
+  const moves = (sys.moves ?? []).map((m, i) => ({ ...moveView(m, i, sys, o), tHtml: moveTextHtml(m.t, m.n, !!o.editable) }));
   return {
     cat, catLabel: CAT_LABEL[cat] ?? "", catColor: CAT_COLOR[cat] ?? CAT_COLOR.regular, catIcon: catIconHtml(cat),
     hp, state, armor: sys.armor ?? 0, psiArmor: sys.psiArmor ?? 0, armorText: sys.armorText ?? "",
-    tags, quick, aspects: aspects.map((a, i) => ({ i, t: a.t, inv: a.inv })),
+    tags, quick, aspects: aspects.map((a, i) => ({ i, t: a.t, inv: a.inv, imm: aspectImmune(a.t, immProf) })),
     baseAspects: (sys.baseAspects ?? []).map((a, i) => ({ i, t: a.t, inv: a.inv, len: Math.max(6, String(a.t ?? "").length + 1) })),
     attacks, moves, psycho, psyIdx, psyMove: psyIdx >= 0 ? moves[psyIdx] : null,
     changed: !!sys.orig && JSON.stringify(sys.orig.attacks ?? null) !== JSON.stringify(sys.attacks) ? true : false,
-    canReset: !!sys.orig, differs: differsFromBook(sys), defence: o.gm ? defenceRows(sys) : [],
+    canReset: !!sys.orig, differs: differsFromBook(sys), defence: o.gm ? defenceRows(sys, o.names ?? []) : [],
     reveal: !!sys.reveal,
   };
 }

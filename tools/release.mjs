@@ -3,12 +3,18 @@
 //   that changes only `version` and `download` in system.json → push → GitHub Actions
 //   (.github/workflows/release.yaml) adds «Auto update files», the tag vX and foundry.zip →
 //   main and the feature branch pull that commit.
+//   When `main` is checked out in another worktree (the shared clone, served by the local Foundry),
+//   the branch is not merged there: the version commit goes on the branch itself, which must already
+//   contain origin/main, and is pushed as `branch:main` (a fast-forward). Afterwards the branch
+//   fast-forwards to origin/main, and so does the clone's main when its dirty files are not touched.
 //
 //   node tools/release.mjs                      only print the plan (dry run, changes nothing)
 //   node tools/release.mjs --go -m "what"       really release (the author's command only)
 //   options: --version 1.1.0-dev.40   another version than the next dev number
 //            --timeout 15             minutes to wait for the build (default 15)
 //
+// With --go it first puts packs/ back to the committed state (git checkout + git clean of packs/ only):
+// Foundry rewrites those LevelDB files whenever a world opens them (author, 2026-11-21).
 // Never touches CHANGELOG.md or the stable repository. No dependencies; `gh` is not needed:
 // the build is watched through GitHub's public API, by the SHA taken from `git rev-parse`.
 import { execFileSync, execSync } from "node:child_process";
@@ -52,12 +58,72 @@ export function repoSlug(url) {
   return m[1];
 }
 
+/** `git worktree list --porcelain` → [{ path, branch }] (branch without refs/heads/, "" when detached). */
+export function parseWorktrees(text) {
+  const out = [];
+  for (const block of text.replace(/\r/g, "").split(/\n\n+/)) {
+    const path = /^worktree (.+)$/m.exec(block)?.[1];
+    if (!path) continue;
+    const branch = /^branch refs\/heads\/(.+)$/m.exec(block)?.[1] ?? "";
+    out.push({ path, branch });
+  }
+  return out;
+}
+
+const normPath = (p) => p.replace(/\\/g, "/").replace(/\/+$/, "").toLowerCase();
+
+/** The folder of another worktree that has `main` checked out, or "" (then this folder may switch to main). */
+export function mainWorktree(worktrees, root) {
+  return worktrees.find((w) => w.branch === "main" && normPath(w.path) !== normPath(root))?.path ?? "";
+}
+
+/** Paths from `git status --porcelain` (a rename gives both names). */
+export function porcelainPaths(text) {
+  return text.replace(/\r/g, "").split("\n").filter((l) => l.length > 3)
+    .flatMap((l) => l.slice(3).split(" -> ")).map((p) => p.replace(/^"(.*)"$/, "$1"));
+}
+
+/** May the shared clone's main fast-forward to origin/main without touching its changed files?
+ *  s: { onMain, isAncestor, dirty: [paths], changed: [paths] }. Returns "" when yes, else the reason.
+ *  A dirty path (or an untracked folder, «dir/») that the fast-forward would rewrite blocks it. */
+export function cloneFastForwardBlock(s) {
+  if (!s.onMain) return "its folder is not on main";
+  if (!s.isAncestor) return "its main has commits that origin/main has not";
+  const hit = s.dirty.filter((p) => {
+    const d = p.replace(/\/$/, "");
+    return s.changed.some((c) => c === d || c.startsWith(d + "/"));
+  });
+  return hit.length ? `the fast-forward would touch ${hit.length} file(s) changed there: ${hit.slice(0, 5).join(", ")}${hit.length > 5 ? ", …" : ""}` : "";
+}
+
+/** Foundry rewrites the compendium LevelDB files in packs/ whenever a world opens them, so a release
+ *  first puts packs/ back to the committed state (author, 2026-11-21). Only paths under packs/. */
+export const PACKS_RESTORE = [["checkout", "--", "packs/"], ["clean", "-fd", "--", "packs/"]];
+export const isPacksPath = (p) => /^packs(\/|$)/.test(p.replace(/\\/g, "/"));
+/** Changed paths that are not under packs/ (these still block a release). */
+export const dirtyBesidesPacks = (paths) => paths.filter((p) => !isPacksPath(p));
+
 /** The steps, in order, for a given state. Text only; doing them is below. */
 export function buildPlan(s) {
   const steps = [];
   if (s.refusal) steps.push(`✗ REFUSED — ${s.refusal}`);
+  steps.push(`git checkout -- packs/; git clean -fd -- packs/   (Foundry rewrites packs/${s.packsDirty ? `: ${s.packsDirty} file(s) changed now` : ""})`);
   steps.push(`Check: the working tree is clean${s.dirty ? "  ✗ NOT CLEAN — commit or put the changes aside first" : "  ✓"}`);
   steps.push(`git fetch origin; main must not differ from origin/main except by being behind`);
+  if (s.mainAt) {
+    const msg = s.message || "<what changed — give it with -m>";
+    steps.push(`main is checked out in ${s.mainAt}: release from ${s.branch} right here, no switch`);
+    steps.push(`Check: ${s.branch} contains origin/main, so pushing it to main is a fast-forward${s.behind ? `  ✗ ${s.behind} commit(s) of origin/main missing — git merge origin/main first` : "  ✓ (as of the last fetch)"}`);
+    steps.push(`npm test (the whole fast suite)`);
+    steps.push(`system.json: version ${s.version} → ${s.next}, download → …/v${s.next}/foundry.zip   (on ${s.branch}: ${s.ahead} commit(s) not in origin/main yet)`);
+    steps.push(`git commit -m "v${s.next}: ${msg}"`);
+    steps.push(`git push origin ${s.branch}:main ${s.branch}`);
+    steps.push(`SHA = git rev-parse HEAD; wait for «Create Release» on that SHA, at most ${s.timeout} min (${s.slug})`);
+    steps.push(`check the release v${s.next} has foundry.zip`);
+    steps.push(`git fetch origin; git merge --ff-only origin/main (${s.branch} gets «Auto update files»); git push origin ${s.branch}`);
+    steps.push(`${s.mainAt}: git merge --ff-only origin/main if none of its changed files is touched; else only print that command`);
+    return steps;
+  }
   steps.push(`npm test (the whole fast suite)`);
   if (s.branch !== "main") {
     steps.push(`git switch main; git merge --ff-only origin/main`);
@@ -77,6 +143,8 @@ export function buildPlan(s) {
 // ---------- doing it ----------
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
+// untrimmed: `git status --porcelain` lines start with a space that trim() would eat from the first one
+const gitRaw = (...args) => execFileSync("git", args, { encoding: "utf8" });
 const gitLoud = (...args) => { console.log(`$ git ${args.join(" ")}`); execFileSync("git", args, { stdio: "inherit" }); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -135,12 +203,16 @@ async function main() {
   const branch = git("rev-parse", "--abbrev-ref", "HEAD");
   if (branch === "HEAD") throw new Error("Detached HEAD: switch to a branch first");
   const slug = repoSlug(git("remote", "get-url", "origin"));
-  const dirty = git("status", "--porcelain") !== "";
+  const changedPaths = porcelainPaths(gitRaw("status", "--porcelain", "--untracked-files=all"));
+  const dirty = dirtyBesidesPacks(changedPaths).length > 0;
+  const packsDirty = changedPaths.length - dirtyBesidesPacks(changedPaths).length;
   const sysText = readFileSync("system.json", "utf8");
   const { version, id } = JSON.parse(sysText);
   const next = o.version || nextVersion(version);
-  const ahead = branch === "main" ? 0 : Number(git("rev-list", "--count", `main..${branch}`));
-  const state = { refusal: refusal(id), branch, dirty, version, next, message: o.message, ahead, slug, timeout: o.timeout };
+  const mainAt = branch === "main" ? "" : mainWorktree(parseWorktrees(git("worktree", "list", "--porcelain")), root);
+  const ahead = branch === "main" ? 0 : Number(git("rev-list", "--count", `${mainAt ? "origin/main" : "main"}..${branch}`));
+  const behind = mainAt ? Number(git("rev-list", "--count", `${branch}..origin/main`)) : 0;
+  const state = { refusal: refusal(id), branch, dirty, packsDirty, version, next, message: o.message, ahead, behind, mainAt, slug, timeout: o.timeout };
 
   console.log(`${o.go ? "RELEASE" : "DRY RUN (nothing changes; add --go -m \"what\" to release)"} — ${slug}, branch ${branch}\n`);
   buildPlan(state).forEach((s, i) => console.log(`${String(i + 1).padStart(2)}. ${s}`));
@@ -148,7 +220,12 @@ async function main() {
 
   console.log("");
   if (state.refusal) throw new Error(state.refusal);
-  if (dirty) throw new Error("The working tree is not clean");
+  if (dirty) throw new Error(`The working tree is not clean (besides packs/): ${dirtyBesidesPacks(changedPaths).slice(0, 5).join(", ")}`);
+  if (packsDirty) {
+    try { for (const args of PACKS_RESTORE) gitLoud(...args); }
+    catch { throw new Error("Could not restore packs/ (a running world may hold the files): close the world in Foundry and run again"); }
+    if (porcelainPaths(gitRaw("status", "--porcelain", "--untracked-files=all")).length) throw new Error("The working tree is still not clean after restoring packs/");
+  }
   if (!o.message) throw new Error('Say what is in the release: -m "…"');
 
   gitLoud("fetch", "origin", "--tags");
@@ -158,7 +235,12 @@ async function main() {
     throw new Error(`origin/${branch} has commits this branch has not: pull them first`);
 
   console.log("$ npm test");
+  if (mainAt && git("rev-list", "--count", `${branch}..origin/main`) !== "0")
+    throw new Error(`${branch} lacks commits of origin/main: git merge origin/main first, so the push to main is a fast-forward`);
+
   execSync("npm test", { stdio: "inherit" }); // throws on a failed test: nothing has changed yet
+
+  if (mainAt) return releaseInWorktree({ o, branch, next, slug, mainAt });
 
   if (branch !== "main") {
     gitLoud("switch", "main");
@@ -182,6 +264,35 @@ async function main() {
     gitLoud("merge", "--ff-only", "main");
     gitLoud("push", "origin", branch);
   }
+  console.log(`\nDone: v${next} is out. Foundry sees it through the manifest of main.`);
+}
+
+// main is checked out in another worktree (the shared clone): everything happens on the branch.
+async function releaseInWorktree({ o, branch, next, slug, mainAt }) {
+  writeFileSync("system.json", bumpSystemJson(readFileSync("system.json", "utf8"), next));
+  gitLoud("add", "system.json");
+  gitLoud("commit", "-m", `v${next}: ${o.message}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`);
+  gitLoud("push", "origin", `${branch}:main`, branch);
+
+  const sha = git("rev-parse", "HEAD");
+  console.log(`\nWaiting for the build of ${sha.slice(0, 7)} (at most ${o.timeout} min)…`);
+  await waitForBuild(slug, sha, next, o.timeout);
+
+  gitLoud("fetch", "origin");
+  gitLoud("merge", "--ff-only", "origin/main");
+  gitLoud("push", "origin", branch);
+
+  const inClone = (...a) => execFileSync("git", ["-C", mainAt, ...a], { encoding: "utf8" });
+  let isAncestor = true;
+  try { inClone("merge-base", "--is-ancestor", "main", "origin/main"); } catch { isAncestor = false; }
+  const block = cloneFastForwardBlock({
+    onMain: inClone("rev-parse", "--abbrev-ref", "HEAD").trim() === "main",
+    isAncestor,
+    dirty: porcelainPaths(inClone("status", "--porcelain", "--untracked-files=all")),
+    changed: inClone("diff", "--name-only", "main", "origin/main").split("\n").map((l) => l.trim()).filter(Boolean),
+  });
+  if (block) console.log(`\nThe clone's main was left as it is: ${block}. When it is safe:\n  git -C "${mainAt}" merge --ff-only origin/main`);
+  else gitLoud("-C", mainAt, "merge", "--ff-only", "origin/main");
   console.log(`\nDone: v${next} is out. Foundry sees it through the manifest of main.`);
 }
 

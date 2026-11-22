@@ -12,6 +12,7 @@
 import { compute } from "./core.mjs";
 import { profileOf as enemyProfile } from "./enemy-model.mjs";
 import { caravanDefAuto, caravanDefences } from "./caravan-defence.mjs";
+import { enemyNonliving, enemyMutant, MUTANT_SPECIES } from "./states.mjs";
 import { logicFor, readState } from "../applications/character-actions.mjs";
 
 const int = (v, d = 0) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? n : d; };
@@ -26,10 +27,8 @@ export function combineDefence(a, m) {
   return "half";
 }
 
-/** A character's profile from its rules state (the sheet's «Захист») */
-export function characterProfileFromState(st) {
-  const d = compute(st);
-  const L = logicFor(st, { quiet: true });
+/** A character's profile from its rules state (the sheet's «Захист»); the sheet passes its own `d` / `L` */
+export function characterProfileFromState(st, { d = compute(st), L = logicFor(st, { quiet: true }) } = {}) {
   const prof = {
     armor: int(d.armorTotal + (L.chemArmor?.() ?? 0)), psyArmor: int(d.psiTotal + (L.chemPsi?.() ?? 0)),
     phys: "normal", energy: "normal", fire: "normal", rad: "normal", poison: "normal", psy: "normal",
@@ -42,14 +41,29 @@ export function characterProfileFromState(st) {
     electricVuln: flag(A.electric, "electric"), halfPartial: flag(A.partial, "partial"),
     noKnockdown: flag(A.noKnock, "noKnock"), noStun: flag(A.noStun, "noStun"), noDisarm: flag(A.noDisarm, "noDisarm"),
     kamikaze: !!d.has?.("Камікадзе"),
+    // «Неживий»: a robot without «Кіборг» (the engine's robotLike; author, 2026-11-20)
+    nonliving: flag(d.robotLike, "nonliving"),
+    // «Улюблений ворог» (author, 2026-11-19): гуль, супермутант, розумний Пазур Смерті
+    mutant: MUTANT_SPECIES.includes(st.species),
   });
   return prof;
+}
+
+/** An enemy's names for the book's tables: its compendium entry's, the `baseName` flag, the base actor's, its own */
+export function enemyNames(actor) {
+  let src = "";
+  try { const u = actor._stats?.compendiumSource ?? actor.flags?.core?.sourceId; src = u ? globalThis.fromUuidSync?.(u)?.name ?? "" : ""; } catch (_) { src = ""; }
+  const base = actor.getFlag?.(globalThis.game?.system?.id, "baseName") ?? "";
+  return [src, base, actor.token?.baseActor?.name ?? "", String(actor.name ?? "").replace(/\s*(?:#|№)?\s*\d+$/, "")].filter(Boolean);
 }
 
 /** The profile of an actor (or null when it can't take damage) */
 export function targetProfile(actor) {
   if (!actor) return null;
-  if (actor.type === "enemy") return enemyProfile(actor.system);
+  if (actor.type === "enemy") {
+    const names = enemyNames(actor);
+    return { ...enemyProfile(actor.system), nonliving: enemyNonliving(actor.system.flags?.nonliving ?? null, names, actor.system), mutant: enemyMutant(names) };
+  }
   if (actor.type === "character") return characterProfileFromState(readState(actor));
   if (actor.type === "caravan") return caravanProfile(actor.system);
   return null;
@@ -65,5 +79,6 @@ export function caravanProfile(sys = {}) {
   const lead = (int(sys.imp?.lead ?? sys.rules?.S?.imp?.lead) || 0) > 0;
   const def = caravanDefences(caravanDefAuto({ tachka: sys.vehicle === "tachka", lead }), sys.defOv);
   // psychic armour set in «Надбавки» (author, 2026-11-15)
-  return { armor: Math.max(0, int(sys.armor)), psyArmor: Math.max(0, int(sys.psiArmor)), ...Object.fromEntries(RES.map((k) => [k, def[k] || "normal"])) };
+  // «Тачка» is a machine, the brahmins are alive: «Електромагнітна граната» takes only the first (author, 2026-11-20)
+  return { armor: Math.max(0, int(sys.armor)), psyArmor: Math.max(0, int(sys.psiArmor)), ...Object.fromEntries(RES.map((k) => [k, def[k] || "normal"])), nonliving: sys.vehicle === "tachka" };
 }

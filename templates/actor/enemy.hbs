@@ -53,7 +53,7 @@
     <section class="pust-en-card">
       <h3><i class="fa-solid fa-tags pust-qic" aria-hidden="true"></i>Ситуативні аспекти</h3>
       <div class="pust-en-chips">
-        {{#each v.aspects}}<span class="pust-en-chip"><span>{{t}}</span>{{#if inv}}<b class="pust-asp-n" title="Безкоштовні Посилення">+{{inv}}</b>{{/if}}</span>
+        {{#each v.aspects}}<span class="pust-en-chip{{#if imm}} imm{{/if}}"{{#if imm}} title="Імунітет: {{imm}}"{{/if}}><span>{{t}}</span>{{#if inv}}<b class="pust-asp-n" title="Безкоштовні Посилення">+{{inv}}</b>{{/if}}</span>
         {{else}}<span class="pust-en-muted">Ситуативних аспектів немає</span>{{/each}}
       </div>
     </section>
@@ -84,17 +84,19 @@
     {{!-- Аспекти --}}
     <section class="pust-en-card">
       <h3><i class="fa-solid fa-tags pust-qic" aria-hidden="true"></i>Ситуативні аспекти</h3>
-      {{#if editable}}{{#if v.quick.length}}
-      <div class="pust-en-quick"><span class="pust-en-sub">Швидкі:</span>
-        {{#each v.quick}}<button type="button" class="pust-en-q" data-action="quickAsp" data-k="{{key}}" {{#if locked}}disabled{{/if}} title="{{help}}">+ {{label}}</button>{{/each}}
-      </div>{{/if}}{{/if}}
       <div class="pust-en-chips">
-        {{#each v.aspects}}<span class="pust-en-chip"><span>{{t}}</span>
+        {{#each v.aspects}}<span class="pust-en-chip{{#if imm}} imm{{/if}}"{{#if imm}} title="Імунітет: {{imm}}"{{/if}}><span>{{t}}</span>
           {{#if ../editable}}<span class="pust-en-inv" title="Безкоштовні посилення цього аспекту"><button type="button" data-action="inv" data-s="s" data-i="{{i}}" data-d="-1" aria-label="Мінус посилення">−</button><b>+{{inv}}</b><button type="button" data-action="inv" data-s="s" data-i="{{i}}" data-d="1" aria-label="Плюс посилення">+</button></span>{{else}}{{#if inv}}<b class="pust-asp-n" title="Безкоштовні Посилення">+{{inv}}</b>{{/if}}{{/if}}
           {{#if ../editable}}<button type="button" class="pust-en-x" data-action="aspRm" data-s="s" data-i="{{i}}" aria-label="Прибрати аспект">×</button>{{/if}}</span>
         {{else}}<span class="pust-en-muted">Ситуативних аспектів немає</span>{{/each}}
       </div>
       {{#if editable}}<input class="pust-en-aspin" type="text" maxlength="100" name="aspin" placeholder="+ ситуативний аспект, Enter" autocomplete="off" aria-label="Новий ситуативний аспект">{{/if}}
+      {{!-- quick aspects as in the character sheet (author, 2026-11-22; 4.2): under the chips, the ochre buttons (label «Швидкі:», short so the three fit one row at 460 px),
+           for whoever may edit the enemy; the others see the chips only --}}
+      {{#if editable}}{{#if v.quick.length}}
+      <div class="pust-en-quick pust-sitq"><span class="pust-en-sub">Швидкі:</span>
+        {{#each v.quick}}<button type="button" class="pust-en-q{{#if imm}} imm{{/if}}" data-action="quickAsp" data-k="{{key}}" title="{{help}}">+ {{label}}</button>{{/each}}
+      </div>{{/if}}{{/if}}
     </section>
 
     {{!-- Атаки --}}
@@ -129,15 +131,16 @@
           {{#if plus}}<span class="pust-en-plus" title="{{plusTitle}}">{{plusText}}</span>{{/if}}
           <span class="pust-en-type {{tcls}}">{{typeLabel}}</span>
           {{#if extra}}<span class="pust-en-dicechip pust-en-extra {{extra.tcls}}" title="{{extra.title}}">{{extra.text}}</span><span class="pust-en-type {{extra.tcls}}" title="{{extra.title}}">{{extra.label}}</span>{{/if}}
-          {{#if ../editable}}<button type="button" class="pust-dmg-apply" data-action="hitSel" data-i="{{i}}" {{#if dead}}disabled{{/if}} title="{{#if dead}}Заряди скінчилися{{else}}Кинути цю атаку й завдати шкоди цілям: броня й стійкості кожного враховуються{{/if}}"><i class="fa-solid fa-crosshairs"></i><span>Завдати цілям</span></button>{{/if}}
+          {{#if ../editable}}<button type="button" class="pust-dmg-apply" data-action="hitSel" data-i="{{i}}" {{#if dead}}disabled{{/if}} title="{{#if dead}}Заряди скінчилися{{else}}Кинути цю атаку й завдати шкоди цілям: броня й стійкості кожного враховуються{{/if}}"><i class="fa-solid fa-crosshairs"></i><span>Завдати цілям</span>{{#if menu}}<i class="fa-solid fa-caret-down pust-pick-caret" aria-hidden="true"></i>{{/if}}</button>{{/if}}
         </div>
         {{#if note}}<div class="pust-en-note">{{note}}</div>{{/if}}
         {{#if ammo}}<div class="pust-en-pips" title="Заряди: {{ammo.value}} з {{ammo.max}}">{{#each ammo.pips}}<button type="button" class="pust-en-pip {{#if on}}on{{/if}}" data-action="pip" data-i="{{../i}}" data-n="{{n}}" aria-label="Заряд {{n}}"></button>{{/each}}<small>{{ammo.value}} / {{ammo.max}}</small></div>{{/if}}
       </div>
       {{else}}<div class="pust-en-muted">Атак немає</div>{{/each}}
       {{#if v.psyMove}}
-      <label class="pust-en-psy {{#if v.psycho}}on{{/if}}" title="Хід «{{v.psyMove.n}}»: до кінця сцени +2 шкоди атаками (крім беззбройних і Пси-удару)">
-        <input type="checkbox" data-used="{{v.psyMove.i}}" {{#if v.psycho}}checked{{/if}} {{#unless editable}}disabled{{/unless}}> Діє Психо <small>+2 шкоди</small></label>
+      {{!-- an indicator only (author, 2026-11-19): the move's «Використати» in «Деталі» turns it on --}}
+      <div class="pust-en-psy {{#if v.psycho}}on{{/if}}" title="Хід «{{v.psyMove.n}}»: до кінця сцени +2 шкоди атаками (крім беззбройних і Пси-удару). Вмикає «Використати» цього ходу в «Деталях»">
+        <i class="fa-solid fa-syringe"></i> {{#if v.psycho}}Діє Психо <small>+2 шкоди</small>{{else}}Психо не діє <small>«{{v.psyMove.n}}» у «Деталях»</small>{{/if}}</div>
       {{/if}}
       {{/if}}
     </section>
@@ -163,13 +166,32 @@
         <textarea data-mf="t" data-i="{{i}}" rows="2" placeholder="Що робить хід" aria-label="Опис ходу">{{t}}</textarea>
       </div>
       {{else}}
-      <div class="pust-en-move {{#if used}}used{{/if}}">
-        <div class="pust-en-mvhd"><b>{{n}}</b>
-          {{#if once}}<label class="pust-en-used" title="{{#if psy}}Діє до кінця сцени: +2 шкоди атаками{{else}}Раз за сцену чи сесію{{/if}}"><input type="checkbox" data-used="{{i}}" {{#if used}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}}> {{#if psy}}Діє Психо (+2 шкоди){{else}}використано{{/if}}</label>{{/if}}
+      {{#if button}}
+      {{!-- a move with «Використати» (author, 2026-11-19; mockup А, like the compact sheet's perks: templates/actor/parts/perk-use.hbs);
+           every move is a card, the stripe rust for a move with the button, grey for one without (author, 2026-11-20) --}}
+      <div class="pust-en-move pust-pkuse pk-{{cls}} pk-act{{#if used}} used{{/if}}">
+        <div class="pust-pkuse-top">
+          <span class="pust-pkuse-n">{{n}}</span>
+          <span class="pust-pklim pk-{{cls}}">{{lim}}{{#if pips}} <span class="pust-mvpips" title="Лишилося використань">{{#each pips}}<i class="{{#if on}}on{{/if}}"></i>{{/each}}</span>{{/if}}</span>
+          {{#if ../editable}}<button type="button" class="pust-pkuse-go" data-action="useMove" data-i="{{i}}" {{#if off}}disabled{{/if}} title="{{#if offWhy}}{{offWhy}}{{else}}{{hint}}{{/if}}">Використати</button>{{/if}}
         </div>
         <div class="pust-en-mvt">{{{tHtml}}}</div>
-        {{#if heal}}<small class="pust-en-hint"><i class="fa-solid fa-kit-medical"></i> Відновлює ОЗ: {{heal}}{{#if healGroup}} (і союзникам у зоні){{/if}}; відмітка «використано» лікує сама</small>{{/if}}
+        {{!-- what the button does is its tooltip only, not a line under the text (author, 2026-11-20) --}}
+        {{#if used}}<p class="pust-pkuse-t"><b class="pust-pkuse-usedtag">Використано</b> · {{back}}.{{#if ../editable}} <button type="button" class="pust-pkuse-free" data-action="freeMove" data-i="{{i}}" title="Зняти позначку «використано»: хід знову доступний, застосований ефект лишається"><i class="fa-solid fa-rotate-left"></i> Зняти позначку</button>{{/if}}</p>{{else}}{{#if spent}}{{#if again}}<p class="pust-pkuse-t">Використано разів: {{spent}}</p>{{/if}}{{/if}}{{/if}}
       </div>
+      {{else}}
+      <div class="pust-en-move pust-pkuse pk-passive{{#if gone}} used{{/if}}">
+        <div class="pust-pkuse-top">
+          <span class="pust-pkuse-n"{{#if hint}} title="{{hint}}"{{/if}}>{{n}}</span>
+          {{#if limited}}<span class="pust-pklim pk-{{cls}}">{{lim}}</span>{{/if}}
+        </div>
+        <div class="pust-en-mvt">{{{tHtml}}}</div>
+        {{#if gone}}
+        {{!-- a «лишається живим» move already spent this scene (author, 2026-11-20): the GM sees it will not save the enemy again --}}
+        <p class="pust-pkuse-t"><b class="pust-pkuse-usedtag">Витрачено</b> · {{back}}.{{#if ../editable}} <button type="button" class="pust-pkuse-free" data-action="freeMove" data-i="{{i}}" title="Зняти позначку «витрачено»: хід знову врятує ворога від 0 ОЗ"><i class="fa-solid fa-rotate-left"></i> Зняти позначку</button>{{/if}}</p>
+        {{/if}}
+      </div>
+      {{/if}}
       {{/if}}
       {{else}}<div class="pust-en-muted">Ходів немає</div>{{/each}}
       {{#if edit}}

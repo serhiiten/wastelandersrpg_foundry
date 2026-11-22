@@ -18,7 +18,7 @@
       "phys": "normal",
       "energy": "normal",
       "fire": "normal",
-      "rad": "normal",
+      "rad": "heal",
       "poison": "half",
       "psy": "normal"
     },
@@ -27,7 +27,7 @@
       "halfPartial": false,
       "noKnockdown": false,
       "noStun": false,
-      "noDisarm": false,
+      "noDisarm": true,
       "kamikaze": false,
       "psyVuln": false
     },
@@ -71,7 +71,7 @@
         "phys": "normal",
         "energy": "normal",
         "fire": "normal",
-        "rad": "normal",
+        "rad": "heal",
         "poison": "half",
         "psy": "normal"
       },
@@ -80,7 +80,7 @@
         "halfPartial": false,
         "noKnockdown": false,
         "noStun": false,
-        "noDisarm": false,
+        "noDisarm": true,
         "kamikaze": false,
         "psyVuln": false
       },
