@@ -3,7 +3,9 @@
 // can press its buttons and type into its fields. Used by tests/caravan-parity.test.mjs.
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { needSiblings } from "./sibling.mjs";
 
+needSiblings(["pustelnyky-caravan/src/caravan.src.html"]);
 const SRC = new URL("../../pustelnyky-caravan/src/caravan.src.html", import.meta.url);
 
 /** The page's main inline script (the IIFE), with S exposed for the test */
@@ -14,7 +16,7 @@ function pageScript() {
   let code = html.slice(start + "<script>".length, html.indexOf("</script>", start));
   const end = code.lastIndexOf("})();");
   code = code.slice(0, end) +
-    "globalThis.__cv = { getS: () => S, setS: (v) => { S = v; }, derived, normalize, clampAfter, salePrices, LOCK_KEYS, IMPS };\n" +
+    "globalThis.__cv = { getS: () => S, setS: (v) => { S = v; }, derived, normalize, clampAfter, salePrices, LOCK_KEYS, IMPS, saleToast, karmaToast };\n" +
     code.slice(end);
   return { code, html };
 }
@@ -128,6 +130,8 @@ export function loadHtmlCaravan({ random = Math.random } = {}) {
     setState: (s) => api.setS(api.normalize(JSON.parse(JSON.stringify(s)))),
     setRandom: (fn) => { ctx.__random = fn; },
     lastToast: () => toastText.textContent,
+    /** forget the last message (a step's own message is then the only one) */
+    clearToast: () => { toastText.textContent = ""; },
     /** ids that got a listener of this type */
     listened: (type) => [...els.values()].filter((e) => e._listeners[type]?.length).map((e) => e.id).filter(Boolean),
     /** click a button by id (confirmTwice buttons: twice) */
